@@ -77,7 +77,8 @@ contract KaChingCashRegisterV1 is EIP712 {
     function _checkBalances(FullOrder calldata order) internal view {
         for (uint256 i = 0; i < order.items.length; i++) {
             OrderItem calldata item = order.items[i];
-            // TODO - support ERC712 and ERC1155
+            require(item.ERC == 20 || item.ERC == 721 || item.ERC == 1155, "Item type (ERC number) is not supported");
+
             ERCTokensBalanceOf token = ERCTokensBalanceOf(item.currency);
             if (item.credit) {
                 require(token.balanceOf(address(this)) >= item.amount, "Contract does not have enough tokens");
@@ -101,14 +102,15 @@ contract KaChingCashRegisterV1 is EIP712 {
     }
 
     function settleOrderPayment(FullOrder calldata order, bytes calldata signature) public {
+        // read-only validations
         require(!_orderProcessed[order.id], "Order already processed");
         require(_isOrderSignerValid(order, signature), "Invalid signature");
         // TODO require - expiry and notBefore
         // TODO require - customer address
         _checkBalances(order);
 
+        // change state
         _orderProcessed[order.id] = true;
-
         _performTransfers(order);
     }
 
