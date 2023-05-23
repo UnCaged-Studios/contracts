@@ -79,6 +79,26 @@ contract KaChingCashRegisterV1 is EIP712 {
         require(_isOrderSignerValid(order, signature), "Invalid signature");
 
         _orderProcessed[order.id] = true;
+
+        for (uint256 i = 0; i < order.items.length; i++) {
+            OrderItem calldata item = order.items[i];
+            IERC20 token = IERC20(item.currency);
+            if (item.credit) {
+                require(token.balanceOf(address(this)) >= item.amount, "Contract does not have enough tokens");
+            } else {
+                require(token.balanceOf(msg.sender) >= item.amount, "Customer does not have enough tokens");
+            }
+        }
+
+        // for (uint256 i = 0; i < order.items.length; i++) {
+        //     OrderItem calldata item = order.items[i];
+        //     IERC20 token = IERC20(item.currency);
+        //     if (item.credit) {
+        //         token.transfer(msg.sender, item.amount);
+        //     } else {
+        //         token.transferFrom(msg.sender, address(this), item.amount);
+        //     }
+        // }
     }
 
     function isOrderProcessed(uint128 orderId) public view returns (bool) {

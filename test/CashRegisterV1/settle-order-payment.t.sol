@@ -3,12 +3,16 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 import "./contracts/TestableCashRegisterV1.sol";
+import "./contracts/MockMBS.sol";
 
 contract KaChingCashRegisterV1Test is Test {
     KaChingCashRegisterV1Testable public cashRegister;
+    MockMBS public mockMBS;
 
     function setUp() public {
         cashRegister = new KaChingCashRegisterV1Testable();
+        mockMBS = new MockMBS();
+        mockMBS.mint(address(cashRegister), 2 * 10 ** 18);
     }
 
     function stringToUint128(string memory uuid) public pure returns (uint128) {
@@ -27,7 +31,7 @@ contract KaChingCashRegisterV1Test is Test {
             notBefore: 3,
             items: new OrderItem[](1)
         });
-        order.items[0] = OrderItem({amount: 1 * 10 ** 18, currency: address(0), credit: false});
+        order.items[0] = OrderItem({amount: 1 * 10 ** 18, currency: address(mockMBS), credit: true});
         bytes32 hash = cashRegister.getEIP712Hash(order);
 
         vm.startPrank(alice); // switch to the signer address
@@ -36,6 +40,7 @@ contract KaChingCashRegisterV1Test is Test {
         vm.stopPrank(); // switch back to the original sender
 
         cashRegister.settleOrderPayment(order, signature);
+
         assertTrue(cashRegister.isOrderProcessed(stringToUint128(uuid)));
     }
 }
