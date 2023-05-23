@@ -3,18 +3,19 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 struct OrderItem {
     uint64 amount;
     address currency;
-    uint8 op;
+    bool credit;
 }
 
 struct FullOrder {
     uint128 id;
     uint32 expiry;
     address customer;
-    uint32 not_before;
+    uint32 notBefore;
     OrderItem[] items;
 }
 
@@ -32,10 +33,10 @@ contract KaChingCashRegisterV1 is EIP712 {
         for (uint256 i = 0; i < order.items.length; i++) {
             bytes32 itemHash = keccak256(
                 abi.encode(
-                    keccak256("OrderItem(uint64 amount,address currency,uint8 op)"),
+                    keccak256("OrderItem(uint64 amount,address currency,bool credit)"),
                     order.items[i].amount,
                     order.items[i].currency,
-                    order.items[i].op
+                    order.items[i].credit
                 )
             );
 
@@ -48,11 +49,11 @@ contract KaChingCashRegisterV1 is EIP712 {
 
         return keccak256(
             abi.encode(
-                keccak256("FullOrder(uint128 id,uint32 expiry,address customer,uint32 not_before,bytes32 itemsHash)"),
+                keccak256("FullOrder(uint128 id,uint32 expiry,address customer,uint32 notBefore,bytes32 itemsHash)"),
                 order.id,
                 order.expiry,
                 order.customer,
-                order.not_before,
+                order.notBefore,
                 structHash
             )
         );
@@ -74,6 +75,7 @@ contract KaChingCashRegisterV1 is EIP712 {
 
     function settleOrderPayment(FullOrder calldata order, bytes calldata signature) public {
         require(!_orderProcessed[order.id], "Order already processed");
+
         require(_isOrderSignerValid(order, signature), "Invalid signature");
 
         _orderProcessed[order.id] = true;

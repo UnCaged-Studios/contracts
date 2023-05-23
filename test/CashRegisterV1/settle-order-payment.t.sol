@@ -24,10 +24,10 @@ contract KaChingCashRegisterV1Test is Test {
             id: stringToUint128(uuid),
             expiry: 2,
             customer: address(0),
-            not_before: 3,
+            notBefore: 3,
             items: new OrderItem[](1)
         });
-        order.items[0] = OrderItem({amount: 1, currency: address(0), op: 1});
+        order.items[0] = OrderItem({amount: 1 * 10 ** 18, currency: address(0), credit: false});
         bytes32 hash = cashRegister.getEIP712Hash(order);
 
         vm.startPrank(alice); // switch to the signer address
