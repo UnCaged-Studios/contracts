@@ -11,12 +11,22 @@ contract KaChingCashRegisterV1Test is Test {
         cashRegister = new KaChingCashRegisterV1Testable();
     }
 
-    function testSettleOrderPayment() public {
+    function stringToUint128(string memory uuid) public pure returns (uint128) {
+        return uint128(uint256(keccak256(abi.encodePacked(uuid))));
+    }
+
+    function testSanity() public {
         // anvil available accounts index[0] (address: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266)
         uint256 signerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+        string memory uuid = "550e8400-e29b-41d4-a716-446655440000";
         address alice = vm.addr(signerPrivateKey);
-        FullOrder memory order =
-            FullOrder({id: 1, expiry: 2, customer: address(0), not_before: 3, items: new OrderItem[](1)});
+        FullOrder memory order = FullOrder({
+            id: stringToUint128(uuid),
+            expiry: 2,
+            customer: address(0),
+            not_before: 3,
+            items: new OrderItem[](1)
+        });
         order.items[0] = OrderItem({amount: 1, currency: address(0), op: 1});
         bytes32 hash = cashRegister.getEIP712Hash(order);
 
@@ -26,6 +36,6 @@ contract KaChingCashRegisterV1Test is Test {
         vm.stopPrank(); // switch back to the original sender
 
         cashRegister.settleOrderPayment(order, signature);
-        // assertEq(cashRegister.orderProcessed(1), true, "Order not processed correctly");
+        assertTrue(cashRegister.isOrderProcessed(stringToUint128(uuid)));
     }
 }

@@ -26,26 +26,6 @@ contract KaChingCashRegisterV1 is EIP712 {
         ORDER_SIGNER_ADDRESSES = [0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 /*, more addresses here if needed */ ];
     }
 
-    function settleOrderPayment(FullOrder calldata order, bytes calldata signature) public {
-        require(!_orderProcessed[order.id], "Order already processed");
-
-        bytes32 fullOrderHash = _getFullOrderHash(order);
-
-        bytes32 hash = _hashTypedDataV4(fullOrderHash);
-        address signer = ECDSA.recover(hash, signature);
-
-        bool isSignerValid = false;
-        for (uint256 i = 0; i < ORDER_SIGNER_ADDRESSES.length; i++) {
-            if (signer == ORDER_SIGNER_ADDRESSES[i]) {
-                isSignerValid = true;
-                break;
-            }
-        }
-        require(isSignerValid, "Invalid signature");
-
-        _orderProcessed[order.id] = true;
-    }
-
     function _getFullOrderHash(FullOrder memory order) internal pure returns (bytes32) {
         bytes memory itemsPacked = new bytes(32 * order.items.length);
 
@@ -76,5 +56,27 @@ contract KaChingCashRegisterV1 is EIP712 {
                 structHash
             )
         );
+    }
+
+    function settleOrderPayment(FullOrder calldata order, bytes calldata signature) public {
+        require(!_orderProcessed[order.id], "Order already processed");
+
+        bytes32 fullOrderHash = _getFullOrderHash(order);
+        address signer = ECDSA.recover(_hashTypedDataV4(fullOrderHash), signature);
+
+        bool isSignerValid = false;
+        for (uint256 i = 0; i < ORDER_SIGNER_ADDRESSES.length; i++) {
+            if (signer == ORDER_SIGNER_ADDRESSES[i]) {
+                isSignerValid = true;
+                break;
+            }
+        }
+        require(isSignerValid, "Invalid signature");
+
+        _orderProcessed[order.id] = true;
+    }
+
+    function isOrderProcessed(uint128 orderId) public view returns (bool) {
+        return _orderProcessed[orderId];
     }
 }
