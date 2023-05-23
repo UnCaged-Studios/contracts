@@ -15,6 +15,35 @@ contract KaChingCashRegisterV1Test is Test {
     MockMonkeyNFT public mockNFT;
 
     uint256 public signerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+    string public uuid = "550e8400-e29b-41d4-a716-446655440000";
+
+    function _stringToUint128(string memory _uuid) internal pure returns (uint128) {
+        return uint128(uint256(keccak256(abi.encodePacked(_uuid))));
+    }
+
+    function _signOrder(address signer, bytes32 hash) internal returns (bytes memory) {
+        vm.startPrank(signer);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerPrivateKey, hash);
+        bytes memory signature = abi.encodePacked(r, s, v);
+        vm.stopPrank();
+        return signature;
+    }
+
+    function _createOrder(string memory _uuid, address customer, bool credit)
+        internal
+        view
+        returns (FullOrder memory)
+    {
+        FullOrder memory order = FullOrder({
+            id: _stringToUint128(_uuid),
+            expiry: 2,
+            customer: customer,
+            notBefore: 3,
+            items: new OrderItem[](1)
+        });
+        order.items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: credit, ERC: 20, id: 0});
+        return order;
+    }
 
     function setUp() public {
         cashRegister = new KaChingCashRegisterV1Testable();
@@ -23,77 +52,44 @@ contract KaChingCashRegisterV1Test is Test {
         sigUtils = new SigUtils(mockMBS.DOMAIN_SEPARATOR());
     }
 
-    function stringToUint128(string memory uuid) public pure returns (uint128) {
-        return uint128(uint256(keccak256(abi.encodePacked(uuid))));
-    }
-
     function testCreditCustomer() public {
-        string memory uuid = "550e8400-e29b-41d4-a716-446655440000";
         address orderSigner = vm.addr(signerPrivateKey);
-        address customer = vm.addr(42);
-        // fund contract with MBS
+        address customer = vm.addr(0xA11CE);
         mockMBS.mint(address(cashRegister), 3e18);
 
-        FullOrder memory order = FullOrder({
-            id: stringToUint128(uuid),
-            expiry: 2,
-            customer: customer,
-            notBefore: 3,
-            items: new OrderItem[](1)
-        });
-        order.items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true, ERC: 20, id: 0});
-
+        FullOrder memory order = _createOrder(uuid, customer, true);
         bytes32 hash = cashRegister.getEIP712Hash(order);
-
-        vm.startPrank(orderSigner); // switch to the signer address
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerPrivateKey, hash);
-        bytes memory signature = abi.encodePacked(r, s, v);
-        vm.stopPrank(); // switch back to the original sender
+        bytes memory signature = _signOrder(orderSigner, hash);
 
         vm.prank(customer);
         cashRegister.settleOrderPayment(order, signature);
-        assertTrue(cashRegister.isOrderProcessed(stringToUint128(uuid)));
+        assertTrue(cashRegister.isOrderProcessed(_stringToUint128(uuid)));
         assertEq(mockMBS.balanceOf(customer), 1e18, "customer");
         assertEq(mockMBS.balanceOf(address(cashRegister)), 2e18, "cashRegister");
     }
 
     // credit customer with ERC20
     function testDebitCustomer() public {
-        string memory uuid = "550e8400-e29b-41d4-a716-446655440000";
         address orderSigner = vm.addr(signerPrivateKey);
         address customer = vm.addr(0xA11CE);
-        // fund customer with MBS
         mockMBS.mint(customer, 3e18);
 
-        FullOrder memory order = FullOrder({
-            id: stringToUint128(uuid),
-            expiry: 2,
-            customer: customer,
-            notBefore: 3,
-            items: new OrderItem[](1)
-        });
-        order.items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: false, ERC: 20, id: 0});
-
+        FullOrder memory order = _createOrder(uuid, customer, false);
         bytes32 hash = cashRegister.getEIP712Hash(order);
-
-        vm.startPrank(orderSigner); // switch to the signer address
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerPrivateKey, hash);
-        bytes memory signature = abi.encodePacked(r, s, v);
-        vm.stopPrank(); // switch back to the original sender
+        bytes memory signature = _signOrder(orderSigner, hash);
 
         SigUtils.Permit memory permit =
             SigUtils.Permit({owner: customer, spender: address(cashRegister), value: 1e18, nonce: 0, deadline: 1 days});
         bytes32 digest = sigUtils.getTypedDataHash(permit);
 
-        (uint8 v1, bytes32 r1, bytes32 s1) = vm.sign(0xA11CE, digest);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(0xA11CE, digest);
 
-        mockMBS.permit(permit.owner, permit.spender, permit.value, permit.deadline, v1, r1, s1);
+        mockMBS.permit(permit.owner, permit.spender, permit.value, permit.deadline, v, r, s);
 
         vm.prank(customer);
         cashRegister.settleOrderPayment(order, signature);
         assertEq(mockMBS.balanceOf(customer), 2e18, "customer");
         assertEq(mockMBS.balanceOf(address(cashRegister)), 1e18, "cashRegister");
-        // FIXME Error: Compiler error (/solidity/libsolidity/codegen/LValue.cpp:56):Stack too deep. Try compiling with `--via-ir` (cli) or the equivalent `viaIR: true` (standard JSON) while enabling the optimizer. Otherwise, try removing local variables.
-        // assertTrue(cashRegister.isOrderProcessed(stringToUint128(uuid)));
+        assertTrue(cashRegister.isOrderProcessed(_stringToUint128(uuid)));
     }
 }
