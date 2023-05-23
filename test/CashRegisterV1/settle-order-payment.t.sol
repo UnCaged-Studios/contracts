@@ -4,15 +4,16 @@ pragma solidity ^0.8.19;
 import "forge-std/Test.sol";
 import "./contracts/TestableCashRegisterV1.sol";
 import "./contracts/MockMBS.sol";
+// import "./contracts/MockMonkeyNFT.sol";
 
 contract KaChingCashRegisterV1Test is Test {
     KaChingCashRegisterV1Testable public cashRegister;
     MockMBS public mockMBS;
+    // MockMonkeyNFT public mockNFT;
 
     function setUp() public {
         cashRegister = new KaChingCashRegisterV1Testable();
         mockMBS = new MockMBS();
-        mockMBS.mint(address(cashRegister), 2 * 10 ** 18);
     }
 
     function stringToUint128(string memory uuid) public pure returns (uint128) {
@@ -24,6 +25,9 @@ contract KaChingCashRegisterV1Test is Test {
         uint256 signerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
         string memory uuid = "550e8400-e29b-41d4-a716-446655440000";
         address customer = vm.addr(signerPrivateKey);
+        // fund customer with MBS
+        mockMBS.mint(address(cashRegister), 3 * 10 ** 18);
+
         FullOrder memory order = FullOrder({
             id: stringToUint128(uuid),
             expiry: 2,
@@ -31,7 +35,10 @@ contract KaChingCashRegisterV1Test is Test {
             notBefore: 3,
             items: new OrderItem[](1)
         });
-        order.items[0] = OrderItem({amount: 1 * 10 ** 18, currency: address(mockMBS), credit: true});
+        // pay in MBS
+        order.items[0] = OrderItem({amount: 1 * 10 ** 18, currency: address(mockMBS), credit: true, ERC: 20});
+        // get an NFT
+
         bytes32 hash = cashRegister.getEIP712Hash(order);
 
         vm.startPrank(customer); // switch to the signer address

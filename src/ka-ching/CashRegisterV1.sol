@@ -9,6 +9,7 @@ struct OrderItem {
     uint64 amount;
     address currency;
     bool credit;
+    uint16 ERC; // Add the TokenType enum as a field in the struct
 }
 
 struct FullOrder {
@@ -17,6 +18,10 @@ struct FullOrder {
     address customer;
     uint32 notBefore;
     OrderItem[] items;
+}
+
+interface ERCTokensBalanceOf {
+    function balanceOf(address account) external view returns (uint256);
 }
 
 contract KaChingCashRegisterV1 is EIP712 {
@@ -29,24 +34,20 @@ contract KaChingCashRegisterV1 is EIP712 {
 
     function _getFullOrderHash(FullOrder memory order) internal pure returns (bytes32) {
         bytes memory itemsPacked = new bytes(32 * order.items.length);
-
         for (uint256 i = 0; i < order.items.length; i++) {
             bytes32 itemHash = keccak256(
                 abi.encode(
-                    keccak256("OrderItem(uint64 amount,address currency,bool credit)"),
+                    keccak256("OrderItem(uint64 amount,address currency,bool credit,uint16 ERC)"),
                     order.items[i].amount,
                     order.items[i].currency,
-                    order.items[i].credit
+                    order.items[i].credit,
+                    order.items[i].ERC
                 )
             );
-
             for (uint256 j = 0; j < 32; j++) {
                 itemsPacked[i * 32 + j] = itemHash[j];
             }
         }
-
-        bytes32 structHash = keccak256(itemsPacked);
-
         return keccak256(
             abi.encode(
                 keccak256("FullOrder(uint128 id,uint32 expiry,address customer,uint32 notBefore,bytes32 itemsHash)"),
@@ -54,7 +55,7 @@ contract KaChingCashRegisterV1 is EIP712 {
                 order.expiry,
                 order.customer,
                 order.notBefore,
-                structHash
+                keccak256(itemsPacked)
             )
         );
     }
@@ -77,7 +78,7 @@ contract KaChingCashRegisterV1 is EIP712 {
         for (uint256 i = 0; i < order.items.length; i++) {
             OrderItem calldata item = order.items[i];
             // TODO - support ERC712 and ERC1155
-            IERC20 token = IERC20(item.currency);
+            ERCTokensBalanceOf token = ERCTokensBalanceOf(item.currency);
             if (item.credit) {
                 require(token.balanceOf(address(this)) >= item.amount, "Contract does not have enough tokens");
             } else {
@@ -101,11 +102,9 @@ contract KaChingCashRegisterV1 is EIP712 {
 
     function settleOrderPayment(FullOrder calldata order, bytes calldata signature) public {
         require(!_orderProcessed[order.id], "Order already processed");
-
         require(_isOrderSignerValid(order, signature), "Invalid signature");
-
-        // TODO - expiry and notBefore validations
-
+        // TODO require - expiry and notBefore
+        // TODO require - customer address
         _checkBalances(order);
 
         _orderProcessed[order.id] = true;
