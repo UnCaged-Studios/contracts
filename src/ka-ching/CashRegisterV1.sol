@@ -73,15 +73,10 @@ contract KaChingCashRegisterV1 is EIP712 {
         return isSignerValid;
     }
 
-    function settleOrderPayment(FullOrder calldata order, bytes calldata signature) public {
-        require(!_orderProcessed[order.id], "Order already processed");
-
-        require(_isOrderSignerValid(order, signature), "Invalid signature");
-
-        _orderProcessed[order.id] = true;
-
+    function _checkBalances(FullOrder calldata order) internal view {
         for (uint256 i = 0; i < order.items.length; i++) {
             OrderItem calldata item = order.items[i];
+            // TODO - support ERC712 and ERC1155
             IERC20 token = IERC20(item.currency);
             if (item.credit) {
                 require(token.balanceOf(address(this)) >= item.amount, "Contract does not have enough tokens");
@@ -89,16 +84,33 @@ contract KaChingCashRegisterV1 is EIP712 {
                 require(token.balanceOf(msg.sender) >= item.amount, "Customer does not have enough tokens");
             }
         }
+    }
 
-        // for (uint256 i = 0; i < order.items.length; i++) {
-        //     OrderItem calldata item = order.items[i];
-        //     IERC20 token = IERC20(item.currency);
-        //     if (item.credit) {
-        //         token.transfer(msg.sender, item.amount);
-        //     } else {
-        //         token.transferFrom(msg.sender, address(this), item.amount);
-        //     }
-        // }
+    function _performTransfers(FullOrder calldata order) internal {
+        for (uint256 i = 0; i < order.items.length; i++) {
+            OrderItem calldata item = order.items[i];
+            // TODO - support ERC712 and ERC1155
+            IERC20 token = IERC20(item.currency);
+            if (item.credit) {
+                token.transfer(msg.sender, item.amount);
+            } else {
+                token.transferFrom(msg.sender, address(this), item.amount);
+            }
+        }
+    }
+
+    function settleOrderPayment(FullOrder calldata order, bytes calldata signature) public {
+        require(!_orderProcessed[order.id], "Order already processed");
+
+        require(_isOrderSignerValid(order, signature), "Invalid signature");
+
+        // TODO - expiry and notBefore validations
+
+        _checkBalances(order);
+
+        _orderProcessed[order.id] = true;
+
+        _performTransfers(order);
     }
 
     function isOrderProcessed(uint128 orderId) public view returns (bool) {
