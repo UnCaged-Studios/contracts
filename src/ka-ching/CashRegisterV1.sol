@@ -58,9 +58,7 @@ contract KaChingCashRegisterV1 is EIP712 {
         );
     }
 
-    function settleOrderPayment(FullOrder calldata order, bytes calldata signature) public {
-        require(!_orderProcessed[order.id], "Order already processed");
-
+    function _isOrderSignerValid(FullOrder memory order, bytes memory signature) internal view returns (bool) {
         bytes32 fullOrderHash = _getFullOrderHash(order);
         address signer = ECDSA.recover(_hashTypedDataV4(fullOrderHash), signature);
 
@@ -71,7 +69,12 @@ contract KaChingCashRegisterV1 is EIP712 {
                 break;
             }
         }
-        require(isSignerValid, "Invalid signature");
+        return isSignerValid;
+    }
+
+    function settleOrderPayment(FullOrder calldata order, bytes calldata signature) public {
+        require(!_orderProcessed[order.id], "Order already processed");
+        require(_isOrderSignerValid(order, signature), "Invalid signature");
 
         _orderProcessed[order.id] = true;
     }
