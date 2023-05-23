@@ -4,12 +4,15 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 struct OrderItem {
-    uint64 amount;
+    uint256 amount;
     address currency;
     bool credit;
     uint16 ERC; // Add the TokenType enum as a field in the struct
+    uint256 id;
 }
 
 struct FullOrder {
@@ -37,7 +40,7 @@ contract KaChingCashRegisterV1 is EIP712 {
         for (uint256 i = 0; i < order.items.length; i++) {
             bytes32 itemHash = keccak256(
                 abi.encode(
-                    keccak256("OrderItem(uint64 amount,address currency,bool credit,uint16 ERC)"),
+                    keccak256("OrderItem(uint256 amount,address currency,bool credit,uint16 ERC, uint256 id)"),
                     order.items[i].amount,
                     order.items[i].currency,
                     order.items[i].credit,
@@ -91,12 +94,27 @@ contract KaChingCashRegisterV1 is EIP712 {
     function _performTransfers(FullOrder calldata order) internal {
         for (uint256 i = 0; i < order.items.length; i++) {
             OrderItem calldata item = order.items[i];
-            // TODO - support ERC712 and ERC1155
-            IERC20 token = IERC20(item.currency);
-            if (item.credit) {
-                token.transfer(msg.sender, item.amount);
-            } else {
-                token.transferFrom(msg.sender, address(this), item.amount);
+            if (item.ERC == 20) {
+                IERC20 erc20Token = IERC20(item.currency);
+                if (item.credit) {
+                    erc20Token.transfer(msg.sender, item.amount);
+                } else {
+                    erc20Token.transferFrom(msg.sender, address(this), item.amount);
+                }
+            } else if (item.ERC == 721) {
+                IERC721 erc721Token = IERC721(item.currency);
+                if (item.credit) {
+                    erc721Token.transferFrom(address(this), msg.sender, item.id);
+                } else {
+                    erc721Token.transferFrom(msg.sender, address(this), item.id);
+                }
+            } else if (item.ERC == 1155) {
+                IERC1155 erc1155Token = IERC1155(item.currency);
+                if (item.credit) {
+                    erc1155Token.safeTransferFrom(address(this), msg.sender, item.id, item.amount, "");
+                } else {
+                    erc1155Token.safeTransferFrom(msg.sender, address(this), item.id, item.amount, "");
+                }
             }
         }
     }

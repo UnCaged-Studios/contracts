@@ -36,7 +36,7 @@ contract KaChingCashRegisterV1Test is Test {
             items: new OrderItem[](1)
         });
         // pay in MBS
-        order.items[0] = OrderItem({amount: 1 * 10 ** 18, currency: address(mockMBS), credit: true, ERC: 20});
+        order.items[0] = OrderItem({amount: 1 * 10 ** 18, currency: address(mockMBS), credit: true, ERC: 20, id: 0});
         // get an NFT
 
         bytes32 hash = cashRegister.getEIP712Hash(order);
