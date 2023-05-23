@@ -4,12 +4,10 @@ pragma solidity ^0.8.19;
 import "forge-std/Test.sol";
 import "./contracts/TestableCashRegisterV1.sol";
 import "./contracts/MockMBS.sol";
-// import "./contracts/MockMonkeyNFT.sol";
 
 contract KaChingCashRegisterV1Test is Test {
     KaChingCashRegisterV1Testable public cashRegister;
     MockMBS public mockMBS;
-    // MockMonkeyNFT public mockNFT;
 
     function setUp() public {
         cashRegister = new KaChingCashRegisterV1Testable();
@@ -21,32 +19,35 @@ contract KaChingCashRegisterV1Test is Test {
     }
 
     function testSanity() public {
-        // anvil available accounts index[0] (address: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266)
         uint256 signerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
         string memory uuid = "550e8400-e29b-41d4-a716-446655440000";
-        address customer = vm.addr(signerPrivateKey);
+        address orderSigner = vm.addr(signerPrivateKey);
+        address customer = vm.addr(42);
         // fund customer with MBS
         mockMBS.mint(address(cashRegister), 3 * 10 ** 18);
 
         FullOrder memory order = FullOrder({
             id: stringToUint128(uuid),
             expiry: 2,
-            customer: address(0),
+            customer: customer,
             notBefore: 3,
             items: new OrderItem[](1)
         });
-        // pay in MBS
         order.items[0] = OrderItem({amount: 1 * 10 ** 18, currency: address(mockMBS), credit: true, ERC: 20, id: 0});
-        // get an NFT
+        // get ERC721
+        // order.items[1] = OrderItem({amount: 1, currency: address(mockNFT), credit: true, ERC: 721, id: 42});
 
         bytes32 hash = cashRegister.getEIP712Hash(order);
 
-        vm.startPrank(customer); // switch to the signer address
+        vm.startPrank(orderSigner); // switch to the signer address
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerPrivateKey, hash);
         bytes memory signature = abi.encodePacked(r, s, v);
         vm.stopPrank(); // switch back to the original sender
 
+        vm.prank(customer);
         cashRegister.settleOrderPayment(order, signature);
         assertTrue(cashRegister.isOrderProcessed(stringToUint128(uuid)));
+        assertEq(mockMBS.balanceOf(customer), 1 * 10 ** 18);
+        assertEq(mockMBS.balanceOf(address(cashRegister)), 2 * 10 ** 18);
     }
 }

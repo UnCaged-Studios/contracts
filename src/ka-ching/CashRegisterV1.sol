@@ -123,8 +123,8 @@ contract KaChingCashRegisterV1 is EIP712 {
         // read-only validations
         require(!_orderProcessed[order.id], "Order already processed");
         require(_isOrderSignerValid(order, signature), "Invalid signature");
+        require(msg.sender == order.customer, "Customer does not match sender address");
         // TODO require - expiry and notBefore
-        // TODO require - customer address
         _checkBalances(order);
 
         // change state
