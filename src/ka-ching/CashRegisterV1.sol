@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 struct OrderItem {
     uint256 amount;
@@ -26,13 +27,16 @@ struct FullOrder {
     OrderItem[] items;
 }
 
-contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC165 {
+contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC165, AccessControl {
     mapping(uint128 => bool) private _orderProcessed;
+
     address[] private ORDER_SIGNER_ADDRESSES;
+    bytes32 public constant CASHIER_ROLE = keccak256("CASHIER_ROLE");
 
     event OrderFullySettled(uint128 orderId, address customer);
 
     constructor() EIP712("KaChingCashRegisterV1", "1") {
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         ORDER_SIGNER_ADDRESSES = [0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 /*, more addresses here if needed */ ];
     }
 
@@ -183,7 +187,29 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
         return this.onERC1155BatchReceived.selector;
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC165, IERC165, AccessControl)
+        returns (bool)
+    {
         return interfaceId == type(IERC1155Receiver).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    function addCashier(address cashier) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        grantRole(CASHIER_ROLE, cashier);
+    }
+
+    function removeCashier(address cashier) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        renounceRole(CASHIER_ROLE, cashier);
+    }
+
+    function overrideOrderSigners(address[] memory newSigners) public onlyRole(CASHIER_ROLE) {
+        ORDER_SIGNER_ADDRESSES = newSigners;
+    }
+
+    function getOrderSigners() public view onlyRole(CASHIER_ROLE) returns (address[] memory) {
+        return ORDER_SIGNER_ADDRESSES;
     }
 }

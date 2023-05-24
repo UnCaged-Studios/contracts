@@ -21,6 +21,7 @@ contract KaChingCashRegisterV1Test is Test {
     address public orderSigner = vm.addr(signerPrivateKey);
     address public customer = vm.addr(0xA11CE);
     uint32 public baselineBlocktime = 1684911164;
+    bytes32 public constant CASHIER_ROLE = keccak256("CASHIER_ROLE");
 
     function _createAndSignOrder(OrderItem[] memory items, uint32 expiry, uint32 notBefore)
         internal
@@ -282,5 +283,54 @@ contract KaChingCashRegisterV1Test is Test {
 
         vm.expectRevert("Invalid signature");
         cashRegister.settleOrderPayment(order, signature);
+    }
+
+    function testAddCashier() public {
+        // Initial assumption: The cashier is not yet a cashier
+        assertFalse(cashRegister.hasRole(CASHIER_ROLE, address(this)));
+
+        cashRegister.addCashier(address(this));
+
+        // After adding, the cashier should have the cashier role
+        assertTrue(cashRegister.hasRole(CASHIER_ROLE, address(this)));
+    }
+
+    // FIXME
+    // function testOverrideOrderSigners() public {
+    //     address[] memory newSigners = new address[](2);
+    //     newSigners[0] = vm.addr(0xB0B1);
+    //     newSigners[1] = vm.addr(0xB0B2);
+
+    //     address newCashier = vm.addr(0xCa1);
+    //     cashRegister.addCashier(newCashier);
+
+    //     vm.prank(newCashier);
+    //     cashRegister.overrideOrderSigners(newSigners);
+    //     // vm.stopPrank();
+
+    //     address[] memory cashRegisterSigners = cashRegister.getOrderSigners();
+
+    //     // Check that the new signers match the set signers
+    //     for (uint256 i = 0; i < newSigners.length; i++) {
+    //         assertEq(cashRegisterSigners[i], newSigners[i]);
+    //     }
+    // }
+
+    function testRevertWhenAddingCashierNotByAdmin() public {
+        // Attempt to add a cashier by someone who is not an admin should fail
+        vm.startPrank(customer);
+        vm.expectRevert();
+        cashRegister.addCashier(customer);
+        vm.stopPrank();
+    }
+
+    function testRevertWhenOverridingSignersNotByCashier() public {
+        address[] memory newSigners = new address[](1);
+        newSigners[0] = vm.addr(0xB0B);
+
+        vm.startPrank(customer);
+        vm.expectRevert();
+        cashRegister.overrideOrderSigners(newSigners);
+        vm.stopPrank();
     }
 }
