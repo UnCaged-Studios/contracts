@@ -121,9 +121,9 @@ contract KaChingCashRegisterV1 is EIP712 {
 
     function settleOrderPayment(FullOrder calldata order, bytes calldata signature) public {
         // read-only validations
-        require(!_orderProcessed[order.id], "Order already processed");
-        require(_isOrderSignerValid(order, signature), "Invalid signature");
         require(msg.sender == order.customer, "Customer does not match sender address");
+        require(_isOrderSignerValid(order, signature), "Invalid signature");
+        require(!_orderProcessed[order.id], "Order already processed");
         // TODO require - expiry and notBefore
         _checkBalances(order);
 
