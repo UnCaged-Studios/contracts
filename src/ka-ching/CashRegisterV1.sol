@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 struct OrderItem {
     uint256 amount;
@@ -24,11 +26,7 @@ struct FullOrder {
     OrderItem[] items;
 }
 
-interface ERCTokensBalanceOf {
-    function balanceOf(address account) external view returns (uint256);
-}
-
-contract KaChingCashRegisterV1 is EIP712, IERC721Receiver {
+contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC165 {
     mapping(uint128 => bool) private _orderProcessed;
     address[] private ORDER_SIGNER_ADDRESSES;
 
@@ -83,11 +81,22 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver {
             OrderItem calldata item = order.items[i];
             require(item.ERC == 20 || item.ERC == 721 || item.ERC == 1155, "Item type (ERC number) is not supported");
 
-            ERCTokensBalanceOf token = ERCTokensBalanceOf(item.currency);
-            if (item.credit) {
-                require(token.balanceOf(address(this)) >= item.amount, "Contract does not have enough tokens");
+            if (item.ERC == 1155) {
+                IERC1155 token = IERC1155(item.currency);
+                if (item.credit) {
+                    require(
+                        token.balanceOf(address(this), item.id) >= item.amount, "Contract does not have enough tokens"
+                    );
+                } else {
+                    require(token.balanceOf(msg.sender, item.id) >= item.amount, "Customer does not have enough tokens");
+                }
             } else {
-                require(token.balanceOf(msg.sender) >= item.amount, "Customer does not have enough tokens");
+                IERC721 token = IERC721(item.currency); // same for IERC20
+                if (item.credit) {
+                    require(token.balanceOf(address(this)) >= item.amount, "Contract does not have enough tokens");
+                } else {
+                    require(token.balanceOf(msg.sender) >= item.amount, "Customer does not have enough tokens");
+                }
             }
         }
     }
@@ -144,5 +153,31 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver {
         bytes calldata /* data */
     ) external pure override returns (bytes4) {
         return this.onERC721Received.selector;
+    }
+
+    function onERC1155Received(
+        address, /* operator */
+        address, /* from */
+        uint256, /* id */
+        uint256, /* value */
+        bytes calldata /* data */
+    ) external pure override returns (bytes4) {
+        // implement your logic here
+        return this.onERC1155Received.selector;
+    }
+
+    function onERC1155BatchReceived(
+        address, /* operator */
+        address, /* from */
+        uint256[] calldata, /* ids */
+        uint256[] calldata, /* values */
+        bytes calldata /* data */
+    ) external pure override returns (bytes4) {
+        // implement your logic here
+        return this.onERC1155BatchReceived.selector;
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+        return interfaceId == type(IERC1155Receiver).interfaceId || super.supportsInterface(interfaceId);
     }
 }

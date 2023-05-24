@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import "./contracts/TestableCashRegisterV1.sol";
 import "./contracts/MockMBS.sol";
 import "./contracts/MockMonkeyNFT.sol";
+import "./contracts/MockCapsuleSFT.sol";
 import "./contracts/SigUtils.sol";
 
 contract KaChingCashRegisterV1Test is Test {
@@ -12,7 +13,8 @@ contract KaChingCashRegisterV1Test is Test {
     SigUtils public sigUtils;
 
     MockMBS public mockMBS;
-    MockMonkeyNFT public mockNFT;
+    MockMonkeyNFT public mockMonkeyNFT;
+    MockCapsuleSFT public mockCapsuleSFT;
 
     uint256 public signerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
     uint128 public uuid = uint128(uint256(keccak256(abi.encodePacked("550e8400-e29b-41d4-a716-446655440000"))));
@@ -32,7 +34,8 @@ contract KaChingCashRegisterV1Test is Test {
     function setUp() public {
         cashRegister = new KaChingCashRegisterV1Testable();
         mockMBS = new MockMBS();
-        mockNFT = new MockMonkeyNFT();
+        mockMonkeyNFT = new MockMonkeyNFT();
+        mockCapsuleSFT = new MockCapsuleSFT();
         sigUtils = new SigUtils(mockMBS.DOMAIN_SEPARATOR());
     }
 
@@ -76,12 +79,14 @@ contract KaChingCashRegisterV1Test is Test {
 
     function testDebitAndCreditCustomerWtihDifferentERCs() public {
         mockMBS.mint(customer, 3e18);
-        mockNFT.mint(address(cashRegister), 42); // mint tokenId: 0
-        mockNFT.mint(address(cashRegister), 73); // mint tokenId: 1
+        mockMonkeyNFT.mint(address(cashRegister), 42); // mint tokenId: 0
+        mockMonkeyNFT.mint(address(cashRegister), 73); // mint tokenId: 1
+        mockCapsuleSFT.mint(address(cashRegister), 101, 5, "");
 
-        OrderItem[] memory items = new OrderItem[](2);
+        OrderItem[] memory items = new OrderItem[](3);
         items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: false, ERC: 20, id: 0});
-        items[1] = OrderItem({amount: 1, currency: address(mockNFT), credit: true, ERC: 721, id: 42});
+        items[1] = OrderItem({amount: 1, currency: address(mockMonkeyNFT), credit: true, ERC: 721, id: 42});
+        items[2] = OrderItem({amount: 3, currency: address(mockCapsuleSFT), credit: true, ERC: 1155, id: 101});
         (FullOrder memory order, bytes memory signature) = _createAndSignOrder(items);
 
         SigUtils.Permit memory permit =
@@ -96,8 +101,11 @@ contract KaChingCashRegisterV1Test is Test {
 
         assertEq(mockMBS.balanceOf(customer), 2e18, "customer MBS balance is not 2");
         assertEq(mockMBS.balanceOf(address(cashRegister)), 1e18, "cashRegister MBS balance is not 1");
-        assertEq(mockNFT.ownerOf(42), customer);
-        assertEq(mockNFT.ownerOf(73), address(cashRegister));
+        assertEq(mockMonkeyNFT.ownerOf(42), customer);
+        assertEq(mockMonkeyNFT.ownerOf(73), address(cashRegister));
+        assertEq(mockCapsuleSFT.balanceOf(customer, 101), 3);
+        assertEq(mockCapsuleSFT.balanceOf(address(cashRegister), 101), 2);
+
         assertTrue(cashRegister.isOrderProcessed(uuid));
     }
 }
