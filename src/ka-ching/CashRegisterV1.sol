@@ -30,6 +30,8 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
     mapping(uint128 => bool) private _orderProcessed;
     address[] private ORDER_SIGNER_ADDRESSES;
 
+    event OrderFullySettled(uint128 orderId, address customer);
+
     constructor() EIP712("KaChingCashRegisterV1", "1") {
         ORDER_SIGNER_ADDRESSES = [0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 /*, more addresses here if needed */ ];
     }
@@ -141,6 +143,9 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
         // change state
         _orderProcessed[order.id] = true;
         _performTransfers(order);
+
+        // event
+        emit OrderFullySettled(order.id, msg.sender);
     }
 
     function isOrderProcessed(uint128 orderId) public view returns (bool) {
