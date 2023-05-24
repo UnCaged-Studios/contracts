@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
 struct OrderItem {
     uint256 amount;
@@ -27,7 +28,7 @@ interface ERCTokensBalanceOf {
     function balanceOf(address account) external view returns (uint256);
 }
 
-contract KaChingCashRegisterV1 is EIP712 {
+contract KaChingCashRegisterV1 is EIP712, IERC721Receiver {
     mapping(uint128 => bool) private _orderProcessed;
     address[] private ORDER_SIGNER_ADDRESSES;
 
@@ -134,5 +135,14 @@ contract KaChingCashRegisterV1 is EIP712 {
 
     function isOrderProcessed(uint128 orderId) public view returns (bool) {
         return _orderProcessed[orderId];
+    }
+
+    function onERC721Received(
+        address, /* operator */
+        address, /* from */
+        uint256, /* tokenId */
+        bytes calldata /* data */
+    ) external pure override returns (bytes4) {
+        return this.onERC721Received.selector;
     }
 }

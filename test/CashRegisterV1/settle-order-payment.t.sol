@@ -19,20 +19,13 @@ contract KaChingCashRegisterV1Test is Test {
     address public orderSigner = vm.addr(signerPrivateKey);
     address public customer = vm.addr(0xA11CE);
 
-    function _signOrder(address signer, bytes32 hash) internal returns (bytes memory) {
-        vm.startPrank(signer);
+    function _createAndSignOrder(OrderItem[] memory items) internal returns (FullOrder memory, bytes memory) {
+        FullOrder memory order = FullOrder({id: uuid, expiry: 2, customer: customer, notBefore: 3, items: items});
+        vm.startPrank(orderSigner);
+        bytes32 hash = cashRegister.getEIP712Hash(order);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerPrivateKey, hash);
         bytes memory signature = abi.encodePacked(r, s, v);
         vm.stopPrank();
-        return signature;
-    }
-
-    function _createAndSignOrder(bool credit) internal returns (FullOrder memory, bytes memory) {
-        FullOrder memory order =
-            FullOrder({id: uuid, expiry: 2, customer: customer, notBefore: 3, items: new OrderItem[](1)});
-        order.items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: credit, ERC: 20, id: 0});
-        bytes32 hash = cashRegister.getEIP712Hash(order);
-        bytes memory signature = _signOrder(vm.addr(signerPrivateKey), hash);
         return (order, signature);
     }
 
@@ -43,9 +36,13 @@ contract KaChingCashRegisterV1Test is Test {
         sigUtils = new SigUtils(mockMBS.DOMAIN_SEPARATOR());
     }
 
-    function testCreditCustomer() public {
+    function testCreditCustomerWithERC20() public {
         mockMBS.mint(address(cashRegister), 3e18);
-        (FullOrder memory order, bytes memory signature) = _createAndSignOrder(true);
+
+        OrderItem[] memory items = new OrderItem[](1);
+        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true, ERC: 20, id: 0});
+
+        (FullOrder memory order, bytes memory signature) = _createAndSignOrder(items);
         vm.prank(customer);
 
         cashRegister.settleOrderPayment(order, signature);
@@ -55,9 +52,12 @@ contract KaChingCashRegisterV1Test is Test {
         assertEq(mockMBS.balanceOf(address(cashRegister)), 2e18, "cashRegister");
     }
 
-    function testDebitCustomer() public {
+    function testDebitCustomerWtihERC20Permit() public {
         mockMBS.mint(customer, 3e18);
-        (FullOrder memory order, bytes memory signature) = _createAndSignOrder(false);
+
+        OrderItem[] memory items = new OrderItem[](1);
+        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: false, ERC: 20, id: 0});
+        (FullOrder memory order, bytes memory signature) = _createAndSignOrder(items);
 
         SigUtils.Permit memory permit =
             SigUtils.Permit({owner: customer, spender: address(cashRegister), value: 1e18, nonce: 0, deadline: 1 days});
@@ -69,8 +69,35 @@ contract KaChingCashRegisterV1Test is Test {
 
         cashRegister.settleOrderPayment(order, signature);
 
-        assertEq(mockMBS.balanceOf(customer), 2e18, "customer");
-        assertEq(mockMBS.balanceOf(address(cashRegister)), 1e18, "cashRegister");
+        assertEq(mockMBS.balanceOf(customer), 2e18, "customer MBS balance is not 2");
+        assertEq(mockMBS.balanceOf(address(cashRegister)), 1e18, "cashRegister MBS balance is not 1");
+        assertTrue(cashRegister.isOrderProcessed(uuid));
+    }
+
+    function testDebitAndCreditCustomerWtihDifferentERCs() public {
+        mockMBS.mint(customer, 3e18);
+        mockNFT.mint(address(cashRegister), 42); // mint tokenId: 0
+        mockNFT.mint(address(cashRegister), 73); // mint tokenId: 1
+
+        OrderItem[] memory items = new OrderItem[](2);
+        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: false, ERC: 20, id: 0});
+        items[1] = OrderItem({amount: 1, currency: address(mockNFT), credit: true, ERC: 721, id: 42});
+        (FullOrder memory order, bytes memory signature) = _createAndSignOrder(items);
+
+        SigUtils.Permit memory permit =
+            SigUtils.Permit({owner: customer, spender: address(cashRegister), value: 1e18, nonce: 0, deadline: 1 days});
+        bytes32 digest = sigUtils.getTypedDataHash(permit);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(0xA11CE, digest);
+        mockMBS.permit(permit.owner, permit.spender, permit.value, permit.deadline, v, r, s);
+
+        vm.prank(customer);
+
+        cashRegister.settleOrderPayment(order, signature);
+
+        assertEq(mockMBS.balanceOf(customer), 2e18, "customer MBS balance is not 2");
+        assertEq(mockMBS.balanceOf(address(cashRegister)), 1e18, "cashRegister MBS balance is not 1");
+        assertEq(mockNFT.ownerOf(42), customer);
+        assertEq(mockNFT.ownerOf(73), address(cashRegister));
         assertTrue(cashRegister.isOrderProcessed(uuid));
     }
 }
