@@ -132,9 +132,10 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
     function settleOrderPayment(FullOrder calldata order, bytes calldata signature) public {
         // read-only validations
         require(msg.sender == order.customer, "Customer does not match sender address");
+        require(block.timestamp <= order.expiry, "Order is expired");
+        require(block.timestamp >= order.notBefore, "Order cannot be used yet");
         require(_isOrderSignerValid(order, signature), "Invalid signature");
         require(!_orderProcessed[order.id], "Order already processed");
-        // TODO require - expiry and notBefore
         _checkBalances(order);
 
         // change state

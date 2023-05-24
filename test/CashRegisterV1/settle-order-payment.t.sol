@@ -20,9 +20,14 @@ contract KaChingCashRegisterV1Test is Test {
     uint128 public uuid = uint128(uint256(keccak256(abi.encodePacked("550e8400-e29b-41d4-a716-446655440000"))));
     address public orderSigner = vm.addr(signerPrivateKey);
     address public customer = vm.addr(0xA11CE);
+    uint32 public baselineBlocktime = 1684911164;
 
-    function _createAndSignOrder(OrderItem[] memory items) internal returns (FullOrder memory, bytes memory) {
-        FullOrder memory order = FullOrder({id: uuid, expiry: 2, customer: customer, notBefore: 3, items: items});
+    function _createAndSignOrder(OrderItem[] memory items, uint32 expiry, uint32 notBefore)
+        internal
+        returns (FullOrder memory, bytes memory)
+    {
+        FullOrder memory order =
+            FullOrder({id: uuid, expiry: expiry, customer: customer, notBefore: notBefore, items: items});
         vm.startPrank(orderSigner);
         bytes32 hash = cashRegister.getEIP712Hash(order);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerPrivateKey, hash);
@@ -45,8 +50,11 @@ contract KaChingCashRegisterV1Test is Test {
         OrderItem[] memory items = new OrderItem[](1);
         items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true, ERC: 20, id: 0});
 
-        (FullOrder memory order, bytes memory signature) = _createAndSignOrder(items);
+        (FullOrder memory order, bytes memory signature) =
+            _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
+
         vm.prank(customer);
+        vm.warp(baselineBlocktime);
 
         cashRegister.settleOrderPayment(order, signature);
 
@@ -60,15 +68,22 @@ contract KaChingCashRegisterV1Test is Test {
 
         OrderItem[] memory items = new OrderItem[](1);
         items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: false, ERC: 20, id: 0});
-        (FullOrder memory order, bytes memory signature) = _createAndSignOrder(items);
+        (FullOrder memory order, bytes memory signature) =
+            _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
 
-        SigUtils.Permit memory permit =
-            SigUtils.Permit({owner: customer, spender: address(cashRegister), value: 1e18, nonce: 0, deadline: 1 days});
+        SigUtils.Permit memory permit = SigUtils.Permit({
+            owner: customer,
+            spender: address(cashRegister),
+            value: 1e18,
+            nonce: 0,
+            deadline: baselineBlocktime + 1
+        });
         bytes32 digest = sigUtils.getTypedDataHash(permit);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(0xA11CE, digest);
         mockMBS.permit(permit.owner, permit.spender, permit.value, permit.deadline, v, r, s);
 
         vm.prank(customer);
+        vm.warp(baselineBlocktime);
 
         cashRegister.settleOrderPayment(order, signature);
 
@@ -87,15 +102,22 @@ contract KaChingCashRegisterV1Test is Test {
         items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: false, ERC: 20, id: 0});
         items[1] = OrderItem({amount: 1, currency: address(mockMonkeyNFT), credit: true, ERC: 721, id: 42});
         items[2] = OrderItem({amount: 3, currency: address(mockCapsuleSFT), credit: true, ERC: 1155, id: 101});
-        (FullOrder memory order, bytes memory signature) = _createAndSignOrder(items);
+        (FullOrder memory order, bytes memory signature) =
+            _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
 
-        SigUtils.Permit memory permit =
-            SigUtils.Permit({owner: customer, spender: address(cashRegister), value: 1e18, nonce: 0, deadline: 1 days});
+        SigUtils.Permit memory permit = SigUtils.Permit({
+            owner: customer,
+            spender: address(cashRegister),
+            value: 1e18,
+            nonce: 0,
+            deadline: baselineBlocktime + 1
+        });
         bytes32 digest = sigUtils.getTypedDataHash(permit);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(0xA11CE, digest);
         mockMBS.permit(permit.owner, permit.spender, permit.value, permit.deadline, v, r, s);
 
         vm.prank(customer);
+        vm.warp(baselineBlocktime);
 
         cashRegister.settleOrderPayment(order, signature);
 
@@ -107,5 +129,29 @@ contract KaChingCashRegisterV1Test is Test {
         assertEq(mockCapsuleSFT.balanceOf(address(cashRegister), 101), 2);
 
         assertTrue(cashRegister.isOrderProcessed(uuid));
+    }
+
+    function testRevertWhenOrderExpired() public {
+        OrderItem[] memory items = new OrderItem[](0);
+        (FullOrder memory order, bytes memory signature) =
+            _createAndSignOrder(items, baselineBlocktime - 1, baselineBlocktime);
+
+        vm.prank(customer);
+        vm.warp(baselineBlocktime);
+
+        vm.expectRevert("Order is expired");
+        cashRegister.settleOrderPayment(order, signature);
+    }
+
+    function testRevertWhenOrderNotBefore() public {
+        OrderItem[] memory items = new OrderItem[](0);
+        (FullOrder memory order, bytes memory signature) =
+            _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime + 1);
+
+        vm.prank(customer);
+        vm.warp(baselineBlocktime);
+
+        vm.expectRevert("Order cannot be used yet");
+        cashRegister.settleOrderPayment(order, signature);
     }
 }
