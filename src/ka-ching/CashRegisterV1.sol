@@ -137,7 +137,7 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
         require(block.timestamp <= order.expiry, "Order is expired");
         require(block.timestamp >= order.notBefore, "Order cannot be used yet");
         require(_isOrderSignerValid(order, signature), "Invalid signature");
-        require(!_orderProcessed[order.id], "Order already processed");
+        require(false == _orderProcessed[order.id], "Order already processed");
         _checkBalances(order);
 
         // change state
