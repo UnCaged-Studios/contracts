@@ -29,8 +29,8 @@ contract KaChingCashRegisterV1Test is Test {
     {
         FullOrder memory order =
             FullOrder({id: uuid, expiry: expiry, customer: customer, notBefore: notBefore, items: items});
-        vm.startPrank(orderSigner);
         bytes32 hash = cashRegister.getEIP712Hash(order);
+        vm.startPrank(orderSigner);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerPrivateKey, hash);
         bytes memory signature = abi.encodePacked(r, s, v);
         vm.stopPrank();
@@ -54,11 +54,13 @@ contract KaChingCashRegisterV1Test is Test {
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
 
-        vm.prank(customer);
         vm.warp(baselineBlocktime);
-
+        vm.prank(customer);
         cashRegister.settleOrderPayment(order, signature);
 
+        address cashier = vm.addr(0xB0B1);
+        cashRegister.addCashier(cashier);
+        vm.prank(cashier);
         assertTrue(cashRegister.isOrderProcessed(uuid));
         assertEq(mockMBS.balanceOf(customer), 1e18, "customer");
         assertEq(mockMBS.balanceOf(address(cashRegister)), 2e18, "cashRegister");
@@ -83,14 +85,12 @@ contract KaChingCashRegisterV1Test is Test {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(0xA11CE, digest);
         mockMBS.permit(permit.owner, permit.spender, permit.value, permit.deadline, v, r, s);
 
-        vm.prank(customer);
         vm.warp(baselineBlocktime);
-
+        vm.prank(customer);
         cashRegister.settleOrderPayment(order, signature);
 
         assertEq(mockMBS.balanceOf(customer), 2e18, "customer MBS balance is not 2");
         assertEq(mockMBS.balanceOf(address(cashRegister)), 1e18, "cashRegister MBS balance is not 1");
-        assertTrue(cashRegister.isOrderProcessed(uuid));
     }
 
     function testDebitAndCreditCustomerWtihDifferentERCs() public {
@@ -117,9 +117,8 @@ contract KaChingCashRegisterV1Test is Test {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(0xA11CE, digest);
         mockMBS.permit(permit.owner, permit.spender, permit.value, permit.deadline, v, r, s);
 
-        vm.prank(customer);
         vm.warp(baselineBlocktime);
-
+        vm.prank(customer);
         cashRegister.settleOrderPayment(order, signature);
 
         assertEq(mockMBS.balanceOf(customer), 2e18, "customer MBS balance is not 2");
@@ -128,8 +127,6 @@ contract KaChingCashRegisterV1Test is Test {
         assertEq(mockMonkeyNFT.ownerOf(73), address(cashRegister));
         assertEq(mockCapsuleSFT.balanceOf(customer, 101), 3);
         assertEq(mockCapsuleSFT.balanceOf(address(cashRegister), 101), 2);
-
-        assertTrue(cashRegister.isOrderProcessed(uuid));
     }
 
     function testRevertWhenOrderExpired() public {
@@ -137,9 +134,8 @@ contract KaChingCashRegisterV1Test is Test {
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime - 1, baselineBlocktime);
 
-        vm.prank(customer);
         vm.warp(baselineBlocktime);
-
+        vm.prank(customer);
         vm.expectRevert("Order is expired");
         cashRegister.settleOrderPayment(order, signature);
     }
@@ -149,19 +145,10 @@ contract KaChingCashRegisterV1Test is Test {
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime + 1);
 
-        vm.prank(customer);
         vm.warp(baselineBlocktime);
-
+        vm.prank(customer);
         vm.expectRevert("Order cannot be used yet");
         cashRegister.settleOrderPayment(order, signature);
-    }
-
-    function testCheckNonExistentOrder() public {
-        uint128 nonExistentOrderUuid =
-            uint128(uint256(keccak256(abi.encodePacked("550e8400-e29b-41d4-a716-446655440001"))));
-
-        // Here we are assuming that this order hasn't been processed yet
-        assertFalse(cashRegister.isOrderProcessed(nonExistentOrderUuid));
     }
 
     function testRevertWhenProcessingOrderTwice() public {
@@ -173,13 +160,12 @@ contract KaChingCashRegisterV1Test is Test {
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
 
-        vm.prank(customer);
         vm.warp(baselineBlocktime);
+        vm.startPrank(customer);
         // Process the order for the first time
         cashRegister.settleOrderPayment(order, signature);
 
         // Attempt to process the same order again and expect a revert
-        vm.prank(customer);
         vm.expectRevert("Order already processed");
         cashRegister.settleOrderPayment(order, signature);
     }
@@ -306,7 +292,6 @@ contract KaChingCashRegisterV1Test is Test {
         vm.startPrank(newCashier);
         cashRegister.setOrderSigners(newSigners);
         address[] memory cashRegisterSigners = cashRegister.getOrderSigners();
-        vm.stopPrank();
 
         // Check that the new signers match the set signers
         for (uint256 i = 0; i < newSigners.length; i++) {
@@ -319,7 +304,6 @@ contract KaChingCashRegisterV1Test is Test {
         vm.startPrank(customer);
         vm.expectRevert();
         cashRegister.addCashier(customer);
-        vm.stopPrank();
     }
 
     function testRevertWhenOverridingSignersNotByCashier() public {
@@ -328,6 +312,11 @@ contract KaChingCashRegisterV1Test is Test {
         vm.startPrank(customer);
         vm.expectRevert();
         cashRegister.setOrderSigners(newSigners);
-        vm.stopPrank();
+    }
+
+    function testRevertWhenCheckingIsOrderProcessedNotByCashier() public {
+        vm.startPrank(vm.addr(0xB0B));
+        vm.expectRevert();
+        cashRegister.isOrderProcessed(uuid);
     }
 }

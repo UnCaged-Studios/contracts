@@ -152,10 +152,6 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
         emit OrderFullySettled(order.id, msg.sender);
     }
 
-    function isOrderProcessed(uint128 orderId) public view returns (bool) {
-        return _orderProcessed[orderId];
-    }
-
     function onERC721Received(
         address, /* operator */
         address, /* from */
@@ -193,6 +189,10 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
         returns (bool)
     {
         return interfaceId == type(IERC1155Receiver).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    function isOrderProcessed(uint128 orderId) public view onlyRole(CASHIER_ROLE) returns (bool) {
+        return _orderProcessed[orderId];
     }
 
     function addCashier(address cashier) public onlyRole(DEFAULT_ADMIN_ROLE) {
