@@ -49,7 +49,8 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
                     order.items[i].amount,
                     order.items[i].currency,
                     order.items[i].credit,
-                    order.items[i].ERC
+                    order.items[i].ERC,
+                    order.items[i].id
                 )
             );
             for (uint256 j = 0; j < 32; j++) {
