@@ -295,26 +295,24 @@ contract KaChingCashRegisterV1Test is Test {
         assertTrue(cashRegister.hasRole(CASHIER_ROLE, address(this)));
     }
 
-    // FIXME
-    // function testOverrideOrderSigners() public {
-    //     address[] memory newSigners = new address[](2);
-    //     newSigners[0] = vm.addr(0xB0B1);
-    //     newSigners[1] = vm.addr(0xB0B2);
+    function testsetOrderSigners() public {
+        address[] memory newSigners = new address[](2);
+        newSigners[0] = vm.addr(0xB0B1);
+        newSigners[1] = vm.addr(0xB0B2);
 
-    //     address newCashier = vm.addr(0xCa1);
-    //     cashRegister.addCashier(newCashier);
+        address newCashier = vm.addr(0xCa11);
+        cashRegister.addCashier(newCashier);
 
-    //     vm.prank(newCashier);
-    //     cashRegister.overrideOrderSigners(newSigners);
-    //     // vm.stopPrank();
+        vm.startPrank(newCashier);
+        cashRegister.setOrderSigners(newSigners);
+        address[] memory cashRegisterSigners = cashRegister.getOrderSigners();
+        vm.stopPrank();
 
-    //     address[] memory cashRegisterSigners = cashRegister.getOrderSigners();
-
-    //     // Check that the new signers match the set signers
-    //     for (uint256 i = 0; i < newSigners.length; i++) {
-    //         assertEq(cashRegisterSigners[i], newSigners[i]);
-    //     }
-    // }
+        // Check that the new signers match the set signers
+        for (uint256 i = 0; i < newSigners.length; i++) {
+            assertEq(cashRegisterSigners[i], newSigners[i]);
+        }
+    }
 
     function testRevertWhenAddingCashierNotByAdmin() public {
         // Attempt to add a cashier by someone who is not an admin should fail
@@ -326,11 +324,10 @@ contract KaChingCashRegisterV1Test is Test {
 
     function testRevertWhenOverridingSignersNotByCashier() public {
         address[] memory newSigners = new address[](1);
-        newSigners[0] = vm.addr(0xB0B);
 
         vm.startPrank(customer);
         vm.expectRevert();
-        cashRegister.overrideOrderSigners(newSigners);
+        cashRegister.setOrderSigners(newSigners);
         vm.stopPrank();
     }
 }

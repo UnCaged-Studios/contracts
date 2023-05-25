@@ -205,7 +205,7 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
         renounceRole(CASHIER_ROLE, cashier);
     }
 
-    function overrideOrderSigners(address[] memory newSigners) public onlyRole(CASHIER_ROLE) {
+    function setOrderSigners(address[] memory newSigners) public onlyRole(CASHIER_ROLE) {
         ORDER_SIGNER_ADDRESSES = newSigners;
     }
 
