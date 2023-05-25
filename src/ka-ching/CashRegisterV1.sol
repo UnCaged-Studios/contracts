@@ -15,7 +15,7 @@ struct OrderItem {
     uint256 amount;
     address currency;
     bool credit;
-    uint16 ERC; // Add the TokenType enum as a field in the struct
+    uint16 ERC;
     uint256 id;
 }
 
@@ -172,7 +172,6 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
         uint256, /* value */
         bytes calldata /* data */
     ) external pure override returns (bytes4) {
-        // implement your logic here
         return this.onERC1155Received.selector;
     }
 
@@ -183,7 +182,6 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
         uint256[] calldata, /* values */
         bytes calldata /* data */
     ) external pure override returns (bytes4) {
-        // implement your logic here
         return this.onERC1155BatchReceived.selector;
     }
 
