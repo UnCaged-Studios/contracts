@@ -8,7 +8,9 @@ const exec = promisify(child_process.exec);
 dotenv.config();
 
 export default async () => {
-  await exec('pkill -f anvil || true');
+  try {
+    await exec('pkill -f anvil || true');
+  } catch (error) {}
 
   try {
     const forkUrl = process.env.ANVIL_FORK_URL || '';
