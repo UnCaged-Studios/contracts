@@ -7,7 +7,7 @@ env:
   FOUNDRY_PROFILE: ci
 
 jobs:
-  build:
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -24,20 +24,9 @@ jobs:
           forge --version
           forge build --sizes
 
-  unit-test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
       - name: Run Unit Tests
         run: |
           forge test -vvv
-
-  e2e-test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
 
       - uses: actions/setup-node@v3
         with:
@@ -46,6 +35,7 @@ jobs:
       - name: Install dependencies with npm
         run: |
           npm install
+
       - name: Run E2E tests
         run: |
           npm test
