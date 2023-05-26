@@ -13,8 +13,8 @@ export default async () => {
   } catch (error) {}
 
   try {
-    const forkUrl = process.env.ANVIL_FORK_URL || '31337';
-    const chainId = process.env.ANVIL_CHAIN_ID || 'https://cloudflare-eth.com';
+    const forkUrl = process.env.ANVIL_FORK_URL || 'https://cloudflare-eth.com';
+    const chainId = process.env.ANVIL_CHAIN_ID || '31337';
     (global as any).anvil = child_process.spawn(
       'anvil',
       ['--fork-url', forkUrl, '--chain-id', chainId],
