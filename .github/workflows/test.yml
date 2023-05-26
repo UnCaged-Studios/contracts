@@ -29,7 +29,12 @@ jobs:
           forge build --sizes
         id: build
 
-      - name: Run Forge tests
+      - name: Run Unit Tests
         run: |
           forge test -vvv
-        id: test
+        id: unit-test
+
+      - name: Run E2E tests
+        run: |
+          npm test
+        id: e2e-test
