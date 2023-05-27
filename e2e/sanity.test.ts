@@ -1,5 +1,5 @@
 import { expect, test, beforeAll } from '@jest/globals';
-import { sdkFactory, getBlockNumber } from '../src/ka-ching/sdk';
+import { sdkFactory } from '../src/ka-ching/sdk';
 import { JsonRpcProvider, Wallet } from 'ethers';
 import { CONTRACT_DEPLOYER_PRIVATE_KEY } from './config';
 
@@ -16,7 +16,7 @@ beforeAll(async () => {
 });
 
 test('node is online', async () => {
-  expect(await getBlockNumber()).toBeGreaterThan(0);
+  expect(await localJsonRpcProvider.getBlockNumber()).toBeGreaterThan(0);
 });
 
 test('sanity', async () => {

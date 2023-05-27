@@ -1,10 +1,5 @@
-import { BaseWallet, JsonRpcProvider } from 'ethers';
+import type { BaseWallet } from 'ethers';
 import { KaChingCashRegisterV1Abi__factory } from './abi';
-
-export async function getBlockNumber() {
-  const provider = new JsonRpcProvider();
-  return await provider.getBlockNumber();
-}
 
 export function sdkFactory({ wallet }: { wallet: BaseWallet }) {
   return KaChingCashRegisterV1Abi__factory.connect(
