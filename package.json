@@ -12,12 +12,12 @@
   "license": "MIT",
   "devDependencies": {
     "@typechain/ethers-v6": "^0.3.3",
-    "@types/wait-on": "^5.3.1",
+    "@types/fs-extra": "^11.0.1",
     "dotenv": "^16.0.3",
+    "fs-extra": "^11.1.1",
     "jest": "^29.5.0",
     "ts-jest": "^29.1.0",
-    "typechain": "^8.2.0",
-    "wait-on": "^7.0.1"
+    "typechain": "^8.2.0"
   },
   "dependencies": {
     "ethers": "^6.4.0"
