@@ -2,6 +2,7 @@ import * as child_process from 'child_process';
 import * as dotenv from 'dotenv';
 import { promisify } from 'util';
 import waitOn from 'wait-on';
+import chalk from 'chalk';
 
 const exec = promisify(child_process.exec);
 
@@ -20,7 +21,6 @@ export default async () => {
       ['--fork-url', forkUrl, '--chain-id', chainId],
       { stdio: 'inherit' }
     );
-
     // Wait for the port to be available
     await waitOn({
       resources: ['tcp:localhost:8545'],
@@ -31,17 +31,16 @@ export default async () => {
     });
     const privateKey =
       '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
-    const deploy_output = await exec(
+    const { stdout } = await exec(
       `forge create src/ka-ching/CashRegisterV1.sol:KaChingCashRegisterV1 --rpc-url http://127.0.0.1:8545 --private-key ${privateKey}`
     );
-    const deployed_address = deploy_output.stdout
-      .split(' ')
-      .find((word) => word.startsWith('0x'));
-
-    console.log(`contract address is ${deployed_address}`);
-    console.log('✨ Local chain was setup successfully!');
+    let match = /Deployed to:\s*(0x[a-fA-F0-9]{40})/.exec(stdout);
+    if (!match) {
+      throw new Error('cannot find contact created pattern');
+    }
+    console.log(chalk.green(`✨✨✨ contract address is ${match[1]}`));
   } catch (error) {
-    console.error(error);
+    console.error(chalk.red(error));
     process.exit(1);
   }
 };
