@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv';
 import { promisify } from 'util';
 import waitOn from 'wait-on';
 import chalk from 'chalk';
+import { CONTRACT_DEPLOYER_PRIVATE_KEY } from './config';
 
 const exec = promisify(child_process.exec);
 
@@ -29,10 +30,8 @@ export default async () => {
       tcpTimeout: 1_000, // tcp timeout in ms, default 300ms
       window: 1_000, // stabilization time in ms, default 750ms
     });
-    const privateKey =
-      '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
     const { stdout } = await exec(
-      `forge create src/ka-ching/CashRegisterV1.sol:KaChingCashRegisterV1 --rpc-url http://127.0.0.1:8545 --private-key ${privateKey}`
+      `forge create src/ka-ching/CashRegisterV1.sol:KaChingCashRegisterV1 --rpc-url http://127.0.0.1:8545 --private-key ${CONTRACT_DEPLOYER_PRIVATE_KEY}`
     );
     let match = /Deployed to:\s*(0x[a-fA-F0-9]{40})/.exec(stdout);
     if (!match) {

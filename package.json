@@ -4,7 +4,9 @@
   "description": "",
   "scripts": {
     "pretest": "npm run abi:generate",
-    "test": "jest",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "forge test -vvv",
+    "test:e2e": "jest",
     "abi:generate": "forge inspect src/ka-ching/CashRegisterV1.sol:KaChingCashRegisterV1 abi > KaChingCashRegisterV1.abi.json && typechain --target=ethers-v6 --out-dir=src/ka-ching/sdk/abi 'KaChingCashRegisterV1.abi.json'"
   },
   "license": "MIT",

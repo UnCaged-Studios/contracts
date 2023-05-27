@@ -37,7 +37,6 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
 
     constructor() EIP712("KaChingCashRegisterV1", "1") {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        ORDER_SIGNER_ADDRESSES = [0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 /*, more addresses here if needed */ ];
     }
 
     function _getFullOrderHash(FullOrder memory order) internal pure returns (bytes32) {
