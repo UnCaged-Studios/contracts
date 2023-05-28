@@ -1,7 +1,20 @@
-import { KaChingCashRegisterV1Abi__factory } from './abi';
+import { coreSdkFactory } from './core';
+import { orderSignerSdkFactory } from './order-signer';
+import { customerSdkFactory } from './customer';
 import type { BaseWallet } from 'ethers';
 
-export function sdkFactory(contractAddress: string, wallet: BaseWallet) {
-  // TODO - split sdk based on type (deployer, cashier and customer)
-  return KaChingCashRegisterV1Abi__factory.connect(contractAddress, wallet);
+export {
+  FullOrderStruct,
+  OrderItemStruct,
+} from './abi/KaChingCashRegisterV1Abi';
+
+export function sdkFactory(contractAddress: string) {
+  return {
+    deployer: (wallet: BaseWallet) => coreSdkFactory(contractAddress, wallet),
+    cashier: (wallet: BaseWallet) => coreSdkFactory(contractAddress, wallet),
+    customer: (wallet: BaseWallet) =>
+      customerSdkFactory(contractAddress, wallet),
+    orderSigner: (wallet: BaseWallet) =>
+      orderSignerSdkFactory(contractAddress, wallet),
+  };
 }

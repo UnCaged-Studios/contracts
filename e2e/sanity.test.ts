@@ -1,17 +1,29 @@
 import { expect, test, beforeAll } from '@jest/globals';
-import { sdkFactory } from '../src/ka-ching/sdk';
 import { JsonRpcProvider, Wallet } from 'ethers';
+import { parse as parseUUID, v4 as UUID } from 'uuid';
 import { privateKeys, contractAddress, contractDeployer } from './anvil.json';
 
+import { FullOrderStruct, sdkFactory } from '../src/ka-ching/sdk';
+
+// wallets
 const localJsonRpcProvider = new JsonRpcProvider();
-const cashier = new Wallet(privateKeys[1], localJsonRpcProvider);
+const deployer = new Wallet(contractDeployer, new JsonRpcProvider());
+const cashier = new Wallet(privateKeys[3], localJsonRpcProvider);
 const orderSigner = Wallet.createRandom(localJsonRpcProvider);
+const customer = new Wallet(privateKeys[4], localJsonRpcProvider);
+
+// SDKs
+const sdk = sdkFactory(contractAddress);
+const deployerSdk = sdk.deployer(deployer);
+const cashierSdk = sdk.cashier(cashier);
+const customerSdk = sdk.customer(customer); // contractAddress, '',
+const orderSignerSdk = sdk.orderSigner(orderSigner);
+
+const _signByBackend = (order: FullOrderStruct) =>
+  orderSignerSdk.signOrder(order, { chainId: '31337' });
 
 beforeAll(async () => {
-  const wallet = new Wallet(contractDeployer, new JsonRpcProvider());
-  const deployerSdk = sdkFactory(contractAddress, wallet);
   await deployerSdk.addCashier(cashier.address);
-  const cashierSdk = sdkFactory(contractAddress, cashier);
   await cashierSdk.setOrderSigners([orderSigner.address]);
 });
 
@@ -20,10 +32,15 @@ test('node is online', async () => {
 });
 
 test('cashier wallet can perform actions', async () => {
-  const cashierSdk = sdkFactory(contractAddress, cashier);
   expect(await cashierSdk.getOrderSigners()).toEqual([orderSigner.address]);
 });
 
-// test('debit customer with erc20', async () => {
-//   const x = sdkFactory();
-// });
+test('debit customer with erc20', async () => {
+  const order = customerSdk.debitCustomerWithERC20({
+    id: parseUUID(UUID()),
+    amount: BigInt(3 * 10 ** 18),
+    currency: '0x90F79bf6EB2c4f870365E785982E1f101E93b906',
+  });
+  const signature = await _signByBackend(order);
+  await customerSdk.settleOrderPayment(order, signature);
+});
