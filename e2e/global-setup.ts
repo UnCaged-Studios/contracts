@@ -56,14 +56,11 @@ export default async () => {
   } catch (error) {}
 
   try {
-    const forkUrl = process.env.ANVIL_FORK_URL || 'https://cloudflare-eth.com';
     const chainId = process.env.ANVIL_CHAIN_ID || '31337';
 
-    const proc = child_process.spawn(
-      'anvil',
-      ['--fork-url', forkUrl, '--chain-id', chainId],
-      { stdio: ['pipe', 'pipe', 'inherit'] }
-    );
+    const proc = child_process.spawn('anvil', ['--chain-id', chainId], {
+      stdio: ['pipe', 'pipe', 'inherit'],
+    });
     (global as any).anvil = proc;
     const { privateKeys } = await _anvilProcessHandler(proc);
     const contractDeployer = privateKeys[0];
