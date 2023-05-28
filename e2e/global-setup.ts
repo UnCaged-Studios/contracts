@@ -9,6 +9,20 @@ const exec = promisify(child_process.exec);
 
 dotenv.config();
 
+async function _deployContract(
+  contract: `${string}:${string}`,
+  privateKey: string
+) {
+  const { stdout } = await exec(
+    `forge create ${contract} --rpc-url http://127.0.0.1:8545 --private-key ${privateKey}`
+  );
+  let match = /Deployed to:\s*(0x[a-fA-F0-9]{40})/.exec(stdout);
+  if (!match || !match[1]) {
+    throw new Error('cannot find contact created pattern');
+  }
+  return match[1];
+}
+
 export default async () => {
   try {
     await exec('pkill -f anvil || true');
@@ -43,19 +57,21 @@ export default async () => {
       });
     });
     const contractDeployer = privateKeys[0];
-    const { stdout } = await exec(
-      `forge create src/ka-ching/CashRegisterV1.sol:KaChingCashRegisterV1 --rpc-url http://127.0.0.1:8545 --private-key ${contractDeployer}`
+    const kaChingCashRegister = await _deployContract(
+      'src/ka-ching/CashRegisterV1.sol:KaChingCashRegisterV1',
+      contractDeployer
     );
-    let match = /Deployed to:\s*(0x[a-fA-F0-9]{40})/.exec(stdout);
-    if (!match || !match[1]) {
-      throw new Error('cannot find contact created pattern');
-    }
+    const mockMBS = await _deployContract(
+      'test/CashRegisterV1/contracts/MockMBS.sol:MockMBS',
+      contractDeployer
+    );
     fs.writeJsonSync(
       path.join(__dirname, 'anvil.json'),
       {
         privateKeys,
         contractDeployer,
-        contractAddress: match[1],
+        kaChingCashRegister,
+        mockMBS,
       },
       {
         spaces: 2,
