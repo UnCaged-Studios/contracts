@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "pretest": "npm-run-all --parallel abi:generate:**",
-    "test": "npm-run-all --parallel test:*",
+    "test": "npm-run-all test:*",
     "test:unit": "forge test -vvv",
     "test:e2e": "jest --runInBand",
     "abi:generate:prod:KaChingCashRegisterV1": "./script/abi-generate.sh prod KaChingCashRegisterV1",
