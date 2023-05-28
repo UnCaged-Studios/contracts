@@ -72,7 +72,7 @@ export default async () => {
       contractDeployer
     );
     await fs.writeJSON(
-      path.join(__dirname, 'anvil.json'),
+      path.join(__dirname, 'ka-ching', 'anvil.json'),
       {
         privateKeys,
         contractDeployer,

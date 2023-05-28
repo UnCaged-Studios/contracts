@@ -13,8 +13,8 @@ import {
   contractDeployer,
   mockMBS,
 } from './anvil.json';
-import { FullOrderStruct, sdkFactory } from '../src/ka-ching/sdk';
-import { MockMBSAbi__factory } from './ka-ching/abi/mbs';
+import { FullOrderStruct, sdkFactory } from '../../src/ka-ching/sdk';
+import { MockMBSAbi__factory } from './abi/mbs';
 
 // wallets
 const localJsonRpcProvider = new JsonRpcProvider();
