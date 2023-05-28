@@ -17,7 +17,7 @@ function serializeOrderId(orderId: Uint8Array) {
 type DebitOrder = {
   id: Uint8Array;
   amount: bigint;
-  currency: `0x${string}`;
+  currency: string;
 };
 
 export function customerSdkFactory(

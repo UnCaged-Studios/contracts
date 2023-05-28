@@ -3,11 +3,12 @@
   "version": "0.0.1",
   "description": "",
   "scripts": {
-    "pretest": "npm run abi:generate",
+    "pretest": "npm run abi:prod:generate && npm run abi:test:generate",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "forge test -vvv",
-    "test:e2e": "jest",
-    "abi:generate": "forge inspect src/ka-ching/CashRegisterV1.sol:KaChingCashRegisterV1 abi > KaChingCashRegisterV1.abi.json && typechain --target=ethers-v6 --out-dir=src/ka-ching/sdk/abi 'KaChingCashRegisterV1.abi.json'"
+    "test:e2e": "jest --runInBand",
+    "abi:prod:generate": "forge inspect src/ka-ching/CashRegisterV1.sol:KaChingCashRegisterV1 abi > KaChingCashRegisterV1.abi.json && typechain --target=ethers-v6 --out-dir=src/ka-ching/sdk/abi 'KaChingCashRegisterV1.abi.json'",
+    "abi:test:generate": "forge inspect test/CashRegisterV1/contracts/MockMBS.sol:MockMBS abi > MockMBS.abi.json && typechain --target=ethers-v6 --out-dir=e2e/ka-ching/abi/mbs 'MockMBS.abi.json'"
   },
   "license": "MIT",
   "devDependencies": {

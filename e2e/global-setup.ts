@@ -57,7 +57,6 @@ export default async () => {
 
   try {
     const chainId = process.env.ANVIL_CHAIN_ID || '31337';
-
     const proc = child_process.spawn('anvil', ['--chain-id', chainId], {
       stdio: ['pipe', 'pipe', 'inherit'],
     });
