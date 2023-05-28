@@ -23,6 +23,33 @@ async function _deployContract(
   return match[1];
 }
 
+async function _anvilProcessHandler(
+  proc: child_process.ChildProcessByStdio<
+    import('stream').Writable,
+    import('stream').Readable,
+    null
+  >
+) {
+  return await new Promise<{ privateKeys: string[] }>((resolve) => {
+    let _privateKeys: string[] = [];
+    proc.stdout.on('data', (data) => {
+      console.log(chalk.italic.gray(data));
+      if (data.toString().includes('Listening on 127.0.0.1:8545')) {
+        resolve({ privateKeys: _privateKeys });
+      }
+      data
+        .toString()
+        .split('\n')
+        .forEach((line: string) => {
+          let privateKeyMatch = line.match(/^\((\d+)\) (0x[a-fA-F0-9]{64})/);
+          if (privateKeyMatch) {
+            _privateKeys.push(privateKeyMatch[2]);
+          }
+        });
+    });
+  });
+}
+
 export default async () => {
   try {
     await exec('pkill -f anvil || true');
@@ -38,24 +65,7 @@ export default async () => {
       { stdio: ['pipe', 'pipe', 'inherit'] }
     );
     (global as any).anvil = proc;
-    const privateKeys = await new Promise<string[]>((resolve) => {
-      let _privateKeys: string[] = [];
-      proc.stdout.on('data', (data) => {
-        console.log(chalk.italic.gray(data));
-        if (data.toString().includes('Listening on 127.0.0.1:8545')) {
-          resolve(_privateKeys);
-        }
-        data
-          .toString()
-          .split('\n')
-          .forEach((line: string) => {
-            let privateKeyMatch = line.match(/^\((\d+)\) (0x[a-fA-F0-9]{64})/);
-            if (privateKeyMatch) {
-              _privateKeys.push(privateKeyMatch[2]);
-            }
-          });
-      });
-    });
+    const { privateKeys } = await _anvilProcessHandler(proc);
     const contractDeployer = privateKeys[0];
     const kaChingCashRegister = await _deployContract(
       'src/ka-ching/CashRegisterV1.sol:KaChingCashRegisterV1',
@@ -65,7 +75,7 @@ export default async () => {
       'test/CashRegisterV1/contracts/MockMBS.sol:MockMBS',
       contractDeployer
     );
-    fs.writeJsonSync(
+    await fs.writeJSON(
       path.join(__dirname, 'anvil.json'),
       {
         privateKeys,
