@@ -44,7 +44,7 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
         for (uint256 i = 0; i < order.items.length; i++) {
             bytes32 itemHash = keccak256(
                 abi.encode(
-                    keccak256("OrderItem(uint256 amount,address currency,bool credit,uint16 ERC, uint256 id)"),
+                    keccak256("OrderItem(uint256 amount,address currency,bool credit,uint16 ERC,uint256 id)"),
                     order.items[i].amount,
                     order.items[i].currency,
                     order.items[i].credit,
