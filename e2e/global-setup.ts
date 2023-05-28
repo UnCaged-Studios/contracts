@@ -64,11 +64,11 @@ export default async () => {
     const { privateKeys } = await _anvilProcessHandler(proc);
     const contractDeployer = privateKeys[0];
     const kaChingCashRegister = await _deployContract(
-      'src/ka-ching/CashRegisterV1.sol:KaChingCashRegisterV1',
+      'src/ka-ching/KaChingCashRegisterV1.sol:KaChingCashRegisterV1',
       contractDeployer
     );
     const mockMBS = await _deployContract(
-      'test/CashRegisterV1/contracts/MockMBS.sol:MockMBS',
+      'test/ka-ching/contracts/MockMBS.sol:MockMBS',
       contractDeployer
     );
     await fs.writeJSON(
