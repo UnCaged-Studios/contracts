@@ -12,9 +12,9 @@ import {
   kaChingCashRegister,
   contractDeployer,
   mockMBS,
-} from './anvil.json';
+} from '../anvil.json';
 import { FullOrderStruct, sdkFactory } from '../../src/ka-ching/sdk';
-import { MockMBSAbi, MockMBSAbi__factory } from './abi/MockMBS';
+import { MockMBSAbi__factory } from './abi/MockMBS';
 
 // wallets
 const localJsonRpcProvider = new JsonRpcProvider();
