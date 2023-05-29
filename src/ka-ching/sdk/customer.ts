@@ -1,33 +1,8 @@
 import ms from 'ms';
 import { FullOrderStruct } from './abi/KaChingCashRegisterV1Abi';
 import { coreSdkFactory } from './core';
-import { BaseContract, BaseWallet, Signature, TypedDataDomain } from 'ethers';
-import { MockMBSAbi } from '../../../e2e/ka-ching/abi/MockMBS';
-
-const erc20PermitTypes = {
-  Permit: [
-    {
-      name: 'owner',
-      type: 'address',
-    },
-    {
-      name: 'spender',
-      type: 'address',
-    },
-    {
-      name: 'value',
-      type: 'uint256',
-    },
-    {
-      name: 'nonce',
-      type: 'uint256',
-    },
-    {
-      name: 'deadline',
-      type: 'uint256',
-    },
-  ],
-};
+import { BaseWallet, BigNumberish, Contract, Signature } from 'ethers';
+import { abi, types } from './permit';
 
 function toEpoch(until: string): number {
   const durationMs = ms(until);
@@ -57,6 +32,13 @@ type UnaryOrderParams = {
   startsIn?: string;
 };
 
+type TypedDataDomain = {
+  name: string;
+  version: string;
+  chainId: BigNumberish;
+  verifyingContract: string;
+};
+
 export function customerSdkFactory(
   contractAddress: string,
   customer: BaseWallet
@@ -81,12 +63,12 @@ export function customerSdkFactory(
     };
   };
 
-  const permitERC20 = async (
-    erc20: MockMBSAbi,
+  const _permitERC20 = async (
     amount: bigint,
     deadlineIn: string,
     domain: TypedDataDomain
   ) => {
+    const erc20 = new Contract(domain.verifyingContract, abi, customer);
     const nonce = await erc20.nonces(customer.address);
     const values = {
       owner: customer.address,
@@ -95,11 +77,7 @@ export function customerSdkFactory(
       nonce,
       deadline: toEpoch(deadlineIn),
     };
-    const signedTypedData = await customer.signTypedData(
-      domain,
-      erc20PermitTypes,
-      values
-    );
+    const signedTypedData = await customer.signTypedData(domain, types, values);
     const permitSignature = Signature.from(signedTypedData);
     return erc20.permit(
       values.owner,
@@ -122,6 +100,8 @@ export function customerSdkFactory(
     settleOrderPayment(order: FullOrderStruct, signature: string) {
       return _sdk.settleOrderPayment(order, signature);
     },
-    permitERC20,
+    permitERC20(amount: bigint, deadlineIn: string, domain: TypedDataDomain) {
+      return _permitERC20(amount, deadlineIn, domain);
+    },
   };
 }

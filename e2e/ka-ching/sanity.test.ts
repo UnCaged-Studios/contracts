@@ -43,6 +43,7 @@ const _waitForTxn = async (
   const resp = await sendTxn();
   await resp.wait();
 };
+
 beforeAll(async () => {
   await _waitForTxn(() => deployerSdk.addCashier(cashier.address));
   await _waitForTxn(() => cashierSdk.setOrderSigners([orderSigner.address]));
@@ -62,7 +63,7 @@ test('debit customer with erc20', async () => {
   await _waitForTxn(() => customerMBS.mint(customer.address, initialBalance));
   const amount = BigInt(3 * 10 ** 18);
   await _waitForTxn(() =>
-    customerSdk.permitERC20(customerMBS, amount, '1h', {
+    customerSdk.permitERC20(amount, '1h', {
       name: 'Mock MBS',
       version: '1',
       chainId: '31337',
