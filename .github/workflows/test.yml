@@ -7,11 +7,7 @@ env:
   FOUNDRY_PROFILE: ci
 
 jobs:
-  check:
-    strategy:
-      fail-fast: true
-
-    name: Build & Test
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -23,13 +19,14 @@ jobs:
         with:
           version: nightly
 
-      - name: Run Forge build
-        run: |
-          forge --version
-          forge build --sizes
-        id: build
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
-      - name: Run Forge tests
+      - name: Install dependencies with npm
         run: |
-          forge test -vvv
-        id: test
+          npm install
+
+      - name: Run Unit && E2E tests
+        run: |
+          npm test

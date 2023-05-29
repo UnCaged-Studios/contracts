@@ -37,7 +37,6 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
 
     constructor() EIP712("KaChingCashRegisterV1", "1") {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        ORDER_SIGNER_ADDRESSES = [0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 /*, more addresses here if needed */ ];
     }
 
     function _getFullOrderHash(FullOrder memory order) internal pure returns (bytes32) {
@@ -45,11 +44,12 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
         for (uint256 i = 0; i < order.items.length; i++) {
             bytes32 itemHash = keccak256(
                 abi.encode(
-                    keccak256("OrderItem(uint256 amount,address currency,bool credit,uint16 ERC, uint256 id)"),
+                    keccak256("OrderItem(uint256 amount,address currency,bool credit,uint16 ERC,uint256 id)"),
                     order.items[i].amount,
                     order.items[i].currency,
                     order.items[i].credit,
-                    order.items[i].ERC
+                    order.items[i].ERC,
+                    order.items[i].id
                 )
             );
             for (uint256 j = 0; j < 32; j++) {

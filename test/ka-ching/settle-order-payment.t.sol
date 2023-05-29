@@ -27,6 +27,10 @@ contract KaChingCashRegisterV1Test is Test {
         internal
         returns (FullOrder memory, bytes memory)
     {
+        cashRegister.addCashier(0x7FA9385bE102ac3EAc297483Dd6233D62b3e1496);
+        address[] memory newSigners = new address[](1);
+        newSigners[0] = orderSigner;
+        cashRegister.setOrderSigners(newSigners);
         FullOrder memory order =
             FullOrder({id: uuid, expiry: expiry, customer: customer, notBefore: notBefore, items: items});
         bytes32 hash = cashRegister.getEIP712Hash(order);

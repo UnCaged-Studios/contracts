@@ -12,3 +12,7 @@ docs/
 
 # Dotenv file
 .env
+
+node_modules
+*.abi.json
+e2e/anvil.json
