@@ -43,61 +43,6 @@ const _waitForTxn = async (
   const resp = await sendTxn();
   await resp.wait();
 };
-
-const _permitERC20 = async (customerMBS: MockMBSAbi, amount: bigint) => {
-  const nonces = await customerMBS.nonces(customer.address);
-  const domain = {
-    name: 'Mock MBS',
-    version: '1',
-    chainId: '31337',
-    verifyingContract: mockMBS,
-  };
-  const types = {
-    Permit: [
-      {
-        name: 'owner',
-        type: 'address',
-      },
-      {
-        name: 'spender',
-        type: 'address',
-      },
-      {
-        name: 'value',
-        type: 'uint256',
-      },
-      {
-        name: 'nonce',
-        type: 'uint256',
-      },
-      {
-        name: 'deadline',
-        type: 'uint256',
-      },
-    ],
-  };
-  const values = {
-    owner: customer.address,
-    spender: kaChingCashRegister,
-    value: amount,
-    nonce: nonces,
-    deadline: Math.floor(Date.now() / 1000) + 60,
-  };
-  const permitSignature = await customer.signTypedData(domain, types, values);
-  const sigi = Signature.from(permitSignature);
-  await _waitForTxn(() =>
-    customerMBS.permit(
-      values.owner,
-      values.spender,
-      values.value,
-      values.deadline,
-      sigi.v,
-      sigi.r,
-      sigi.s
-    )
-  );
-};
-
 beforeAll(async () => {
   await _waitForTxn(() => deployerSdk.addCashier(cashier.address));
   await _waitForTxn(() => cashierSdk.setOrderSigners([orderSigner.address]));
@@ -116,7 +61,14 @@ test('debit customer with erc20', async () => {
   const initialBalance = BigInt(5 * 10 ** 18);
   await _waitForTxn(() => customerMBS.mint(customer.address, initialBalance));
   const amount = BigInt(3 * 10 ** 18);
-  await _permitERC20(customerMBS, amount);
+  await _waitForTxn(() =>
+    customerSdk.permitERC20(customerMBS, amount, '1h', {
+      name: 'Mock MBS',
+      version: '1',
+      chainId: '31337',
+      verifyingContract: mockMBS,
+    })
+  );
   const order = customerSdk.debitCustomerWithERC20({
     id: parseUUID(uuid()),
     amount,
