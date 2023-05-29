@@ -1,6 +1,15 @@
+import ms from 'ms';
 import { FullOrderStruct } from './abi/KaChingCashRegisterV1Abi';
 import { coreSdkFactory } from './core';
 import type { BaseWallet } from 'ethers';
+
+function toEpoch(until: string): number {
+  const durationMs = ms(until);
+  if (!durationMs) {
+    throw new Error(`Invalid duration format: ${until}`);
+  }
+  return Math.floor((Date.now() + durationMs) / 1000);
+}
 
 function serializeOrderId(orderId: Uint8Array) {
   if (orderId.length != 16) {
@@ -14,10 +23,12 @@ function serializeOrderId(orderId: Uint8Array) {
   return BigInt('0x' + hex);
 }
 
-type DebitOrder = {
+type UnaryOrderParams = {
   id: Uint8Array;
   amount: bigint;
   currency: string;
+  expiresIn: string;
+  startsIn?: string;
 };
 
 export function customerSdkFactory(
@@ -25,24 +36,30 @@ export function customerSdkFactory(
   customer: BaseWallet
 ) {
   const _sdk = coreSdkFactory(contractAddress, customer);
+  const _unaryOrder = (
+    { id, amount, currency, expiresIn, startsIn }: UnaryOrderParams,
+    credit: boolean
+  ) => {
+    if (ms(startsIn || '0') >= ms(expiresIn)) {
+      throw new Error(
+        `Invalid duration: startsIn (${startsIn}) should be less than expiresIn (${expiresIn})`
+      );
+    }
+    return {
+      id: serializeOrderId(id),
+      customer: customer.address,
+      expiry: toEpoch(expiresIn),
+      notBefore: startsIn ? toEpoch(startsIn) : 0,
+      items: [{ amount, currency, credit, ERC: 20, id: 0 }],
+    };
+  };
+
   return {
-    debitCustomerWithERC20({ id, currency, amount }: DebitOrder) {
-      return {
-        id: serializeOrderId(id),
-        customer: customer.address,
-        expiry: Math.ceil((Date.now() + 60_000) / 1_000),
-        notBefore: 0,
-        items: [{ amount, currency, credit: false, ERC: 20, id: 0 }],
-      };
+    creditCustomerWithERC20(params: UnaryOrderParams) {
+      return _unaryOrder(params, true);
     },
-    creditCustomerWithERC20({ id, currency, amount }: DebitOrder) {
-      return {
-        id: serializeOrderId(id),
-        customer: customer.address,
-        expiry: Math.ceil((Date.now() + 60_000) / 1_000),
-        notBefore: 0,
-        items: [{ amount, currency, credit: true, ERC: 20, id: 0 }],
-      };
+    debitCustomerWithERC20(params: UnaryOrderParams) {
+      return _unaryOrder(params, false);
     },
     settleOrderPayment(order: FullOrderStruct, signature: string) {
       return _sdk.settleOrderPayment(order, signature);

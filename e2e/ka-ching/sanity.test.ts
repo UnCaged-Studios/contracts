@@ -121,6 +121,7 @@ test('debit customer with erc20', async () => {
     id: parseUUID(uuid()),
     amount,
     currency: mockMBS,
+    expiresIn: '1m',
   });
   const orderSignature = await _signOffChain(order);
   await _waitForTxn(() =>
@@ -143,6 +144,7 @@ test('credit customer with erc20', async () => {
     id: parseUUID(uuid()),
     amount,
     currency: mockMBS,
+    expiresIn: '30s',
   });
   const orderSignature = await _signOffChain(order);
   await _waitForTxn(() =>
