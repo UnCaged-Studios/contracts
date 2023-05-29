@@ -32,11 +32,95 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
 
     address[] private ORDER_SIGNER_ADDRESSES;
     bytes32 public constant CASHIER_ROLE = keccak256("CASHIER_ROLE");
+    uint8 private constant MAX_ORDER_SIGNERS = 3;
 
     event OrderFullySettled(uint128 orderId, address customer);
 
     constructor() EIP712("KaChingCashRegisterV1", "1") {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    }
+
+    function onERC721Received(
+        address, /* operator */
+        address, /* from */
+        uint256, /* tokenId */
+        bytes calldata /* data */
+    ) external pure override returns (bytes4) {
+        return this.onERC721Received.selector;
+    }
+
+    function onERC1155Received(
+        address, /* operator */
+        address, /* from */
+        uint256, /* id */
+        uint256, /* value */
+        bytes calldata /* data */
+    ) external pure override returns (bytes4) {
+        return this.onERC1155Received.selector;
+    }
+
+    function onERC1155BatchReceived(
+        address, /* operator */
+        address, /* from */
+        uint256[] calldata, /* ids */
+        uint256[] calldata, /* values */
+        bytes calldata /* data */
+    ) external pure override returns (bytes4) {
+        return this.onERC1155BatchReceived.selector;
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC165, IERC165, AccessControl)
+        returns (bool)
+    {
+        return interfaceId == type(IERC1155Receiver).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    // deployer API
+
+    function addCashier(address cashier) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        grantRole(CASHIER_ROLE, cashier);
+    }
+
+    function removeCashier(address cashier) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        renounceRole(CASHIER_ROLE, cashier);
+    }
+
+    // cashier API
+
+    function setOrderSigners(address[] memory newSigners) public onlyRole(CASHIER_ROLE) {
+        require(newSigners.length <= MAX_ORDER_SIGNERS, "Exceeded maximum number of signers");
+        ORDER_SIGNER_ADDRESSES = newSigners;
+    }
+
+    function getOrderSigners() public view onlyRole(CASHIER_ROLE) returns (address[] memory) {
+        return ORDER_SIGNER_ADDRESSES;
+    }
+
+    function isOrderProcessed(uint128 orderId) public view onlyRole(CASHIER_ROLE) returns (bool) {
+        return _orderProcessed[orderId];
+    }
+
+    // customer API
+
+    function settleOrderPayment(FullOrder calldata order, bytes calldata signature) public {
+        // read-only validations
+        require(msg.sender == order.customer, "Customer does not match sender address");
+        require(block.timestamp <= order.expiry, "Order is expired");
+        require(block.timestamp >= order.notBefore, "Order cannot be used yet");
+        require(_isOrderSignerValid(order, signature), "Invalid signature");
+        require(false == _orderProcessed[order.id], "Order already processed");
+        _checkBalances(order);
+
+        // change state
+        _orderProcessed[order.id] = true;
+        _performTransfers(order);
+
+        // event
+        emit OrderFullySettled(order.id, msg.sender);
     }
 
     function _getFullOrderHash(FullOrder memory order) internal pure returns (bytes32) {
@@ -140,81 +224,5 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
                 }
             }
         }
-    }
-
-    function settleOrderPayment(FullOrder calldata order, bytes calldata signature) public {
-        // read-only validations
-        require(msg.sender == order.customer, "Customer does not match sender address");
-        require(block.timestamp <= order.expiry, "Order is expired");
-        require(block.timestamp >= order.notBefore, "Order cannot be used yet");
-        require(_isOrderSignerValid(order, signature), "Invalid signature");
-        require(false == _orderProcessed[order.id], "Order already processed");
-        _checkBalances(order);
-
-        // change state
-        _orderProcessed[order.id] = true;
-        _performTransfers(order);
-
-        // event
-        emit OrderFullySettled(order.id, msg.sender);
-    }
-
-    function onERC721Received(
-        address, /* operator */
-        address, /* from */
-        uint256, /* tokenId */
-        bytes calldata /* data */
-    ) external pure override returns (bytes4) {
-        return this.onERC721Received.selector;
-    }
-
-    function onERC1155Received(
-        address, /* operator */
-        address, /* from */
-        uint256, /* id */
-        uint256, /* value */
-        bytes calldata /* data */
-    ) external pure override returns (bytes4) {
-        return this.onERC1155Received.selector;
-    }
-
-    function onERC1155BatchReceived(
-        address, /* operator */
-        address, /* from */
-        uint256[] calldata, /* ids */
-        uint256[] calldata, /* values */
-        bytes calldata /* data */
-    ) external pure override returns (bytes4) {
-        return this.onERC1155BatchReceived.selector;
-    }
-
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(ERC165, IERC165, AccessControl)
-        returns (bool)
-    {
-        return interfaceId == type(IERC1155Receiver).interfaceId || super.supportsInterface(interfaceId);
-    }
-
-    function isOrderProcessed(uint128 orderId) public view onlyRole(CASHIER_ROLE) returns (bool) {
-        return _orderProcessed[orderId];
-    }
-
-    function addCashier(address cashier) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        grantRole(CASHIER_ROLE, cashier);
-    }
-
-    function removeCashier(address cashier) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        renounceRole(CASHIER_ROLE, cashier);
-    }
-
-    function setOrderSigners(address[] memory newSigners) public onlyRole(CASHIER_ROLE) {
-        ORDER_SIGNER_ADDRESSES = newSigners;
-    }
-
-    function getOrderSigners() public view onlyRole(CASHIER_ROLE) returns (address[] memory) {
-        return ORDER_SIGNER_ADDRESSES;
     }
 }
