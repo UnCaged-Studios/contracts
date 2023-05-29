@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "",
   "scripts": {
-    "pretest": "npm-run-all --parallel abi:generate:**",
+    "pretest": "npm-run-all abi:generate:**",
     "test": "npm-run-all test:*",
     "test:unit": "forge test -vvv",
     "test:e2e": "jest",
