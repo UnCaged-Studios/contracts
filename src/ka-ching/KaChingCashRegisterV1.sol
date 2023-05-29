@@ -96,8 +96,15 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
                 } else {
                     require(token.balanceOf(msg.sender, item.id) >= item.amount, "Customer does not have enough tokens");
                 }
-            } else {
-                IERC721 token = IERC721(item.currency); // same for IERC20
+            } else if (item.ERC == 721) {
+                IERC721 token = IERC721(item.currency);
+                if (item.credit) {
+                    require(token.ownerOf(item.id) == address(this), "Contract does not own this token");
+                } else {
+                    require(token.ownerOf(item.id) == msg.sender, "Customer does not own this token");
+                }
+            } else if (item.ERC == 20) {
+                IERC20 token = IERC20(item.currency);
                 if (item.credit) {
                     require(token.balanceOf(address(this)) >= item.amount, "Contract does not have enough tokens");
                 } else {
