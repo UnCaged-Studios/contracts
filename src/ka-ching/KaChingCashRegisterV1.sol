@@ -152,7 +152,7 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
         );
     }
 
-    function _isOrderSignerValid(FullOrder memory order, bytes memory signature) internal view returns (bool) {
+    function _isOrderSignerValid(FullOrder memory order, bytes memory signature) private view returns (bool) {
         bytes32 fullOrderHash = _getFullOrderHash(order);
         address signer = ECDSA.recover(_hashTypedDataV4(fullOrderHash), signature);
 
@@ -166,7 +166,7 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
         return isSignerValid;
     }
 
-    function _checkBalances(FullOrder calldata order) internal view {
+    function _checkBalances(FullOrder calldata order) private view {
         for (uint256 i = 0; i < order.items.length; i++) {
             OrderItem calldata item = order.items[i];
             require(item.ERC == 20 || item.ERC == 721 || item.ERC == 1155, "Item type (ERC number) is not supported");
@@ -198,7 +198,7 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
         }
     }
 
-    function _performTransfers(FullOrder calldata order) internal {
+    function _performTransfers(FullOrder calldata order) private {
         for (uint256 i = 0; i < order.items.length; i++) {
             OrderItem calldata item = order.items[i];
             if (item.ERC == 20) {
