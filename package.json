@@ -6,7 +6,7 @@
     "pretest": "npm-run-all --parallel abi:generate:**",
     "test": "npm-run-all test:*",
     "test:unit": "forge test -vvv",
-    "test:e2e": "jest --runInBand",
+    "test:e2e": "jest",
     "abi:generate:prod:KaChingCashRegisterV1": "./script/abi-generate.sh prod KaChingCashRegisterV1",
     "abi:generate:test:MockMBS": "./script/abi-generate.sh test MockMBS",
     "abi:generate:test:MockCapsuleSFT": "./script/abi-generate.sh test MockCapsuleSFT",

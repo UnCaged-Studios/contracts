@@ -35,6 +35,15 @@ export function customerSdkFactory(
         items: [{ amount, currency, credit: false, ERC: 20, id: 0 }],
       };
     },
+    creditCustomerWithERC20({ id, currency, amount }: DebitOrder) {
+      return {
+        id: serializeOrderId(id),
+        customer: customer.address,
+        expiry: Math.ceil((Date.now() + 60_000) / 1_000),
+        notBefore: 0,
+        items: [{ amount, currency, credit: true, ERC: 20, id: 0 }],
+      };
+    },
     settleOrderPayment(order: FullOrderStruct, signature: string) {
       return _sdk.settleOrderPayment(order, signature);
     },

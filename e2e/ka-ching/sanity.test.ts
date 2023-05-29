@@ -6,7 +6,7 @@ import {
   Signature,
   ContractTransactionResponse,
 } from 'ethers';
-import { parse as parseUUID, v4 as UUID } from 'uuid';
+import { parse as parseUUID, v4 as uuid } from 'uuid';
 import {
   privateKeys,
   kaChingCashRegister,
@@ -14,7 +14,7 @@ import {
   mockMBS,
 } from './anvil.json';
 import { FullOrderStruct, sdkFactory } from '../../src/ka-ching/sdk';
-import { MockMBSAbi__factory } from './abi/MockMBS';
+import { MockMBSAbi, MockMBSAbi__factory } from './abi/MockMBS';
 
 // wallets
 const localJsonRpcProvider = new JsonRpcProvider();
@@ -44,39 +44,13 @@ const _waitForTxn = async (
   await resp.wait();
 };
 
-beforeAll(async () => {
-  await _waitForTxn(() => deployerSdk.addCashier(cashier.address));
-  await _waitForTxn(() => cashierSdk.setOrderSigners([orderSigner.address]));
-  // fund customer with MBS
-  const deployerMBS = mbsSDK(deployer);
-  await _waitForTxn(() =>
-    deployerMBS.mint(customer.address, BigInt(5 * 10 ** 18))
-  );
-}, 30_000);
-
-test('node is online', async () => {
-  expect(await localJsonRpcProvider.getBlockNumber()).toBeGreaterThan(0);
-});
-
-test('cashier wallet can perform actions', async () => {
-  expect(await cashierSdk.getOrderSigners()).toEqual([orderSigner.address]);
-});
-
-test('debit customer with erc20', async () => {
-  const amount = BigInt(3 * 10 ** 18);
-  const customerMBS = mbsSDK(customer);
-  const currency = await customerMBS.getAddress();
-  const order = customerSdk.debitCustomerWithERC20({
-    id: parseUUID(UUID()),
-    amount,
-    currency,
-  });
+const _permitERC20 = async (customerMBS: MockMBSAbi, amount: bigint) => {
   const nonces = await customerMBS.nonces(customer.address);
   const domain = {
-    name: await customerMBS.name(),
+    name: 'Mock MBS',
     version: '1',
     chainId: '31337',
-    verifyingContract: currency,
+    verifyingContract: mockMBS,
   };
   const types = {
     Permit: [
@@ -122,11 +96,58 @@ test('debit customer with erc20', async () => {
       sigi.s
     )
   );
+};
+
+beforeAll(async () => {
+  await _waitForTxn(() => deployerSdk.addCashier(cashier.address));
+  await _waitForTxn(() => cashierSdk.setOrderSigners([orderSigner.address]));
+}, 30_000);
+
+test('node is online', async () => {
+  expect(await localJsonRpcProvider.getBlockNumber()).toBeGreaterThan(0);
+});
+
+test('cashier wallet can perform actions', async () => {
+  expect(await cashierSdk.getOrderSigners()).toEqual([orderSigner.address]);
+});
+
+test('debit customer with erc20', async () => {
+  const customerMBS = mbsSDK(customer);
+  const initialBalance = BigInt(5 * 10 ** 18);
+  await _waitForTxn(() => customerMBS.mint(customer.address, initialBalance));
+  const amount = BigInt(3 * 10 ** 18);
+  await _permitERC20(customerMBS, amount);
+  const order = customerSdk.debitCustomerWithERC20({
+    id: parseUUID(uuid()),
+    amount,
+    currency: mockMBS,
+  });
   const orderSignature = await _signOffChain(order);
   await _waitForTxn(() =>
     customerSdk.settleOrderPayment(order, orderSignature)
   );
-  expect(await customerMBS.balanceOf(customer.address)).toBe(
-    BigInt(2 * 10 ** 18)
+  const balanceOfCustomer = await customerMBS.balanceOf(customer.address);
+  expect(balanceOfCustomer).toBe(initialBalance - amount);
+}, 30_000);
+
+test('credit customer with erc20', async () => {
+  const deployerMBS = mbsSDK(deployer);
+  const [cashRegister_b0, customer_b0] = await Promise.all([
+    deployerMBS.balanceOf(kaChingCashRegister),
+    deployerMBS.balanceOf(customer.address),
+  ]);
+  expect(cashRegister_b0).toBeGreaterThan(0);
+
+  const amount = cashRegister_b0;
+  const order = customerSdk.creditCustomerWithERC20({
+    id: parseUUID(uuid()),
+    amount,
+    currency: mockMBS,
+  });
+  const orderSignature = await _signOffChain(order);
+  await _waitForTxn(() =>
+    customerSdk.settleOrderPayment(order, orderSignature)
   );
+  const customer_b1 = await deployerMBS.balanceOf(customer.address);
+  expect(customer_b1).toBe(customer_b0 + amount);
 }, 30_000);
