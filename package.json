@@ -5,6 +5,9 @@
   "exports": {
     "./ka-ching": "./dist/ka-ching/sdk/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "npm-run-all build:**",
     "build:ka-ching": "tsc -p src/ka-ching/sdk",
