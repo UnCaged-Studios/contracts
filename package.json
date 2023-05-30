@@ -1,9 +1,14 @@
 {
   "name": "@uncaged-studios/evm-contracts-library",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "",
+  "exports": {
+    "./ka-ching": "./dist/ka-ching/sdk/index.js"
+  },
   "scripts": {
-    "pretest": "npm-run-all abi:generate:**",
+    "build": "npm-run-all build:**",
+    "build:ka-ching": "tsc -p src/ka-ching/sdk",
+    "pretest": "npm-run-all abi:generate:** build",
     "test": "npm-run-all test:*",
     "test:unit": "forge test -vvv",
     "test:e2e": "jest",
@@ -22,6 +27,7 @@
     "npm-run-all": "^4.1.5",
     "ts-jest": "^29.1.0",
     "typechain": "^8.2.0",
+    "typescript": "^5.0.4",
     "uuid": "^9.0.0"
   },
   "dependencies": {
