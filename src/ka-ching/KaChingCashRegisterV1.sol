@@ -29,7 +29,7 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl {
 
     bytes32 public constant CASHIER_ROLE = keccak256("CASHIER_ROLE");
 
-    event OrderFullySettled(uint128 orderId, address customer);
+    event OrderFullySettled(uint128 indexed orderId, address indexed customer);
 
     constructor() EIP712("KaChingCashRegisterV1", "1") {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);

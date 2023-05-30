@@ -18,13 +18,13 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
-        indexed: false,
+        indexed: true,
         internalType: "uint128",
         name: "orderId",
         type: "uint128",
       },
       {
-        indexed: false,
+        indexed: true,
         internalType: "address",
         name: "customer",
         type: "address",

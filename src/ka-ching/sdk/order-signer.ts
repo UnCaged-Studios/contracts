@@ -3,7 +3,7 @@ import type { BaseWallet, TypedDataDomain } from 'ethers';
 import type {
   FullOrderStruct,
   OrderItemStruct,
-} from './abi/KaChingCashRegisterV1Abi';
+} from './abi/KaChingCashRegisterV1/KaChingCashRegisterV1Abi';
 
 const hashedItem = (item: OrderItemStruct): string =>
   TypedDataEncoder.from({
