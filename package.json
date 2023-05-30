@@ -6,7 +6,8 @@
     "./ka-ching": "./dist/ka-ching/sdk/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "docs"
   ],
   "scripts": {
     "build": "npm-run-all build:**",
