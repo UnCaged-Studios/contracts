@@ -3,7 +3,6 @@ import {
   ContractRunner,
   JsonRpcProvider,
   Wallet,
-  Signature,
   ContractTransactionResponse,
 } from 'ethers';
 import { parse as parseUUID, v4 as uuid } from 'uuid';
@@ -44,9 +43,25 @@ const _waitForTxn = async (
   await resp.wait();
 };
 
+const _ensureNonZeroBalance = async (
+  walletAddress: string,
+  mintAmount = BigInt(5 * 10 ** 18)
+) => {
+  const tokenContract = mbsSDK(deployer);
+  let balance = await tokenContract.balanceOf(walletAddress);
+  if (balance > 0) {
+    return balance;
+  }
+  await _waitForTxn(() => tokenContract.mint(walletAddress, mintAmount));
+  return mintAmount;
+};
+
+let _orders: Uint8Array[];
+
 beforeAll(async () => {
   await _waitForTxn(() => deployerSdk.addCashier(cashier.address));
   await _waitForTxn(() => cashierSdk.setOrderSigners([orderSigner.address]));
+  _orders = [];
 }, 30_000);
 
 test('node is online', async () => {
@@ -58,9 +73,8 @@ test('cashier wallet can perform actions', async () => {
 });
 
 test('debit customer with erc20', async () => {
-  const customerMBS = mbsSDK(customer);
-  const initialBalance = BigInt(5 * 10 ** 18);
-  await _waitForTxn(() => customerMBS.mint(customer.address, initialBalance));
+  const customer_b0 = await _ensureNonZeroBalance(customer.address);
+
   const amount = BigInt(3 * 10 ** 18);
   await _waitForTxn(() =>
     customerSdk.permitERC20(amount, '1h', {
@@ -70,8 +84,10 @@ test('debit customer with erc20', async () => {
       verifyingContract: mockMBS,
     })
   );
-  const order = customerSdk.debitCustomerWithERC20({
-    id: parseUUID(uuid()),
+  const id = parseUUID(uuid());
+  _orders.push(id);
+  const order = customerSdk.orders.debitCustomerWithERC20({
+    id,
     amount,
     currency: mockMBS,
     expiresIn: '1m',
@@ -80,21 +96,24 @@ test('debit customer with erc20', async () => {
   await _waitForTxn(() =>
     customerSdk.settleOrderPayment(order, orderSignature)
   );
-  const balanceOfCustomer = await customerMBS.balanceOf(customer.address);
-  expect(balanceOfCustomer).toBe(initialBalance - amount);
+  const customer_b1 = await mbsSDK(localJsonRpcProvider).balanceOf(
+    customer.address
+  );
+  expect(customer_b1).toBe(customer_b0 - amount);
 }, 30_000);
 
 test('credit customer with erc20', async () => {
-  const deployerMBS = mbsSDK(deployer);
-  const [cashRegister_b0, customer_b0] = await Promise.all([
-    deployerMBS.balanceOf(kaChingCashRegister),
-    deployerMBS.balanceOf(customer.address),
-  ]);
+  const cashRegister_b0 = await _ensureNonZeroBalance(kaChingCashRegister);
+
+  const mbs = mbsSDK(localJsonRpcProvider);
+  const customer_b0 = await mbs.balanceOf(customer.address);
   expect(cashRegister_b0).toBeGreaterThan(0);
 
   const amount = cashRegister_b0;
-  const order = customerSdk.creditCustomerWithERC20({
-    id: parseUUID(uuid()),
+  const id = parseUUID(uuid());
+  _orders.push(id);
+  const order = customerSdk.orders.creditCustomerWithERC20({
+    id,
     amount,
     currency: mockMBS,
     expiresIn: '30s',
@@ -103,6 +122,17 @@ test('credit customer with erc20', async () => {
   await _waitForTxn(() =>
     customerSdk.settleOrderPayment(order, orderSignature)
   );
-  const customer_b1 = await deployerMBS.balanceOf(customer.address);
+  const customer_b1 = await mbs.balanceOf(customer.address);
   expect(customer_b1).toBe(customer_b0 + amount);
+}, 30_000);
+
+test('OrderFullySettled event', async () => {
+  const [allEvents, byOrderId_1, byCustomer] = await Promise.all([
+    customerSdk.events.OrderFullySettled.findAll(),
+    customerSdk.events.OrderFullySettled.findByOrderId(_orders[1]),
+    customerSdk.events.OrderFullySettled.findByCustomer(),
+  ]);
+  expect(allEvents.length).toBe(2);
+  expect(byCustomer.length).toBe(2);
+  expect(byOrderId_1.length).toBe(1);
 }, 30_000);

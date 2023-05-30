@@ -1,7 +1,14 @@
 import ms from 'ms';
-import { FullOrderStruct } from './abi/KaChingCashRegisterV1Abi';
+import { FullOrderStruct } from './abi/KaChingCashRegisterV1/KaChingCashRegisterV1Abi';
 import { coreSdkFactory } from './core';
-import { BaseWallet, BigNumberish, Contract, Signature } from 'ethers';
+import {
+  AddressLike,
+  BaseWallet,
+  BigNumberish,
+  Contract,
+  Log,
+  Signature,
+} from 'ethers';
 import { abi, types } from './permit';
 
 function toEpoch(until: string): number {
@@ -37,6 +44,23 @@ type TypedDataDomain = {
   version: string;
   chainId: BigNumberish;
   verifyingContract: string;
+};
+
+type QueryEventsBlockFilters = {
+  fromBlockOrBlockhash?: string | number | undefined;
+  toBlock?: string | number | undefined;
+};
+
+type Serializable =
+  | string
+  | number
+  | boolean
+  | null
+  | { [K in string | number]: Serializable }
+  | Serializable[];
+
+type InferSerializable<T> = {
+  [P in keyof T as T[P] extends Serializable ? P : never]: T[P];
 };
 
 export function customerSdkFactory(
@@ -90,18 +114,65 @@ export function customerSdkFactory(
     );
   };
 
+  const _queryOrderFullySettledEvents = async (
+    orderId: BigNumberish | undefined,
+    customerAddress: AddressLike | undefined,
+    { fromBlockOrBlockhash, toBlock }: QueryEventsBlockFilters = {}
+  ) => {
+    const topicFilter = _sdk.filters.OrderFullySettled(
+      orderId,
+      customerAddress
+    );
+    const result = await _sdk.queryFilter(
+      topicFilter,
+      fromBlockOrBlockhash,
+      toBlock
+    );
+    return result.map((ev) => ({
+      ...(ev.toJSON() as InferSerializable<Log>),
+      description: _sdk.interface.parseLog(ev as any),
+    }));
+  };
+
   return {
-    creditCustomerWithERC20(params: UnaryOrderParams) {
-      return _unaryOrder(params, true);
-    },
-    debitCustomerWithERC20(params: UnaryOrderParams) {
-      return _unaryOrder(params, false);
-    },
     settleOrderPayment(order: FullOrderStruct, signature: string) {
       return _sdk.settleOrderPayment(order, signature);
     },
     permitERC20(amount: bigint, deadlineIn: string, domain: TypedDataDomain) {
       return _permitERC20(amount, deadlineIn, domain);
+    },
+    orders: {
+      creditCustomerWithERC20(params: UnaryOrderParams) {
+        return _unaryOrder(params, true);
+      },
+      debitCustomerWithERC20(params: UnaryOrderParams) {
+        return _unaryOrder(params, false);
+      },
+    },
+    events: {
+      OrderFullySettled: {
+        findByCustomer(blockFilters?: QueryEventsBlockFilters) {
+          return _queryOrderFullySettledEvents(
+            undefined,
+            customer.address,
+            blockFilters
+          );
+        },
+        findByOrderId(id: Uint8Array, blockFilters?: QueryEventsBlockFilters) {
+          return _queryOrderFullySettledEvents(
+            serializeOrderId(id),
+            undefined,
+            blockFilters
+          );
+        },
+        findAll(blockFilters?: QueryEventsBlockFilters) {
+          return _queryOrderFullySettledEvents(
+            undefined,
+            undefined,
+            blockFilters
+          );
+        },
+      },
     },
   };
 }
