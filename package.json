@@ -2,6 +2,9 @@
   "name": "@uncaged-studios/evm-contracts-library",
   "version": "0.0.0",
   "description": "Ka-Ching TypeScript SDK - A decentralized point-of-sale system",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     "./ka-ching": "./dist/ka-ching/sdk/index.js"
   },
