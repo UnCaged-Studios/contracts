@@ -8,9 +8,7 @@
     "test:unit": "forge test -vvv",
     "test:e2e": "jest",
     "abi:generate:prod:KaChingCashRegisterV1": "./script/abi-generate.sh prod KaChingCashRegisterV1",
-    "abi:generate:test:MockMBS": "./script/abi-generate.sh test MockMBS",
-    "abi:generate:test:MockCapsuleSFT": "./script/abi-generate.sh test MockCapsuleSFT",
-    "abi:generate:test:MockMonkeyNFT": "./script/abi-generate.sh test MockMonkeyNFT"
+    "abi:generate:test:MockMBS": "./script/abi-generate.sh test MockMBS"
   },
   "license": "MIT",
   "devDependencies": {

@@ -4,11 +4,6 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 struct OrderItem {
@@ -27,10 +22,11 @@ struct FullOrder {
     OrderItem[] items;
 }
 
-contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC165, AccessControl {
+contract KaChingCashRegisterV1 is EIP712, AccessControl {
     mapping(uint128 => bool) private _orderProcessed;
 
-    address[] private ORDER_SIGNER_ADDRESSES;
+    address[] private _orderSignerAddresses;
+
     bytes32 public constant CASHIER_ROLE = keccak256("CASHIER_ROLE");
 
     event OrderFullySettled(uint128 orderId, address customer);
@@ -73,8 +69,8 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
         address signer = ECDSA.recover(_hashTypedDataV4(fullOrderHash), signature);
 
         bool isSignerValid = false;
-        for (uint256 i = 0; i < ORDER_SIGNER_ADDRESSES.length; i++) {
-            if (signer == ORDER_SIGNER_ADDRESSES[i]) {
+        for (uint256 i = 0; i < _orderSignerAddresses.length; i++) {
+            if (signer == _orderSignerAddresses[i]) {
                 isSignerValid = true;
                 break;
             }
@@ -85,24 +81,12 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
     function _checkBalances(FullOrder calldata order) internal view {
         for (uint256 i = 0; i < order.items.length; i++) {
             OrderItem calldata item = order.items[i];
-            require(item.ERC == 20 || item.ERC == 721 || item.ERC == 1155, "Item type (ERC number) is not supported");
-
-            if (item.ERC == 1155) {
-                IERC1155 token = IERC1155(item.currency);
-                if (item.credit) {
-                    require(
-                        token.balanceOf(address(this), item.id) >= item.amount, "Contract does not have enough tokens"
-                    );
-                } else {
-                    require(token.balanceOf(msg.sender, item.id) >= item.amount, "Customer does not have enough tokens");
-                }
+            require(item.ERC == 20, "Item ERC type is not supported");
+            IERC20 token = IERC20(item.currency);
+            if (item.credit) {
+                require(token.balanceOf(address(this)) >= item.amount, "Contract does not have enough tokens");
             } else {
-                IERC721 token = IERC721(item.currency); // same for IERC20
-                if (item.credit) {
-                    require(token.balanceOf(address(this)) >= item.amount, "Contract does not have enough tokens");
-                } else {
-                    require(token.balanceOf(msg.sender) >= item.amount, "Customer does not have enough tokens");
-                }
+                require(token.balanceOf(msg.sender) >= item.amount, "Customer does not have enough tokens");
             }
         }
     }
@@ -110,27 +94,12 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
     function _performTransfers(FullOrder calldata order) internal {
         for (uint256 i = 0; i < order.items.length; i++) {
             OrderItem calldata item = order.items[i];
-            if (item.ERC == 20) {
-                IERC20 erc20Token = IERC20(item.currency);
-                if (item.credit) {
-                    erc20Token.transfer(msg.sender, item.amount);
-                } else {
-                    erc20Token.transferFrom(msg.sender, address(this), item.amount);
-                }
-            } else if (item.ERC == 721) {
-                IERC721 erc721Token = IERC721(item.currency);
-                if (item.credit) {
-                    erc721Token.transferFrom(address(this), msg.sender, item.id);
-                } else {
-                    erc721Token.transferFrom(msg.sender, address(this), item.id);
-                }
-            } else if (item.ERC == 1155) {
-                IERC1155 erc1155Token = IERC1155(item.currency);
-                if (item.credit) {
-                    erc1155Token.safeTransferFrom(address(this), msg.sender, item.id, item.amount, "");
-                } else {
-                    erc1155Token.safeTransferFrom(msg.sender, address(this), item.id, item.amount, "");
-                }
+            require(item.ERC == 20, "Item ERC type is not supported");
+            IERC20 token = IERC20(item.currency);
+            if (item.credit) {
+                token.transfer(msg.sender, item.amount);
+            } else {
+                token.transferFrom(msg.sender, address(this), item.amount);
             }
         }
     }
@@ -152,45 +121,6 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
         emit OrderFullySettled(order.id, msg.sender);
     }
 
-    function onERC721Received(
-        address, /* operator */
-        address, /* from */
-        uint256, /* tokenId */
-        bytes calldata /* data */
-    ) external pure override returns (bytes4) {
-        return this.onERC721Received.selector;
-    }
-
-    function onERC1155Received(
-        address, /* operator */
-        address, /* from */
-        uint256, /* id */
-        uint256, /* value */
-        bytes calldata /* data */
-    ) external pure override returns (bytes4) {
-        return this.onERC1155Received.selector;
-    }
-
-    function onERC1155BatchReceived(
-        address, /* operator */
-        address, /* from */
-        uint256[] calldata, /* ids */
-        uint256[] calldata, /* values */
-        bytes calldata /* data */
-    ) external pure override returns (bytes4) {
-        return this.onERC1155BatchReceived.selector;
-    }
-
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(ERC165, IERC165, AccessControl)
-        returns (bool)
-    {
-        return interfaceId == type(IERC1155Receiver).interfaceId || super.supportsInterface(interfaceId);
-    }
-
     function isOrderProcessed(uint128 orderId) public view onlyRole(CASHIER_ROLE) returns (bool) {
         return _orderProcessed[orderId];
     }
@@ -204,10 +134,10 @@ contract KaChingCashRegisterV1 is EIP712, IERC721Receiver, IERC1155Receiver, ERC
     }
 
     function setOrderSigners(address[] memory newSigners) public onlyRole(CASHIER_ROLE) {
-        ORDER_SIGNER_ADDRESSES = newSigners;
+        _orderSignerAddresses = newSigners;
     }
 
     function getOrderSigners() public view onlyRole(CASHIER_ROLE) returns (address[] memory) {
-        return ORDER_SIGNER_ADDRESSES;
+        return _orderSignerAddresses;
     }
 }
