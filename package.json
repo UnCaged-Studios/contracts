@@ -1,7 +1,7 @@
 {
   "name": "@uncaged-studios/evm-contracts-library",
   "version": "0.1.0",
-  "description": "",
+  "description": "Ka-Ching TypeScript SDK - A decentralized point-of-sale system",
   "exports": {
     "./ka-ching": "./dist/ka-ching/sdk/index.js"
   },
@@ -18,7 +18,6 @@
     "abi:generate:prod:KaChingCashRegisterV1": "./script/abi-generate.sh prod KaChingCashRegisterV1",
     "abi:generate:test:MockMBS": "./script/abi-generate.sh test MockMBS"
   },
-  "license": "MIT",
   "devDependencies": {
     "@typechain/ethers-v6": "^0.3.3",
     "@types/fs-extra": "^11.0.1",
@@ -36,5 +35,15 @@
   "dependencies": {
     "ethers": "^6.4.0",
     "ms": "^2.1.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UnCaged-Studios/solana-program-library.git"
+  },
+  "bugs": {
+    "url": "https://github.com/UnCaged-Studios/solana-program-library/issues"
+  },
+  "homepage": "https://github.com/UnCaged-Studios/solana-program-library#readme",
+  "author": "perestom@gmail.com",
+  "license": "MIT"
 }
