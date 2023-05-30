@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 struct OrderItem {
     uint256 amount;
@@ -22,7 +23,7 @@ struct FullOrder {
     OrderItem[] items;
 }
 
-contract KaChingCashRegisterV1 is EIP712, AccessControl {
+contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
     mapping(uint128 => bool) private _orderProcessed;
 
     address[] private _orderSignerAddresses;
@@ -104,7 +105,7 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl {
         }
     }
 
-    function settleOrderPayment(FullOrder calldata order, bytes calldata signature) public {
+    function settleOrderPayment(FullOrder calldata order, bytes calldata signature) public nonReentrant {
         // read-only validations
         require(msg.sender == order.customer, "Customer does not match sender address");
         require(block.timestamp <= order.expiry, "Order is expired");
