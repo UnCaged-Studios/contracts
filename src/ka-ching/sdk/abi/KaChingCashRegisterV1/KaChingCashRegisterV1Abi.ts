@@ -78,9 +78,6 @@ export interface KaChingCashRegisterV1AbiInterface extends Interface {
       | "grantRole"
       | "hasRole"
       | "isOrderProcessed"
-      | "onERC1155BatchReceived"
-      | "onERC1155Received"
-      | "onERC721Received"
       | "removeCashier"
       | "renounceRole"
       | "revokeRole"
@@ -130,24 +127,6 @@ export interface KaChingCashRegisterV1AbiInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "onERC1155BatchReceived",
-    values: [
-      AddressLike,
-      AddressLike,
-      BigNumberish[],
-      BigNumberish[],
-      BytesLike
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "onERC1155Received",
-    values: [AddressLike, AddressLike, BigNumberish, BigNumberish, BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "onERC721Received",
-    values: [AddressLike, AddressLike, BigNumberish, BytesLike]
-  ): string;
-  encodeFunctionData(
     functionFragment: "removeCashier",
     values: [AddressLike]
   ): string;
@@ -193,18 +172,6 @@ export interface KaChingCashRegisterV1AbiInterface extends Interface {
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isOrderProcessed",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "onERC1155BatchReceived",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "onERC1155Received",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "onERC721Received",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -373,36 +340,6 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
     "view"
   >;
 
-  onERC1155BatchReceived: TypedContractMethod<
-    [
-      arg0: AddressLike,
-      arg1: AddressLike,
-      arg2: BigNumberish[],
-      arg3: BigNumberish[],
-      arg4: BytesLike
-    ],
-    [string],
-    "view"
-  >;
-
-  onERC1155Received: TypedContractMethod<
-    [
-      arg0: AddressLike,
-      arg1: AddressLike,
-      arg2: BigNumberish,
-      arg3: BigNumberish,
-      arg4: BytesLike
-    ],
-    [string],
-    "view"
-  >;
-
-  onERC721Received: TypedContractMethod<
-    [arg0: AddressLike, arg1: AddressLike, arg2: BigNumberish, arg3: BytesLike],
-    [string],
-    "view"
-  >;
-
   removeCashier: TypedContractMethod<
     [cashier: AddressLike],
     [void],
@@ -475,39 +412,6 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
   getFunction(
     nameOrSignature: "isOrderProcessed"
   ): TypedContractMethod<[orderId: BigNumberish], [boolean], "view">;
-  getFunction(
-    nameOrSignature: "onERC1155BatchReceived"
-  ): TypedContractMethod<
-    [
-      arg0: AddressLike,
-      arg1: AddressLike,
-      arg2: BigNumberish[],
-      arg3: BigNumberish[],
-      arg4: BytesLike
-    ],
-    [string],
-    "view"
-  >;
-  getFunction(
-    nameOrSignature: "onERC1155Received"
-  ): TypedContractMethod<
-    [
-      arg0: AddressLike,
-      arg1: AddressLike,
-      arg2: BigNumberish,
-      arg3: BigNumberish,
-      arg4: BytesLike
-    ],
-    [string],
-    "view"
-  >;
-  getFunction(
-    nameOrSignature: "onERC721Received"
-  ): TypedContractMethod<
-    [arg0: AddressLike, arg1: AddressLike, arg2: BigNumberish, arg3: BytesLike],
-    [string],
-    "view"
-  >;
   getFunction(
     nameOrSignature: "removeCashier"
   ): TypedContractMethod<[cashier: AddressLike], [void], "nonpayable">;
