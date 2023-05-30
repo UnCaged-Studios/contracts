@@ -12,7 +12,7 @@ import {
   contractDeployer,
   mockMBS,
 } from '../anvil.json';
-import { FullOrderStruct, sdkFactory } from '../../src/ka-ching/sdk';
+import { sdkFactory, type FullOrderStruct } from '../../dist/ka-ching';
 import { MockMBSAbi__factory } from './abi/MockMBS';
 
 // wallets

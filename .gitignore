@@ -7,12 +7,10 @@ out/
 /broadcast/*/31337/
 /broadcast/**/dry-run/
 
-# Docs
-docs/
-
 # Dotenv file
 .env
 
+dist/
 node_modules
 *.abi.json
 e2e/anvil.json

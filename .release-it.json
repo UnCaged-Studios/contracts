@@ -1,0 +1,13 @@
+{
+  "github": {
+    "release": true
+  },
+  "git": {
+    "commitMessage": "🐣 release v${version}"
+  },
+  "hooks": {
+    "before:init": ["npm run test"],
+    "after:bump": "npm run build",
+    "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
+  }
+}
