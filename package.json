@@ -5,16 +5,23 @@
   "publishConfig": {
     "access": "public"
   },
+  "type": "module",
   "exports": {
-    "./ka-ching": "./dist/ka-ching/sdk/index.js"
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/esm/index.d.ts"
+    }
   },
+  "types": "./dist/esm/index.d.ts",
   "files": [
     "dist",
     "docs"
   ],
   "scripts": {
     "build": "npm-run-all build:**",
-    "build:ka-ching": "tsc -p src/ka-ching/sdk",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
     "pretest": "npm-run-all abi:generate:** build",
     "test": "npm-run-all test:*",
     "test:unit": "forge test -vvv",
@@ -41,6 +48,9 @@
   "dependencies": {
     "ethers": "^6.4.0",
     "ms": "^2.1.3"
+  },
+  "engines": {
+    "node": ">=14"
   },
   "repository": {
     "type": "git",
