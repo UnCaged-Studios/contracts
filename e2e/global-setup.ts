@@ -71,17 +71,19 @@ export default async () => {
       'test/ka-ching/contracts/MockMBS.sol:MockMBS',
       contractDeployer
     );
-    await fs.writeJSON(
-      path.join(__dirname, 'anvil.json'),
-      {
-        privateKeys,
-        contractDeployer,
-        kaChingCashRegister,
-        mockMBS,
-      },
-      {
-        spaces: 2,
-      }
+    const json = {
+      privateKeys,
+      contractDeployer,
+      kaChingCashRegister,
+      mockMBS,
+    };
+    await fs.writeJSON(path.join(__dirname, 'anvil.json'), json, {
+      spaces: 2,
+    });
+    console.log(
+      chalk.bold.green(
+        `🚀 anvil deployed contracts:\nMBS: ${mockMBS}\nKaChing: ${kaChingCashRegister}`
+      )
     );
   } catch (error) {
     console.error(chalk.red(error));
