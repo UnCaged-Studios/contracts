@@ -12,7 +12,7 @@ import {
   contractDeployer,
   mockMBS,
 } from '../anvil.json';
-import { sdkFactory, type FullOrderStruct } from '../../dist/ka-ching';
+import { KaChingV1 } from '../../dist/cjs';
 import { MockMBSAbi__factory } from './abi/MockMBS';
 
 // wallets
@@ -23,7 +23,7 @@ const orderSigner = Wallet.createRandom(localJsonRpcProvider);
 const customer = new Wallet(privateKeys[4], localJsonRpcProvider);
 
 // SDKs under test
-const sdk = sdkFactory(kaChingCashRegister);
+const sdk = KaChingV1.sdkFactory(kaChingCashRegister);
 const deployerSdk = sdk.deployer(deployer);
 const cashierSdk = sdk.cashier(cashier);
 const customerSdk = sdk.customer(customer);
@@ -33,7 +33,7 @@ const orderSignerSdk = sdk.orderSigner(orderSigner);
 const mbsSDK = (runner: ContractRunner) =>
   MockMBSAbi__factory.connect(mockMBS, runner);
 
-const _signOffChain = (order: FullOrderStruct) =>
+const _signOffChain = (order: KaChingV1.FullOrderStruct) =>
   orderSignerSdk.signOrder(order, { chainId: '31337' });
 
 const _waitForTxn = async (

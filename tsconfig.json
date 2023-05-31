@@ -1,38 +1,14 @@
 {
   "compilerOptions": {
-    // "target": specifies the ECMAScript target version. The output code will be
-    // compatible with this version of ECMAScript. "es2016" is a relatively modern
-    // target that should work in all current and near-future environments (both
-    // Node.js and browsers). If older environment support is required, this can be
-    // lowered to es5 or es6.
     "target": "es2016",
-
-    // "moduleResolution": determines the strategy for module resolution.
-    // "node" style resolution is appropriate for Node.js, and also works well
-    // in conjunction with most JavaScript bundlers like Webpack or Rollup which
-    // are typically used in a browser context. This option makes your library
-    // compatible with Node.js require and ES6 import style.
     "moduleResolution": "node",
-
-    // "module": specifies the module code generation method.
-    // "ES2020" supports dynamic import() and export() syntax, and is more suitable
-    // for modern browsers and Node.js versions, allowing for more efficient tree-shaking
-    // with bundlers. If you want to support older environments that do not support ES
-    // modules, you may need to lower this to "commonjs".
-    "module": "commonjs",
-
-    // "lib": is used to specify a list of built-in API declarations to be included in
-    // the compilation process. In the context of a library, "ES2020" provides modern
-    // ECMAScript features, while "DOM" is necessary for compatibility with browser
-    // environments. If your library does not interact with the DOM at all, you can
-    // remove "DOM".
     "lib": ["ES2020", "DOM"],
-
     "esModuleInterop": true,
     "declaration": true,
     "resolveJsonModule": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
-  }
+  },
+  "include": ["src"]
 }
