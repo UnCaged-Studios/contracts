@@ -5,12 +5,12 @@
   "publishConfig": {
     "access": "public"
   },
-  "type": "module",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js",
-      "types": "./dist/esm/index.d.ts"
+      "types": "./dist/esm/index.d.ts",
+      "default": "./dist/esm/index.js"
     }
   },
   "types": "./dist/esm/index.d.ts",
