@@ -1,5 +1,4 @@
-import { keccak256, TypedDataEncoder } from 'ethers';
-import type { BaseWallet, TypedDataDomain } from 'ethers';
+import { keccak256, Signer, TypedDataEncoder } from 'ethers';
 import type {
   FullOrderStruct,
   OrderItemStruct,
@@ -18,44 +17,41 @@ const hashedItem = (item: OrderItemStruct): string =>
     .hash(item)
     .slice(2);
 
-async function _signTypedData(
-  order: FullOrderStruct,
-  customer: BaseWallet,
-  domain: TypedDataDomain
-) {
+function _signTypedData(order: FullOrderStruct) {
   const { items, ...baseOrder } = order;
-  return await customer.signTypedData(
-    domain,
-    {
-      FullOrder: [
-        { name: 'id', type: 'uint128' },
-        { name: 'expiry', type: 'uint32' },
-        { name: 'customer', type: 'address' },
-        { name: 'notBefore', type: 'uint32' },
-        { name: 'itemsHash', type: 'bytes32' },
-      ],
-    },
-    {
-      ...baseOrder,
-      itemsHash: keccak256('0x' + items.map(hashedItem).join('')),
-    }
-  );
+  return {
+    ...baseOrder,
+    itemsHash: keccak256('0x' + items.map(hashedItem).join('')),
+  };
 }
 
 export function orderSignerSdkFactory(
   contractAddress: string,
-  orderSigner: BaseWallet
+  orderSigner: Signer
 ) {
   const signOrder = async (
     order: FullOrderStruct,
     chain: { chainId: string }
   ) => {
-    return await _signTypedData(order, orderSigner, {
-      name: 'KaChingCashRegisterV1',
-      version: '1',
-      chainId: chain.chainId,
-      verifyingContract: contractAddress,
-    });
+    const values = _signTypedData(order);
+    return orderSigner.signTypedData(
+      {
+        name: 'KaChingCashRegisterV1',
+        version: '1',
+        chainId: chain.chainId,
+        verifyingContract: contractAddress,
+      },
+      {
+        FullOrder: [
+          { name: 'id', type: 'uint128' },
+          { name: 'expiry', type: 'uint32' },
+          { name: 'customer', type: 'address' },
+          { name: 'notBefore', type: 'uint32' },
+          { name: 'itemsHash', type: 'bytes32' },
+        ],
+      },
+      values
+    );
   };
   return {
     signOrder,

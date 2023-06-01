@@ -1,7 +1,8 @@
 import { coreSdkFactory } from './core';
 import { orderSignerSdkFactory } from './order-signer';
 import { customerSdkFactory } from './customer';
-import type { BaseWallet, Provider } from 'ethers';
+import type { Provider, Signer } from 'ethers';
+import { readonlySdkFactory } from './readonly';
 export type {
   FullOrderStruct,
   OrderItemStruct,
@@ -9,12 +10,14 @@ export type {
 
 export function sdkFactory(contractAddress: string) {
   return {
-    contract: (provider: Provider) => coreSdkFactory(contractAddress, provider),
-    deployer: (wallet: BaseWallet) => coreSdkFactory(contractAddress, wallet),
-    cashier: (wallet: BaseWallet) => coreSdkFactory(contractAddress, wallet),
-    customer: (wallet: BaseWallet) =>
-      customerSdkFactory(contractAddress, wallet),
-    orderSigner: (wallet: BaseWallet) =>
-      orderSignerSdkFactory(contractAddress, wallet),
+    readonly: (provider: Provider) =>
+      readonlySdkFactory(contractAddress, provider),
+    customer: (customer: Signer) =>
+      customerSdkFactory(contractAddress, customer),
+    orderSigner: (signer: Signer) =>
+      orderSignerSdkFactory(contractAddress, signer),
+    // TODO - expose only relevant functions
+    deployer: (deployer: Signer) => coreSdkFactory(contractAddress, deployer),
+    cashier: (cashier: Signer) => coreSdkFactory(contractAddress, cashier),
   };
 }

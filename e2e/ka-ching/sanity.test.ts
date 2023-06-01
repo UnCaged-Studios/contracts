@@ -28,6 +28,7 @@ const deployerSdk = sdk.deployer(deployer);
 const cashierSdk = sdk.cashier(cashier);
 const customerSdk = sdk.customer(customer);
 const orderSignerSdk = sdk.orderSigner(orderSigner);
+const readonlySdk = sdk.readonly(localJsonRpcProvider);
 
 // test SDKs
 const mbsSDK = (runner: ContractRunner) =>
@@ -85,9 +86,9 @@ test('debit customer with erc20', async () => {
     })
   );
   const id = parseUUID(uuid());
-  _orders.push(id);
-  const order = customerSdk.orders.debitCustomerWithERC20({
+  const order = readonlySdk.orders.debitCustomerWithERC20({
     id,
+    customer: customer.address,
     amount,
     currency: mockMBS,
     expiresIn: '1m',
@@ -100,6 +101,7 @@ test('debit customer with erc20', async () => {
     customer.address
   );
   expect(customer_b1).toBe(customer_b0 - amount);
+  _orders.push(id);
 }, 30_000);
 
 test('credit customer with erc20', async () => {
@@ -111,10 +113,10 @@ test('credit customer with erc20', async () => {
 
   const amount = cashRegister_b0;
   const id = parseUUID(uuid());
-  _orders.push(id);
-  const order = customerSdk.orders.creditCustomerWithERC20({
+  const order = readonlySdk.orders.creditCustomerWithERC20({
     id,
     amount,
+    customer: customer.address,
     currency: mockMBS,
     expiresIn: '30s',
   });
@@ -124,13 +126,14 @@ test('credit customer with erc20', async () => {
   );
   const customer_b1 = await mbs.balanceOf(customer.address);
   expect(customer_b1).toBe(customer_b0 + amount);
+  _orders.push(id);
 }, 30_000);
 
 test('OrderFullySettled event', async () => {
   const [allEvents, byOrderId_1, byCustomer] = await Promise.all([
-    customerSdk.events.OrderFullySettled.findAll(),
-    customerSdk.events.OrderFullySettled.findByOrderId(_orders[1]),
-    customerSdk.events.OrderFullySettled.findByCustomer(),
+    readonlySdk.events.OrderFullySettled.findAll(),
+    readonlySdk.events.OrderFullySettled.findByOrderId(_orders[1]),
+    readonlySdk.events.OrderFullySettled.findByCustomer(customer.address),
   ]);
   expect(allEvents.length).toBe(2);
   expect(byCustomer.length).toBe(2);
