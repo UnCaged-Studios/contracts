@@ -20,6 +20,7 @@
   ],
   "scripts": {
     "lint": "eslint . --ext .ts --fix",
+    "prebuild": "npm run lint",
     "build": "npm-run-all build:**",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
