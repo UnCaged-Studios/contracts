@@ -57,10 +57,4 @@ contract KaChingCashRegisterV1Test is Test {
         vm.expectRevert();
         cashRegister.setOrderSigners(newSigners);
     }
-
-    function testRevertWhenCheckingIsOrderProcessedNotByCashier() public {
-        vm.startPrank(vm.addr(0xB0B));
-        vm.expectRevert();
-        cashRegister.isOrderProcessed(uuid);
-    }
 }

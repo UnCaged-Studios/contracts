@@ -74,6 +74,7 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
   functions: {
     "CASHIER_ROLE()": FunctionFragment;
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
+    "GOVERNOR_ROLE()": FunctionFragment;
     "addCashier(address)": FunctionFragment;
     "getOrderSigners()": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -92,6 +93,7 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "CASHIER_ROLE"
       | "DEFAULT_ADMIN_ROLE"
+      | "GOVERNOR_ROLE"
       | "addCashier"
       | "getOrderSigners"
       | "getRoleAdmin"
@@ -112,6 +114,10 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "DEFAULT_ADMIN_ROLE",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "GOVERNOR_ROLE",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "addCashier", values: [string]): string;
@@ -166,6 +172,10 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "GOVERNOR_ROLE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "addCashier", data: BytesLike): Result;
@@ -298,6 +308,8 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
 
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
+    GOVERNOR_ROLE(overrides?: CallOverrides): Promise<[string]>;
+
     addCashier(
       cashier: string,
       overrides?: Overrides & { from?: string }
@@ -362,6 +374,8 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
+  GOVERNOR_ROLE(overrides?: CallOverrides): Promise<string>;
+
   addCashier(
     cashier: string,
     overrides?: Overrides & { from?: string }
@@ -425,6 +439,8 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
     CASHIER_ROLE(overrides?: CallOverrides): Promise<string>;
 
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
+
+    GOVERNOR_ROLE(overrides?: CallOverrides): Promise<string>;
 
     addCashier(cashier: string, overrides?: CallOverrides): Promise<void>;
 
@@ -529,6 +545,8 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
 
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
+    GOVERNOR_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
+
     addCashier(
       cashier: string,
       overrides?: Overrides & { from?: string }
@@ -598,6 +616,8 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
     DEFAULT_ADMIN_ROLE(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    GOVERNOR_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     addCashier(
       cashier: string,
