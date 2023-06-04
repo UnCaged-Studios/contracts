@@ -19,6 +19,7 @@
     "docs"
   ],
   "scripts": {
+    "lint": "eslint . --ext .ts --fix",
     "build": "npm-run-all build:**",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
@@ -32,11 +33,14 @@
     "anvil": "ts-node -e \"require('./e2e/global-setup').default()\""
   },
   "devDependencies": {
-    "@typechain/ethers-v6": "^0.3.3",
+    "@typechain/ethers-v5": "^11.0.0",
     "@types/fs-extra": "^11.0.1",
     "@types/ms": "^0.7.31",
     "@types/uuid": "^9.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.59.8",
+    "@typescript-eslint/parser": "^5.59.8",
     "dotenv": "^16.0.3",
+    "eslint": "^8.42.0",
     "fs-extra": "^11.1.1",
     "jest": "^29.5.0",
     "npm-run-all": "^4.1.5",
@@ -48,7 +52,7 @@
     "uuid": "^9.0.0"
   },
   "dependencies": {
-    "ethers": "^6.4.0",
+    "ethers": "^5.7.2",
     "ms": "^2.1.3"
   },
   "engines": {

@@ -1,4 +1,4 @@
-import { AddressLike, BigNumberish, Log, Provider } from 'ethers';
+import { BigNumber, BigNumberish, providers } from 'ethers';
 import ms from 'ms';
 import { coreSdkFactory } from './core';
 import { toEpoch } from './commons';
@@ -9,16 +9,16 @@ function serializeOrderId(orderId: Uint8Array) {
       `orderId is ${orderId.length} bytes, which does not represent a 128-bit number (16 bytes)`
     );
   }
-  let hex = Array.from(orderId)
+  const hex = Array.from(orderId)
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
-  return BigInt('0x' + hex);
+  return BigNumber.from('0x' + hex);
 }
 
 type UnaryOrderParams = {
   id: Uint8Array;
   customer: string;
-  amount: bigint;
+  amount: BigNumber;
   currency: string;
   expiresIn: string;
   startsIn?: string;
@@ -29,21 +29,21 @@ type QueryEventsBlockFilters = {
   toBlock?: string | number | undefined;
 };
 
-type Serializable =
-  | string
-  | number
-  | boolean
-  | null
-  | { [K in string | number]: Serializable }
-  | Serializable[];
+// type Serializable =
+//   | string
+//   | number
+//   | boolean
+//   | null
+//   | { [K in string | number]: Serializable }
+//   | Serializable[];
 
-type InferSerializable<T> = {
-  [P in keyof T as T[P] extends Serializable ? P : never]: T[P];
-};
+// type InferSerializable<T> = {
+//   [P in keyof T as T[P] extends Serializable ? P : never]: T[P];
+// };
 
 export function readonlySdkFactory(
   contractAddress: string,
-  provider: Provider
+  provider: providers.Provider
 ) {
   const _sdk = coreSdkFactory(contractAddress, provider);
 
@@ -67,7 +67,7 @@ export function readonlySdkFactory(
 
   const _queryOrderFullySettledEvents = async (
     orderId: BigNumberish | undefined,
-    customerAddress: AddressLike | undefined,
+    customerAddress: string | undefined,
     { fromBlockOrBlockhash, toBlock }: QueryEventsBlockFilters = {}
   ) => {
     const topicFilter = _sdk.filters.OrderFullySettled(
@@ -80,8 +80,8 @@ export function readonlySdkFactory(
       toBlock
     );
     return result.map((ev) => ({
-      ...(ev.toJSON() as InferSerializable<Log>),
-      description: _sdk.interface.parseLog(ev as any),
+      ...ev, //  as InferSerializable<Log>
+      description: _sdk.interface.parseLog(ev),
     }));
   };
 

@@ -1,7 +1,7 @@
-import ms from 'ms';
 import { FullOrderStruct } from './abi/KaChingCashRegisterV1/KaChingCashRegisterV1Abi';
 import { coreSdkFactory } from './core';
-import { BigNumberish, Contract, Signature, Signer } from 'ethers';
+import { utils, BigNumberish, Contract, Signer, BigNumber } from 'ethers';
+import type { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { abi, types } from './permit';
 import { toEpoch } from './commons';
 
@@ -12,11 +12,14 @@ type TypedDataDomain = {
   verifyingContract: string;
 };
 
-export function customerSdkFactory(contractAddress: string, customer: Signer) {
+export function customerSdkFactory(
+  contractAddress: string,
+  customer: Signer & TypedDataSigner
+) {
   const _sdk = coreSdkFactory(contractAddress, customer);
 
   const _permitERC20 = async (
-    amount: bigint,
+    amount: BigNumber,
     deadlineIn: string,
     domain: TypedDataDomain
   ) => {
@@ -30,8 +33,12 @@ export function customerSdkFactory(contractAddress: string, customer: Signer) {
       nonce,
       deadline: toEpoch(deadlineIn),
     };
-    const signedTypedData = await customer.signTypedData(domain, types, values);
-    const permitSignature = Signature.from(signedTypedData);
+    const signedTypedData = await customer._signTypedData(
+      domain,
+      types,
+      values
+    );
+    const permitSignature = utils.splitSignature(signedTypedData);
     return erc20.permit(
       values.owner,
       values.spender,
@@ -47,7 +54,11 @@ export function customerSdkFactory(contractAddress: string, customer: Signer) {
     settleOrderPayment(order: FullOrderStruct, signature: string) {
       return _sdk.settleOrderPayment(order, signature);
     },
-    permitERC20(amount: bigint, deadlineIn: string, domain: TypedDataDomain) {
+    permitERC20(
+      amount: BigNumber,
+      deadlineIn: string,
+      domain: TypedDataDomain
+    ) {
       return _permitERC20(amount, deadlineIn, domain);
     },
   };

@@ -2,7 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Interface, type ContractRunner } from "ethers";
+import { Contract, Signer, utils } from "ethers";
+import type { Provider } from "@ethersproject/providers";
 import type { MockMBSAbi, MockMBSAbiInterface } from "../MockMBSAbi";
 
 const _abi = [
@@ -379,9 +380,12 @@ const _abi = [
 export class MockMBSAbi__factory {
   static readonly abi = _abi;
   static createInterface(): MockMBSAbiInterface {
-    return new Interface(_abi) as MockMBSAbiInterface;
+    return new utils.Interface(_abi) as MockMBSAbiInterface;
   }
-  static connect(address: string, runner?: ContractRunner | null): MockMBSAbi {
-    return new Contract(address, _abi, runner) as unknown as MockMBSAbi;
+  static connect(
+    address: string,
+    signerOrProvider: Signer | Provider
+  ): MockMBSAbi {
+    return new Contract(address, _abi, signerOrProvider) as MockMBSAbi;
   }
 }

@@ -3,73 +3,93 @@
 /* eslint-disable */
 import type {
   BaseContract,
+  BigNumber,
   BigNumberish,
   BytesLike,
-  FunctionFragment,
-  Result,
-  Interface,
-  EventFragment,
-  AddressLike,
-  ContractRunner,
-  ContractMethod,
-  Listener,
+  CallOverrides,
+  ContractTransaction,
+  Overrides,
+  PopulatedTransaction,
+  Signer,
+  utils,
 } from "ethers";
 import type {
-  TypedContractEvent,
-  TypedDeferredTopicFilter,
-  TypedEventLog,
-  TypedLogDescription,
+  FunctionFragment,
+  Result,
+  EventFragment,
+} from "@ethersproject/abi";
+import type { Listener, Provider } from "@ethersproject/providers";
+import type {
+  TypedEventFilter,
+  TypedEvent,
   TypedListener,
-  TypedContractMethod,
+  OnEvent,
 } from "./common";
 
 export type OrderItemStruct = {
   amount: BigNumberish;
-  currency: AddressLike;
+  currency: string;
   credit: boolean;
   ERC: BigNumberish;
   id: BigNumberish;
 };
 
 export type OrderItemStructOutput = [
-  amount: bigint,
-  currency: string,
-  credit: boolean,
-  ERC: bigint,
-  id: bigint
+  BigNumber,
+  string,
+  boolean,
+  number,
+  BigNumber
 ] & {
-  amount: bigint;
+  amount: BigNumber;
   currency: string;
   credit: boolean;
-  ERC: bigint;
-  id: bigint;
+  ERC: number;
+  id: BigNumber;
 };
 
 export type FullOrderStruct = {
   id: BigNumberish;
   expiry: BigNumberish;
-  customer: AddressLike;
+  customer: string;
   notBefore: BigNumberish;
   items: OrderItemStruct[];
 };
 
 export type FullOrderStructOutput = [
-  id: bigint,
-  expiry: bigint,
-  customer: string,
-  notBefore: bigint,
-  items: OrderItemStructOutput[]
+  BigNumber,
+  number,
+  string,
+  number,
+  OrderItemStructOutput[]
 ] & {
-  id: bigint;
-  expiry: bigint;
+  id: BigNumber;
+  expiry: number;
   customer: string;
-  notBefore: bigint;
+  notBefore: number;
   items: OrderItemStructOutput[];
 };
 
-export interface KaChingCashRegisterV1AbiInterface extends Interface {
+export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
+  functions: {
+    "CASHIER_ROLE()": FunctionFragment;
+    "DEFAULT_ADMIN_ROLE()": FunctionFragment;
+    "addCashier(address)": FunctionFragment;
+    "getOrderSigners()": FunctionFragment;
+    "getRoleAdmin(bytes32)": FunctionFragment;
+    "grantRole(bytes32,address)": FunctionFragment;
+    "hasRole(bytes32,address)": FunctionFragment;
+    "isOrderProcessed(uint128)": FunctionFragment;
+    "removeCashier(address)": FunctionFragment;
+    "renounceRole(bytes32,address)": FunctionFragment;
+    "revokeRole(bytes32,address)": FunctionFragment;
+    "setOrderSigners(address[])": FunctionFragment;
+    "settleOrderPayment((uint128,uint32,address,uint32,(uint256,address,bool,uint16,uint256)[]),bytes)": FunctionFragment;
+    "supportsInterface(bytes4)": FunctionFragment;
+  };
+
   getFunction(
-    nameOrSignature:
+    nameOrSignatureOrTopic:
       | "CASHIER_ROLE"
       | "DEFAULT_ADMIN_ROLE"
       | "addCashier"
@@ -86,14 +106,6 @@ export interface KaChingCashRegisterV1AbiInterface extends Interface {
       | "supportsInterface"
   ): FunctionFragment;
 
-  getEvent(
-    nameOrSignatureOrTopic:
-      | "OrderFullySettled"
-      | "RoleAdminChanged"
-      | "RoleGranted"
-      | "RoleRevoked"
-  ): EventFragment;
-
   encodeFunctionData(
     functionFragment: "CASHIER_ROLE",
     values?: undefined
@@ -102,10 +114,7 @@ export interface KaChingCashRegisterV1AbiInterface extends Interface {
     functionFragment: "DEFAULT_ADMIN_ROLE",
     values?: undefined
   ): string;
-  encodeFunctionData(
-    functionFragment: "addCashier",
-    values: [AddressLike]
-  ): string;
+  encodeFunctionData(functionFragment: "addCashier", values: [string]): string;
   encodeFunctionData(
     functionFragment: "getOrderSigners",
     values?: undefined
@@ -116,11 +125,11 @@ export interface KaChingCashRegisterV1AbiInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "grantRole",
-    values: [BytesLike, AddressLike]
+    values: [BytesLike, string]
   ): string;
   encodeFunctionData(
     functionFragment: "hasRole",
-    values: [BytesLike, AddressLike]
+    values: [BytesLike, string]
   ): string;
   encodeFunctionData(
     functionFragment: "isOrderProcessed",
@@ -128,19 +137,19 @@ export interface KaChingCashRegisterV1AbiInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "removeCashier",
-    values: [AddressLike]
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceRole",
-    values: [BytesLike, AddressLike]
+    values: [BytesLike, string]
   ): string;
   encodeFunctionData(
     functionFragment: "revokeRole",
-    values: [BytesLike, AddressLike]
+    values: [BytesLike, string]
   ): string;
   encodeFunctionData(
     functionFragment: "setOrderSigners",
-    values: [AddressLike[]]
+    values: [string[]]
   ): string;
   encodeFunctionData(
     functionFragment: "settleOrderPayment",
@@ -195,326 +204,461 @@ export interface KaChingCashRegisterV1AbiInterface extends Interface {
     functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
+
+  events: {
+    "OrderFullySettled(uint128,address)": EventFragment;
+    "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
+    "RoleGranted(bytes32,address,address)": EventFragment;
+    "RoleRevoked(bytes32,address,address)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "OrderFullySettled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
 }
 
-export namespace OrderFullySettledEvent {
-  export type InputTuple = [orderId: BigNumberish, customer: AddressLike];
-  export type OutputTuple = [orderId: bigint, customer: string];
-  export interface OutputObject {
-    orderId: bigint;
-    customer: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
+export interface OrderFullySettledEventObject {
+  orderId: BigNumber;
+  customer: string;
 }
+export type OrderFullySettledEvent = TypedEvent<
+  [BigNumber, string],
+  OrderFullySettledEventObject
+>;
 
-export namespace RoleAdminChangedEvent {
-  export type InputTuple = [
-    role: BytesLike,
-    previousAdminRole: BytesLike,
-    newAdminRole: BytesLike
-  ];
-  export type OutputTuple = [
-    role: string,
-    previousAdminRole: string,
-    newAdminRole: string
-  ];
-  export interface OutputObject {
-    role: string;
-    previousAdminRole: string;
-    newAdminRole: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
+export type OrderFullySettledEventFilter =
+  TypedEventFilter<OrderFullySettledEvent>;
 
-export namespace RoleGrantedEvent {
-  export type InputTuple = [
-    role: BytesLike,
-    account: AddressLike,
-    sender: AddressLike
-  ];
-  export type OutputTuple = [role: string, account: string, sender: string];
-  export interface OutputObject {
-    role: string;
-    account: string;
-    sender: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
+export interface RoleAdminChangedEventObject {
+  role: string;
+  previousAdminRole: string;
+  newAdminRole: string;
 }
+export type RoleAdminChangedEvent = TypedEvent<
+  [string, string, string],
+  RoleAdminChangedEventObject
+>;
 
-export namespace RoleRevokedEvent {
-  export type InputTuple = [
-    role: BytesLike,
-    account: AddressLike,
-    sender: AddressLike
-  ];
-  export type OutputTuple = [role: string, account: string, sender: string];
-  export interface OutputObject {
-    role: string;
-    account: string;
-    sender: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
+export type RoleAdminChangedEventFilter =
+  TypedEventFilter<RoleAdminChangedEvent>;
+
+export interface RoleGrantedEventObject {
+  role: string;
+  account: string;
+  sender: string;
 }
+export type RoleGrantedEvent = TypedEvent<
+  [string, string, string],
+  RoleGrantedEventObject
+>;
+
+export type RoleGrantedEventFilter = TypedEventFilter<RoleGrantedEvent>;
+
+export interface RoleRevokedEventObject {
+  role: string;
+  account: string;
+  sender: string;
+}
+export type RoleRevokedEvent = TypedEvent<
+  [string, string, string],
+  RoleRevokedEventObject
+>;
+
+export type RoleRevokedEventFilter = TypedEventFilter<RoleRevokedEvent>;
 
 export interface KaChingCashRegisterV1Abi extends BaseContract {
-  connect(runner?: ContractRunner | null): BaseContract;
-  attach(addressOrName: AddressLike): this;
+  connect(signerOrProvider: Signer | Provider | string): this;
+  attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
   interface: KaChingCashRegisterV1AbiInterface;
 
-  queryFilter<TCEvent extends TypedContractEvent>(
-    event: TCEvent,
+  queryFilter<TEvent extends TypedEvent>(
+    event: TypedEventFilter<TEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TypedEventLog<TCEvent>>>;
-  queryFilter<TCEvent extends TypedContractEvent>(
-    filter: TypedDeferredTopicFilter<TCEvent>,
-    fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
-  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  ): Promise<Array<TEvent>>;
 
-  on<TCEvent extends TypedContractEvent>(
-    event: TCEvent,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
-  on<TCEvent extends TypedContractEvent>(
-    filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
+  listeners<TEvent extends TypedEvent>(
+    eventFilter?: TypedEventFilter<TEvent>
+  ): Array<TypedListener<TEvent>>;
+  listeners(eventName?: string): Array<Listener>;
+  removeAllListeners<TEvent extends TypedEvent>(
+    eventFilter: TypedEventFilter<TEvent>
+  ): this;
+  removeAllListeners(eventName?: string): this;
+  off: OnEvent<this>;
+  on: OnEvent<this>;
+  once: OnEvent<this>;
+  removeListener: OnEvent<this>;
 
-  once<TCEvent extends TypedContractEvent>(
-    event: TCEvent,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
-  once<TCEvent extends TypedContractEvent>(
-    filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
+  functions: {
+    CASHIER_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-  listeners<TCEvent extends TypedContractEvent>(
-    event: TCEvent
-  ): Promise<Array<TypedListener<TCEvent>>>;
-  listeners(eventName?: string): Promise<Array<Listener>>;
-  removeAllListeners<TCEvent extends TypedContractEvent>(
-    event?: TCEvent
-  ): Promise<this>;
+    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-  CASHIER_ROLE: TypedContractMethod<[], [string], "view">;
+    addCashier(
+      cashier: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
 
-  DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
+    getOrderSigners(overrides?: CallOverrides): Promise<[string[]]>;
 
-  addCashier: TypedContractMethod<[cashier: AddressLike], [void], "nonpayable">;
+    getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
 
-  getOrderSigners: TypedContractMethod<[], [string[]], "view">;
+    grantRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
 
-  getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
+    hasRole(
+      role: BytesLike,
+      account: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
-  grantRole: TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
+    isOrderProcessed(
+      orderId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
-  hasRole: TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [boolean],
-    "view"
-  >;
+    removeCashier(
+      cashier: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
 
-  isOrderProcessed: TypedContractMethod<
-    [orderId: BigNumberish],
-    [boolean],
-    "view"
-  >;
+    renounceRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
 
-  removeCashier: TypedContractMethod<
-    [cashier: AddressLike],
-    [void],
-    "nonpayable"
-  >;
+    revokeRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
 
-  renounceRole: TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
+    setOrderSigners(
+      newSigners: string[],
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
 
-  revokeRole: TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
+    settleOrderPayment(
+      order: FullOrderStruct,
+      signature: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
 
-  setOrderSigners: TypedContractMethod<
-    [newSigners: AddressLike[]],
-    [void],
-    "nonpayable"
-  >;
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+  };
 
-  settleOrderPayment: TypedContractMethod<
-    [order: FullOrderStruct, signature: BytesLike],
-    [void],
-    "nonpayable"
-  >;
+  CASHIER_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  supportsInterface: TypedContractMethod<
-    [interfaceId: BytesLike],
-    [boolean],
-    "view"
-  >;
+  DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  getFunction<T extends ContractMethod = ContractMethod>(
-    key: string | FunctionFragment
-  ): T;
+  addCashier(
+    cashier: string,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
 
-  getFunction(
-    nameOrSignature: "CASHIER_ROLE"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "DEFAULT_ADMIN_ROLE"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "addCashier"
-  ): TypedContractMethod<[cashier: AddressLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "getOrderSigners"
-  ): TypedContractMethod<[], [string[]], "view">;
-  getFunction(
-    nameOrSignature: "getRoleAdmin"
-  ): TypedContractMethod<[role: BytesLike], [string], "view">;
-  getFunction(
-    nameOrSignature: "grantRole"
-  ): TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "hasRole"
-  ): TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [boolean],
-    "view"
-  >;
-  getFunction(
-    nameOrSignature: "isOrderProcessed"
-  ): TypedContractMethod<[orderId: BigNumberish], [boolean], "view">;
-  getFunction(
-    nameOrSignature: "removeCashier"
-  ): TypedContractMethod<[cashier: AddressLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "renounceRole"
-  ): TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "revokeRole"
-  ): TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "setOrderSigners"
-  ): TypedContractMethod<[newSigners: AddressLike[]], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "settleOrderPayment"
-  ): TypedContractMethod<
-    [order: FullOrderStruct, signature: BytesLike],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "supportsInterface"
-  ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;
+  getOrderSigners(overrides?: CallOverrides): Promise<string[]>;
 
-  getEvent(
-    key: "OrderFullySettled"
-  ): TypedContractEvent<
-    OrderFullySettledEvent.InputTuple,
-    OrderFullySettledEvent.OutputTuple,
-    OrderFullySettledEvent.OutputObject
-  >;
-  getEvent(
-    key: "RoleAdminChanged"
-  ): TypedContractEvent<
-    RoleAdminChangedEvent.InputTuple,
-    RoleAdminChangedEvent.OutputTuple,
-    RoleAdminChangedEvent.OutputObject
-  >;
-  getEvent(
-    key: "RoleGranted"
-  ): TypedContractEvent<
-    RoleGrantedEvent.InputTuple,
-    RoleGrantedEvent.OutputTuple,
-    RoleGrantedEvent.OutputObject
-  >;
-  getEvent(
-    key: "RoleRevoked"
-  ): TypedContractEvent<
-    RoleRevokedEvent.InputTuple,
-    RoleRevokedEvent.OutputTuple,
-    RoleRevokedEvent.OutputObject
-  >;
+  getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
+
+  grantRole(
+    role: BytesLike,
+    account: string,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  hasRole(
+    role: BytesLike,
+    account: string,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  isOrderProcessed(
+    orderId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  removeCashier(
+    cashier: string,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  renounceRole(
+    role: BytesLike,
+    account: string,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  revokeRole(
+    role: BytesLike,
+    account: string,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  setOrderSigners(
+    newSigners: string[],
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  settleOrderPayment(
+    order: FullOrderStruct,
+    signature: BytesLike,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  supportsInterface(
+    interfaceId: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  callStatic: {
+    CASHIER_ROLE(overrides?: CallOverrides): Promise<string>;
+
+    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
+
+    addCashier(cashier: string, overrides?: CallOverrides): Promise<void>;
+
+    getOrderSigners(overrides?: CallOverrides): Promise<string[]>;
+
+    getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
+
+    grantRole(
+      role: BytesLike,
+      account: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    hasRole(
+      role: BytesLike,
+      account: string,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    isOrderProcessed(
+      orderId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    removeCashier(cashier: string, overrides?: CallOverrides): Promise<void>;
+
+    renounceRole(
+      role: BytesLike,
+      account: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    revokeRole(
+      role: BytesLike,
+      account: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setOrderSigners(
+      newSigners: string[],
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    settleOrderPayment(
+      order: FullOrderStruct,
+      signature: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+  };
 
   filters: {
-    "OrderFullySettled(uint128,address)": TypedContractEvent<
-      OrderFullySettledEvent.InputTuple,
-      OrderFullySettledEvent.OutputTuple,
-      OrderFullySettledEvent.OutputObject
-    >;
-    OrderFullySettled: TypedContractEvent<
-      OrderFullySettledEvent.InputTuple,
-      OrderFullySettledEvent.OutputTuple,
-      OrderFullySettledEvent.OutputObject
-    >;
+    "OrderFullySettled(uint128,address)"(
+      orderId?: BigNumberish | null,
+      customer?: string | null
+    ): OrderFullySettledEventFilter;
+    OrderFullySettled(
+      orderId?: BigNumberish | null,
+      customer?: string | null
+    ): OrderFullySettledEventFilter;
 
-    "RoleAdminChanged(bytes32,bytes32,bytes32)": TypedContractEvent<
-      RoleAdminChangedEvent.InputTuple,
-      RoleAdminChangedEvent.OutputTuple,
-      RoleAdminChangedEvent.OutputObject
-    >;
-    RoleAdminChanged: TypedContractEvent<
-      RoleAdminChangedEvent.InputTuple,
-      RoleAdminChangedEvent.OutputTuple,
-      RoleAdminChangedEvent.OutputObject
-    >;
+    "RoleAdminChanged(bytes32,bytes32,bytes32)"(
+      role?: BytesLike | null,
+      previousAdminRole?: BytesLike | null,
+      newAdminRole?: BytesLike | null
+    ): RoleAdminChangedEventFilter;
+    RoleAdminChanged(
+      role?: BytesLike | null,
+      previousAdminRole?: BytesLike | null,
+      newAdminRole?: BytesLike | null
+    ): RoleAdminChangedEventFilter;
 
-    "RoleGranted(bytes32,address,address)": TypedContractEvent<
-      RoleGrantedEvent.InputTuple,
-      RoleGrantedEvent.OutputTuple,
-      RoleGrantedEvent.OutputObject
-    >;
-    RoleGranted: TypedContractEvent<
-      RoleGrantedEvent.InputTuple,
-      RoleGrantedEvent.OutputTuple,
-      RoleGrantedEvent.OutputObject
-    >;
+    "RoleGranted(bytes32,address,address)"(
+      role?: BytesLike | null,
+      account?: string | null,
+      sender?: string | null
+    ): RoleGrantedEventFilter;
+    RoleGranted(
+      role?: BytesLike | null,
+      account?: string | null,
+      sender?: string | null
+    ): RoleGrantedEventFilter;
 
-    "RoleRevoked(bytes32,address,address)": TypedContractEvent<
-      RoleRevokedEvent.InputTuple,
-      RoleRevokedEvent.OutputTuple,
-      RoleRevokedEvent.OutputObject
-    >;
-    RoleRevoked: TypedContractEvent<
-      RoleRevokedEvent.InputTuple,
-      RoleRevokedEvent.OutputTuple,
-      RoleRevokedEvent.OutputObject
-    >;
+    "RoleRevoked(bytes32,address,address)"(
+      role?: BytesLike | null,
+      account?: string | null,
+      sender?: string | null
+    ): RoleRevokedEventFilter;
+    RoleRevoked(
+      role?: BytesLike | null,
+      account?: string | null,
+      sender?: string | null
+    ): RoleRevokedEventFilter;
+  };
+
+  estimateGas: {
+    CASHIER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
+
+    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
+
+    addCashier(
+      cashier: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    getOrderSigners(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getRoleAdmin(
+      role: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    grantRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    hasRole(
+      role: BytesLike,
+      account: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    isOrderProcessed(
+      orderId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    removeCashier(
+      cashier: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    renounceRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    revokeRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    setOrderSigners(
+      newSigners: string[],
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    settleOrderPayment(
+      order: FullOrderStruct,
+      signature: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+  };
+
+  populateTransaction: {
+    CASHIER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    DEFAULT_ADMIN_ROLE(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    addCashier(
+      cashier: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    getOrderSigners(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getRoleAdmin(
+      role: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    grantRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    hasRole(
+      role: BytesLike,
+      account: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    isOrderProcessed(
+      orderId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    removeCashier(
+      cashier: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    renounceRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    revokeRole(
+      role: BytesLike,
+      account: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    setOrderSigners(
+      newSigners: string[],
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    settleOrderPayment(
+      order: FullOrderStruct,
+      signature: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
   };
 }

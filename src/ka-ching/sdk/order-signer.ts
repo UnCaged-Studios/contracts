@@ -1,40 +1,42 @@
-import { keccak256, Signer, TypedDataEncoder } from 'ethers';
+import { utils } from 'ethers';
 import type {
   FullOrderStruct,
   OrderItemStruct,
 } from './abi/KaChingCashRegisterV1/KaChingCashRegisterV1Abi';
+import { AdvancedSigner } from './types';
 
 const hashedItem = (item: OrderItemStruct): string =>
-  TypedDataEncoder.from({
-    OrderItem: [
-      { name: 'amount', type: 'uint256' },
-      { name: 'currency', type: 'address' },
-      { name: 'credit', type: 'bool' },
-      { name: 'ERC', type: 'uint16' },
-      { name: 'id', type: 'uint256' },
-    ],
-  })
+  utils._TypedDataEncoder
+    .from({
+      OrderItem: [
+        { name: 'amount', type: 'uint256' },
+        { name: 'currency', type: 'address' },
+        { name: 'credit', type: 'bool' },
+        { name: 'ERC', type: 'uint16' },
+        { name: 'id', type: 'uint256' },
+      ],
+    })
     .hash(item)
     .slice(2);
 
-function _signTypedData(order: FullOrderStruct) {
+function hashOrderItems(order: FullOrderStruct) {
   const { items, ...baseOrder } = order;
   return {
     ...baseOrder,
-    itemsHash: keccak256('0x' + items.map(hashedItem).join('')),
+    itemsHash: utils.keccak256('0x' + items.map(hashedItem).join('')),
   };
 }
 
 export function orderSignerSdkFactory(
   contractAddress: string,
-  orderSigner: Signer
+  orderSigner: AdvancedSigner
 ) {
   const signOrder = async (
     order: FullOrderStruct,
     chain: { chainId: string }
   ) => {
-    const values = _signTypedData(order);
-    return orderSigner.signTypedData(
+    const values = hashOrderItems(order);
+    return orderSigner._signTypedData(
       {
         name: 'KaChingCashRegisterV1',
         version: '1',
