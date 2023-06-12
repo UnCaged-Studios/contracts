@@ -2,7 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Interface, type ContractRunner } from "ethers";
+import { Contract, Signer, utils } from "ethers";
+import type { Provider } from "@ethersproject/providers";
 import type {
   KaChingCashRegisterV1Abi,
   KaChingCashRegisterV1AbiInterface,
@@ -398,16 +399,16 @@ const _abi = [
 export class KaChingCashRegisterV1Abi__factory {
   static readonly abi = _abi;
   static createInterface(): KaChingCashRegisterV1AbiInterface {
-    return new Interface(_abi) as KaChingCashRegisterV1AbiInterface;
+    return new utils.Interface(_abi) as KaChingCashRegisterV1AbiInterface;
   }
   static connect(
     address: string,
-    runner?: ContractRunner | null
+    signerOrProvider: Signer | Provider
   ): KaChingCashRegisterV1Abi {
     return new Contract(
       address,
       _abi,
-      runner
-    ) as unknown as KaChingCashRegisterV1Abi;
+      signerOrProvider
+    ) as KaChingCashRegisterV1Abi;
   }
 }

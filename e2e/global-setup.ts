@@ -16,7 +16,7 @@ async function _deployContract(
   const { stdout } = await exec(
     `forge create ${contract} --rpc-url http://127.0.0.1:8545 --private-key ${privateKey}`
   );
-  let match = /Deployed to:\s*(0x[a-fA-F0-9]{40})/.exec(stdout);
+  const match = /Deployed to:\s*(0x[a-fA-F0-9]{40})/.exec(stdout);
   if (!match || !match[1]) {
     throw new Error('cannot find contact created pattern');
   }
@@ -31,7 +31,7 @@ async function _anvilProcessHandler(
   >
 ) {
   return await new Promise<{ privateKeys: string[] }>((resolve) => {
-    let _privateKeys: string[] = [];
+    const _privateKeys: string[] = [];
     proc.stdout.on('data', (data) => {
       console.log(chalk.italic.gray(data));
       if (data.toString().includes('Listening on 127.0.0.1:8545')) {
@@ -41,7 +41,7 @@ async function _anvilProcessHandler(
         .toString()
         .split('\n')
         .forEach((line: string) => {
-          let privateKeyMatch = line.match(/^\((\d+)\) (0x[a-fA-F0-9]{64})/);
+          const privateKeyMatch = line.match(/^\((\d+)\) (0x[a-fA-F0-9]{64})/);
           if (privateKeyMatch) {
             _privateKeys.push(privateKeyMatch[2]);
           }
@@ -53,13 +53,16 @@ async function _anvilProcessHandler(
 export default async () => {
   try {
     await exec('pkill -f anvil || true');
-  } catch (error) {}
+  } catch (error) {
+    /* shhhhh */
+  }
 
   try {
     const chainId = process.env.ANVIL_CHAIN_ID || '31337';
     const proc = child_process.spawn('anvil', ['--chain-id', chainId], {
       stdio: ['pipe', 'pipe', 'inherit'],
     });
+    // eslint-disable-next-line
     (global as any).anvil = proc;
     const { privateKeys } = await _anvilProcessHandler(proc);
     const contractDeployer = privateKeys[0];
@@ -71,17 +74,19 @@ export default async () => {
       'test/ka-ching/contracts/MockMBS.sol:MockMBS',
       contractDeployer
     );
-    await fs.writeJSON(
-      path.join(__dirname, 'anvil.json'),
-      {
-        privateKeys,
-        contractDeployer,
-        kaChingCashRegister,
-        mockMBS,
-      },
-      {
-        spaces: 2,
-      }
+    const json = {
+      privateKeys,
+      contractDeployer,
+      kaChingCashRegister,
+      mockMBS,
+    };
+    await fs.writeJSON(path.join(__dirname, 'anvil.json'), json, {
+      spaces: 2,
+    });
+    console.log(
+      chalk.bold.green(
+        `🚀 anvil deployed contracts:\nMBS: ${mockMBS}\nKaChing: ${kaChingCashRegister}`
+      )
     );
   } catch (error) {
     console.error(chalk.red(error));
