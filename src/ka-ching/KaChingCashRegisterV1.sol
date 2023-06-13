@@ -27,7 +27,6 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
     bytes32 private constant _FULL_ORDER_HASH =
         keccak256("FullOrder(uint128 id,uint32 expiry,uint32 notBefore,address customer,bytes32 itemsHash)");
     mapping(uint128 => bool) private _orderProcessed;
-    // FIXME - where is the limit?
     address[] private _orderSignerAddresses;
 
     bytes32 public constant CASHIER_ROLE = keccak256("CASHIER_ROLE");
@@ -125,17 +124,16 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
         return _orderProcessed[orderId];
     }
 
-    // TBD - no need for cashier role
     function addCashier(address cashier) external onlyRole(DEFAULT_ADMIN_ROLE) {
         grantRole(CASHIER_ROLE, cashier);
     }
 
-    // TBD no need for cashier role
     function removeCashier(address cashier) external onlyRole(DEFAULT_ADMIN_ROLE) {
         renounceRole(CASHIER_ROLE, cashier);
     }
 
     function setOrderSigners(address[] memory newSigners) external onlyRole(CASHIER_ROLE) {
+        require(newSigners.length <= 3, "Cannot set more than 3 signers");
         _orderSignerAddresses = newSigners;
     }
 
