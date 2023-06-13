@@ -30,43 +30,33 @@ export type OrderItemStruct = {
   amount: BigNumberish;
   currency: string;
   credit: boolean;
-  ERC: BigNumberish;
-  id: BigNumberish;
 };
 
-export type OrderItemStructOutput = [
-  BigNumber,
-  string,
-  boolean,
-  number,
-  BigNumber
-] & {
+export type OrderItemStructOutput = [BigNumber, string, boolean] & {
   amount: BigNumber;
   currency: string;
   credit: boolean;
-  ERC: number;
-  id: BigNumber;
 };
 
 export type FullOrderStruct = {
   id: BigNumberish;
   expiry: BigNumberish;
-  customer: string;
   notBefore: BigNumberish;
+  customer: string;
   items: OrderItemStruct[];
 };
 
 export type FullOrderStructOutput = [
   BigNumber,
   number,
-  string,
   number,
+  string,
   OrderItemStructOutput[]
 ] & {
   id: BigNumber;
   expiry: number;
-  customer: string;
   notBefore: number;
+  customer: string;
   items: OrderItemStructOutput[];
 };
 
@@ -84,7 +74,7 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
     "setOrderSigners(address[])": FunctionFragment;
-    "settleOrderPayment((uint128,uint32,address,uint32,(uint256,address,bool,uint16,uint256)[]),bytes)": FunctionFragment;
+    "settleOrderPayment((uint128,uint32,uint32,address,(uint256,address,bool)[]),bytes)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
   };
 

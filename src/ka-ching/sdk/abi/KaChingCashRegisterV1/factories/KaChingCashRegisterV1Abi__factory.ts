@@ -318,14 +318,14 @@ const _abi = [
             type: "uint32",
           },
           {
-            internalType: "address",
-            name: "customer",
-            type: "address",
-          },
-          {
             internalType: "uint32",
             name: "notBefore",
             type: "uint32",
+          },
+          {
+            internalType: "address",
+            name: "customer",
+            type: "address",
           },
           {
             components: [
@@ -343,16 +343,6 @@ const _abi = [
                 internalType: "bool",
                 name: "credit",
                 type: "bool",
-              },
-              {
-                internalType: "uint16",
-                name: "ERC",
-                type: "uint16",
-              },
-              {
-                internalType: "uint256",
-                name: "id",
-                type: "uint256",
               },
             ],
             internalType: "struct OrderItem[]",

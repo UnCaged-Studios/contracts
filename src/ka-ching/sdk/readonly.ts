@@ -61,7 +61,7 @@ export function readonlySdkFactory(
       customer,
       expiry: toEpoch(expiresIn),
       notBefore: startsIn ? toEpoch(startsIn) : 0,
-      items: [{ amount, currency, credit, ERC: 20, id: 0 }],
+      items: [{ amount, currency, credit }],
     };
   };
 

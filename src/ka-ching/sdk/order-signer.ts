@@ -12,8 +12,6 @@ const hashedItem = (item: OrderItemStruct): string =>
         { name: 'amount', type: 'uint256' },
         { name: 'currency', type: 'address' },
         { name: 'credit', type: 'bool' },
-        { name: 'ERC', type: 'uint16' },
-        { name: 'id', type: 'uint256' },
       ],
     })
     .hash(item)
@@ -47,8 +45,8 @@ export function orderSignerSdkFactory(
         FullOrder: [
           { name: 'id', type: 'uint128' },
           { name: 'expiry', type: 'uint32' },
-          { name: 'customer', type: 'address' },
           { name: 'notBefore', type: 'uint32' },
+          { name: 'customer', type: 'address' },
           { name: 'itemsHash', type: 'bytes32' },
         ],
       },

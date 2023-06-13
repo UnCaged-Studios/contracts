@@ -1,66 +1,60 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.19;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
 
-import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 struct OrderItem {
     uint256 amount;
     address currency;
     bool credit;
-    uint16 ERC;
-    uint256 id;
 }
 
 struct FullOrder {
     uint128 id;
     uint32 expiry;
-    address customer;
     uint32 notBefore;
+    address customer;
     OrderItem[] items;
 }
 
+// FIXME - add docs as comments
 contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
+    bytes32 private constant _ORDER_ITEM_HASH = keccak256("OrderItem(uint256 amount,address currency,bool credit)");
+    bytes32 private constant _FULL_ORDER_HASH =
+        keccak256("FullOrder(uint128 id,uint32 expiry,uint32 notBefore,address customer,bytes32 itemsHash)");
     mapping(uint128 => bool) private _orderProcessed;
-
     address[] private _orderSignerAddresses;
 
     bytes32 public constant CASHIER_ROLE = keccak256("CASHIER_ROLE");
+    // bytes32 public constant GOVERNOR_ROLE = keccak256("GOVERNOR_ROLE");
 
     event OrderFullySettled(uint128 indexed orderId, address indexed customer);
 
     constructor() EIP712("KaChingCashRegisterV1", "1") {
+        // FIXME - set admin as GOVERNOR_ROLE
+        // check that DEFAULT_ADMIN_ROLE is not 0x00
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     function _getFullOrderHash(FullOrder memory order) internal pure returns (bytes32) {
         bytes memory itemsPacked = new bytes(32 * order.items.length);
-        for (uint256 i = 0; i < order.items.length; i++) {
-            bytes32 itemHash = keccak256(
-                abi.encode(
-                    keccak256("OrderItem(uint256 amount,address currency,bool credit,uint16 ERC,uint256 id)"),
-                    order.items[i].amount,
-                    order.items[i].currency,
-                    order.items[i].credit,
-                    order.items[i].ERC,
-                    order.items[i].id
-                )
-            );
-            for (uint256 j = 0; j < 32; j++) {
-                itemsPacked[i * 32 + j] = itemHash[j];
+        unchecked {
+            for (uint256 i = 0; i < order.items.length; i++) {
+                bytes32 itemHash = keccak256(
+                    abi.encode(_ORDER_ITEM_HASH, order.items[i].amount, order.items[i].currency, order.items[i].credit)
+                );
+                for (uint256 j = 0; j < 32; j++) {
+                    itemsPacked[i * 32 + j] = itemHash[j];
+                }
             }
         }
         return keccak256(
             abi.encode(
-                keccak256("FullOrder(uint128 id,uint32 expiry,address customer,uint32 notBefore,bytes32 itemsHash)"),
-                order.id,
-                order.expiry,
-                order.customer,
-                order.notBefore,
-                keccak256(itemsPacked)
+                _FULL_ORDER_HASH, order.id, order.expiry, order.notBefore, order.customer, keccak256(itemsPacked)
             )
         );
     }
@@ -70,75 +64,80 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
         address signer = ECDSA.recover(_hashTypedDataV4(fullOrderHash), signature);
 
         bool isSignerValid = false;
-        for (uint256 i = 0; i < _orderSignerAddresses.length; i++) {
-            if (signer == _orderSignerAddresses[i]) {
-                isSignerValid = true;
-                break;
+        unchecked {
+            for (uint256 i = 0; i < _orderSignerAddresses.length; i++) {
+                if (signer == _orderSignerAddresses[i]) {
+                    isSignerValid = true;
+                    break;
+                }
             }
         }
         return isSignerValid;
     }
 
-    function _checkBalances(FullOrder calldata order) internal view {
-        for (uint256 i = 0; i < order.items.length; i++) {
-            OrderItem calldata item = order.items[i];
-            require(item.ERC == 20, "Item ERC type is not supported");
-            IERC20 token = IERC20(item.currency);
-            if (item.credit) {
-                require(token.balanceOf(address(this)) >= item.amount, "Contract does not have enough tokens");
-            } else {
-                require(token.balanceOf(msg.sender) >= item.amount, "Customer does not have enough tokens");
+    function _checkBalances(FullOrder calldata order, address to) internal view {
+        unchecked {
+            for (uint256 i = 0; i < order.items.length; i++) {
+                OrderItem calldata item = order.items[i];
+                IERC20 token = IERC20(item.currency);
+                if (item.credit) {
+                    require(token.balanceOf(address(this)) >= item.amount, "Contract does not have enough tokens");
+                } else {
+                    require(token.balanceOf(to) >= item.amount, "Customer does not have enough tokens");
+                }
             }
         }
     }
 
-    function _performTransfers(FullOrder calldata order) internal {
-        for (uint256 i = 0; i < order.items.length; i++) {
-            OrderItem calldata item = order.items[i];
-            require(item.ERC == 20, "Item ERC type is not supported");
-            IERC20 token = IERC20(item.currency);
-            if (item.credit) {
-                token.transfer(msg.sender, item.amount);
-            } else {
-                token.transferFrom(msg.sender, address(this), item.amount);
+    function _performTransfers(FullOrder calldata order, address to) internal {
+        unchecked {
+            for (uint256 i = 0; i < order.items.length; i++) {
+                OrderItem calldata item = order.items[i];
+                IERC20 token = IERC20(item.currency);
+                if (item.credit) {
+                    token.transfer(to, item.amount);
+                } else {
+                    token.transferFrom(to, address(this), item.amount);
+                }
             }
         }
     }
 
-    function settleOrderPayment(FullOrder calldata order, bytes calldata signature) public nonReentrant {
+    function settleOrderPayment(FullOrder calldata order, bytes calldata signature) external nonReentrant {
         // read-only validations
         require(msg.sender == order.customer, "Customer does not match sender address");
         require(block.timestamp <= order.expiry, "Order is expired");
         require(block.timestamp >= order.notBefore, "Order cannot be used yet");
         require(_isOrderSignerValid(order, signature), "Invalid signature");
         require(false == _orderProcessed[order.id], "Order already processed");
-        _checkBalances(order);
+        _checkBalances({order: order, to: msg.sender});
 
         // change state
         _orderProcessed[order.id] = true;
-        _performTransfers(order);
+        _performTransfers({order: order, to: msg.sender});
 
         // event
-        emit OrderFullySettled(order.id, msg.sender);
+        emit OrderFullySettled({orderId: order.id, customer: msg.sender});
     }
 
-    function isOrderProcessed(uint128 orderId) public view onlyRole(CASHIER_ROLE) returns (bool) {
+    function isOrderProcessed(uint128 orderId) external view returns (bool) {
         return _orderProcessed[orderId];
     }
 
-    function addCashier(address cashier) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addCashier(address cashier) external onlyRole(DEFAULT_ADMIN_ROLE) {
         grantRole(CASHIER_ROLE, cashier);
     }
 
-    function removeCashier(address cashier) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function removeCashier(address cashier) external onlyRole(DEFAULT_ADMIN_ROLE) {
         renounceRole(CASHIER_ROLE, cashier);
     }
 
-    function setOrderSigners(address[] memory newSigners) public onlyRole(CASHIER_ROLE) {
+    function setOrderSigners(address[] memory newSigners) external onlyRole(CASHIER_ROLE) {
+        require(newSigners.length <= 3, "Cannot set more than 3 signers");
         _orderSignerAddresses = newSigners;
     }
 
-    function getOrderSigners() public view onlyRole(CASHIER_ROLE) returns (address[] memory) {
+    function getOrderSigners() external view returns (address[] memory) {
         return _orderSignerAddresses;
     }
 }

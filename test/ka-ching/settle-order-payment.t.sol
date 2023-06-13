@@ -47,7 +47,7 @@ contract KaChingCashRegisterV1Test is Test {
         mockMBS.mint(address(cashRegister), 3e18);
 
         OrderItem[] memory items = new OrderItem[](1);
-        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true, ERC: 20, id: 0});
+        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true});
 
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
@@ -68,7 +68,7 @@ contract KaChingCashRegisterV1Test is Test {
         mockMBS.mint(customer, 3e18);
 
         OrderItem[] memory items = new OrderItem[](1);
-        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: false, ERC: 20, id: 0});
+        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: false});
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
 
@@ -117,7 +117,7 @@ contract KaChingCashRegisterV1Test is Test {
         mockMBS.mint(address(cashRegister), 3e18);
         // Create an order
         OrderItem[] memory items = new OrderItem[](1);
-        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true, ERC: 20, id: 0});
+        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true});
 
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
@@ -135,7 +135,7 @@ contract KaChingCashRegisterV1Test is Test {
     function testRevertWhenInvalidSignature() public {
         // Create an order
         OrderItem[] memory items = new OrderItem[](1);
-        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true, ERC: 20, id: 0});
+        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true});
 
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
@@ -154,7 +154,7 @@ contract KaChingCashRegisterV1Test is Test {
     function testRevertWhenOrderAlteredAfterSignature() public {
         // Create an order
         OrderItem[] memory items = new OrderItem[](1);
-        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true, ERC: 20, id: 0});
+        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true});
 
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
@@ -173,7 +173,7 @@ contract KaChingCashRegisterV1Test is Test {
     function testRevertWhenCustomerIsSignerButNotMsgSender() public {
         // Create an order
         OrderItem[] memory items = new OrderItem[](1);
-        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true, ERC: 20, id: 0});
+        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true});
 
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
@@ -186,29 +186,11 @@ contract KaChingCashRegisterV1Test is Test {
         cashRegister.settleOrderPayment(order, signature);
     }
 
-    function testRevertWhenItemTypeNotSupported() public {
-        // Mint some tokens for the cash register
-        mockMBS.mint(address(cashRegister), 3e18);
-
-        // Create an order with an unsupported ERC number
-        OrderItem[] memory items = new OrderItem[](1);
-        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true, ERC: 123, id: 0}); // Unsupported ERC number
-
-        (FullOrder memory order, bytes memory signature) =
-            _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
-
-        vm.prank(customer);
-        vm.warp(baselineBlocktime);
-
-        vm.expectRevert("Item ERC type is not supported");
-        cashRegister.settleOrderPayment(order, signature);
-    }
-
     function testRevertWhenOrderSignedByDifferentSigner() public {
         mockMBS.mint(address(cashRegister), 3e18);
 
         OrderItem[] memory items = new OrderItem[](1);
-        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true, ERC: 20, id: 0});
+        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true});
 
         uint256 newSignerPrivateKey = 0xbc0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff81; // New private key
         address newOrderSigner = vm.addr(newSignerPrivateKey); // New signer address
