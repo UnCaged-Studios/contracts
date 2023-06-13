@@ -49,21 +49,21 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
 
     function _getFullOrderHash(FullOrder memory order) internal pure returns (bytes32) {
         bytes memory itemsPacked = new bytes(32 * order.items.length);
-        // FIXME - increment as unchecked
-        for (uint256 i = 0; i < order.items.length; i++) {
-            bytes32 itemHash = keccak256(
-                abi.encode(
-                    _ORDER_ITEM_HASH,
-                    order.items[i].amount,
-                    order.items[i].currency,
-                    order.items[i].credit,
-                    order.items[i].ERC,
-                    order.items[i].id
-                )
-            );
-            // FIXME - increment as unchecked
-            for (uint256 j = 0; j < 32; j++) {
-                itemsPacked[i * 32 + j] = itemHash[j];
+        unchecked {
+            for (uint256 i = 0; i < order.items.length; i++) {
+                bytes32 itemHash = keccak256(
+                    abi.encode(
+                        _ORDER_ITEM_HASH,
+                        order.items[i].amount,
+                        order.items[i].currency,
+                        order.items[i].credit,
+                        order.items[i].ERC,
+                        order.items[i].id
+                    )
+                );
+                for (uint256 j = 0; j < 32; j++) {
+                    itemsPacked[i * 32 + j] = itemHash[j];
+                }
             }
         }
         return keccak256(
@@ -78,43 +78,46 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
         address signer = ECDSA.recover(_hashTypedDataV4(fullOrderHash), signature);
 
         bool isSignerValid = false;
-        // FIXME - increment as unchecked
-        for (uint256 i = 0; i < _orderSignerAddresses.length; i++) {
-            if (signer == _orderSignerAddresses[i]) {
-                isSignerValid = true;
-                break;
+        unchecked {
+            for (uint256 i = 0; i < _orderSignerAddresses.length; i++) {
+                if (signer == _orderSignerAddresses[i]) {
+                    isSignerValid = true;
+                    break;
+                }
             }
         }
         return isSignerValid;
     }
 
     function _checkBalances(FullOrder calldata order) internal view {
-        // FIXME - increment as unchecked
-        for (uint256 i = 0; i < order.items.length; i++) {
-            OrderItem calldata item = order.items[i];
-            // can be removed
-            require(item.ERC == 20, "Item ERC type is not supported");
-            IERC20 token = IERC20(item.currency);
-            if (item.credit) {
-                require(token.balanceOf(address(this)) >= item.amount, "Contract does not have enough tokens");
-            } else {
-                require(token.balanceOf(msg.sender) >= item.amount, "Customer does not have enough tokens");
+        unchecked {
+            for (uint256 i = 0; i < order.items.length; i++) {
+                OrderItem calldata item = order.items[i];
+                // can be removed
+                require(item.ERC == 20, "Item ERC type is not supported");
+                IERC20 token = IERC20(item.currency);
+                if (item.credit) {
+                    require(token.balanceOf(address(this)) >= item.amount, "Contract does not have enough tokens");
+                } else {
+                    require(token.balanceOf(msg.sender) >= item.amount, "Customer does not have enough tokens");
+                }
             }
         }
     }
 
     function _performTransfers(FullOrder calldata order, address party) internal {
-        // FIXME - increment as unchecked
-        for (uint256 i = 0; i < order.items.length; i++) {
-            OrderItem calldata item = order.items[i];
-            require(item.ERC == 20, "Item ERC type is not supported");
-            IERC20 token = IERC20(item.currency);
-            if (item.credit) {
-                // FIXME - msg.sender should be passed as param
-                // FIXME - move to safeTransfer (safeERC20)
-                token.transfer(party, item.amount);
-            } else {
-                token.transferFrom(party, address(this), item.amount);
+        unchecked {
+            for (uint256 i = 0; i < order.items.length; i++) {
+                OrderItem calldata item = order.items[i];
+                require(item.ERC == 20, "Item ERC type is not supported");
+                IERC20 token = IERC20(item.currency);
+                if (item.credit) {
+                    // FIXME - msg.sender should be passed as param
+                    // FIXME - move to safeTransfer (safeERC20)
+                    token.transfer(party, item.amount);
+                } else {
+                    token.transferFrom(party, address(this), item.amount);
+                }
             }
         }
     }
