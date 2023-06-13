@@ -11,8 +11,6 @@ struct OrderItem {
     uint256 amount;
     address currency; // consider using immutable state variable
     bool credit;
-    uint16 ERC; // FIXME can be removed (only)
-    uint256 id; // FIXME move to after amount (strcut packing)
 }
 
 // packing optimization
@@ -28,16 +26,15 @@ error Foo(uint128 orderId);
 
 // FIXME - add docs as comments
 contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
-    bytes32 private constant _ORDER_ITEM_HASH =
-        keccak256("OrderItem(uint256 amount,address currency,bool credit,uint16 ERC,uint256 id)");
+    bytes32 private constant _ORDER_ITEM_HASH = keccak256("OrderItem(uint256 amount,address currency,bool credit)");
     bytes32 private constant _FULL_ORDER_HASH =
         keccak256("FullOrder(uint128 id,uint32 expiry,address customer,uint32 notBefore,bytes32 itemsHash)");
     mapping(uint128 => bool) private _orderProcessed;
     // FIXME - where is the limit?
     address[] private _orderSignerAddresses;
-    bytes32 public constant CASHIER_ROLE = keccak256("CASHIER_ROLE");
 
-    bytes32 public constant GOVERNOR_ROLE = keccak256("GOVERNOR_ROLE");
+    bytes32 public constant CASHIER_ROLE = keccak256("CASHIER_ROLE");
+    // bytes32 public constant GOVERNOR_ROLE = keccak256("GOVERNOR_ROLE");
 
     event OrderFullySettled(uint128 indexed orderId, address indexed customer);
 
@@ -52,14 +49,7 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
         unchecked {
             for (uint256 i = 0; i < order.items.length; i++) {
                 bytes32 itemHash = keccak256(
-                    abi.encode(
-                        _ORDER_ITEM_HASH,
-                        order.items[i].amount,
-                        order.items[i].currency,
-                        order.items[i].credit,
-                        order.items[i].ERC,
-                        order.items[i].id
-                    )
+                    abi.encode(_ORDER_ITEM_HASH, order.items[i].amount, order.items[i].currency, order.items[i].credit)
                 );
                 for (uint256 j = 0; j < 32; j++) {
                     itemsPacked[i * 32 + j] = itemHash[j];
@@ -89,34 +79,29 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
         return isSignerValid;
     }
 
-    function _checkBalances(FullOrder calldata order) internal view {
+    function _checkBalances(FullOrder calldata order, address to) internal view {
         unchecked {
             for (uint256 i = 0; i < order.items.length; i++) {
                 OrderItem calldata item = order.items[i];
-                // can be removed
-                require(item.ERC == 20, "Item ERC type is not supported");
                 IERC20 token = IERC20(item.currency);
                 if (item.credit) {
                     require(token.balanceOf(address(this)) >= item.amount, "Contract does not have enough tokens");
                 } else {
-                    require(token.balanceOf(msg.sender) >= item.amount, "Customer does not have enough tokens");
+                    require(token.balanceOf(to) >= item.amount, "Customer does not have enough tokens");
                 }
             }
         }
     }
 
-    function _performTransfers(FullOrder calldata order, address party) internal {
+    function _performTransfers(FullOrder calldata order, address to) internal {
         unchecked {
             for (uint256 i = 0; i < order.items.length; i++) {
                 OrderItem calldata item = order.items[i];
-                require(item.ERC == 20, "Item ERC type is not supported");
                 IERC20 token = IERC20(item.currency);
                 if (item.credit) {
-                    // FIXME - msg.sender should be passed as param
-                    // FIXME - move to safeTransfer (safeERC20)
-                    token.transfer(party, item.amount);
+                    token.transfer(to, item.amount);
                 } else {
-                    token.transferFrom(party, address(this), item.amount);
+                    token.transferFrom(to, address(this), item.amount);
                 }
             }
         }
@@ -125,16 +110,15 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
     function settleOrderPayment(FullOrder calldata order, bytes calldata signature) external nonReentrant {
         // read-only validations
         require(msg.sender == order.customer, "Customer does not match sender address");
-        // FIXME : revert Foo();
         require(block.timestamp <= order.expiry, "Order is expired");
         require(block.timestamp >= order.notBefore, "Order cannot be used yet");
         require(_isOrderSignerValid(order, signature), "Invalid signature");
         require(false == _orderProcessed[order.id], "Order already processed");
-        _checkBalances(order);
+        _checkBalances({order: order, to: msg.sender});
 
         // change state
         _orderProcessed[order.id] = true;
-        _performTransfers({order: order, party: msg.sender});
+        _performTransfers({order: order, to: msg.sender});
 
         // event
         emit OrderFullySettled({orderId: order.id, customer: msg.sender});

@@ -30,22 +30,12 @@ export type OrderItemStruct = {
   amount: BigNumberish;
   currency: string;
   credit: boolean;
-  ERC: BigNumberish;
-  id: BigNumberish;
 };
 
-export type OrderItemStructOutput = [
-  BigNumber,
-  string,
-  boolean,
-  number,
-  BigNumber
-] & {
+export type OrderItemStructOutput = [BigNumber, string, boolean] & {
   amount: BigNumber;
   currency: string;
   credit: boolean;
-  ERC: number;
-  id: BigNumber;
 };
 
 export type FullOrderStruct = {
@@ -74,7 +64,6 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
   functions: {
     "CASHIER_ROLE()": FunctionFragment;
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "GOVERNOR_ROLE()": FunctionFragment;
     "addCashier(address)": FunctionFragment;
     "getOrderSigners()": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -85,7 +74,7 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
     "setOrderSigners(address[])": FunctionFragment;
-    "settleOrderPayment((uint128,uint32,address,uint32,(uint256,address,bool,uint16,uint256)[]),bytes)": FunctionFragment;
+    "settleOrderPayment((uint128,uint32,address,uint32,(uint256,address,bool)[]),bytes)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
   };
 
@@ -93,7 +82,6 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "CASHIER_ROLE"
       | "DEFAULT_ADMIN_ROLE"
-      | "GOVERNOR_ROLE"
       | "addCashier"
       | "getOrderSigners"
       | "getRoleAdmin"
@@ -114,10 +102,6 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "DEFAULT_ADMIN_ROLE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "GOVERNOR_ROLE",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "addCashier", values: [string]): string;
@@ -172,10 +156,6 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "GOVERNOR_ROLE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "addCashier", data: BytesLike): Result;
@@ -308,8 +288,6 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
 
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    GOVERNOR_ROLE(overrides?: CallOverrides): Promise<[string]>;
-
     addCashier(
       cashier: string,
       overrides?: Overrides & { from?: string }
@@ -374,8 +352,6 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  GOVERNOR_ROLE(overrides?: CallOverrides): Promise<string>;
-
   addCashier(
     cashier: string,
     overrides?: Overrides & { from?: string }
@@ -439,8 +415,6 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
     CASHIER_ROLE(overrides?: CallOverrides): Promise<string>;
 
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
-
-    GOVERNOR_ROLE(overrides?: CallOverrides): Promise<string>;
 
     addCashier(cashier: string, overrides?: CallOverrides): Promise<void>;
 
@@ -545,8 +519,6 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
 
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    GOVERNOR_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
-
     addCashier(
       cashier: string,
       overrides?: Overrides & { from?: string }
@@ -616,8 +588,6 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
     DEFAULT_ADMIN_ROLE(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    GOVERNOR_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     addCashier(
       cashier: string,

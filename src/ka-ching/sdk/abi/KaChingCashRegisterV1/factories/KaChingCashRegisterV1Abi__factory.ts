@@ -136,19 +136,6 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "GOVERNOR_ROLE",
-    outputs: [
-      {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "address",
@@ -356,16 +343,6 @@ const _abi = [
                 internalType: "bool",
                 name: "credit",
                 type: "bool",
-              },
-              {
-                internalType: "uint16",
-                name: "ERC",
-                type: "uint16",
-              },
-              {
-                internalType: "uint256",
-                name: "id",
-                type: "uint256",
               },
             ],
             internalType: "struct OrderItem[]",
