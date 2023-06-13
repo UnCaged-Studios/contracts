@@ -45,8 +45,8 @@ export function orderSignerSdkFactory(
         FullOrder: [
           { name: 'id', type: 'uint128' },
           { name: 'expiry', type: 'uint32' },
-          { name: 'customer', type: 'address' },
           { name: 'notBefore', type: 'uint32' },
+          { name: 'customer', type: 'address' },
           { name: 'itemsHash', type: 'bytes32' },
         ],
       },

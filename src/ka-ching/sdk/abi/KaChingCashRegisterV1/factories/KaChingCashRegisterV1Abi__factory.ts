@@ -318,14 +318,14 @@ const _abi = [
             type: "uint32",
           },
           {
-            internalType: "address",
-            name: "customer",
-            type: "address",
-          },
-          {
             internalType: "uint32",
             name: "notBefore",
             type: "uint32",
+          },
+          {
+            internalType: "address",
+            name: "customer",
+            type: "address",
           },
           {
             components: [
