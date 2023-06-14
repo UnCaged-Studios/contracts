@@ -12,10 +12,10 @@ import {
   privateKeys,
   kaChingCashRegister,
   contractDeployer,
-  mockMBS,
+  mbs as mbsAddress,
 } from '../anvil.json';
 import { KaChingV1 } from '../../dist/cjs';
-import { MockMBSAbi__factory } from './abi/MockMBS';
+import { MBS } from '../../dist/cjs';
 
 // wallets
 const localJsonRpcProvider = new ethers.providers.JsonRpcProvider();
@@ -34,7 +34,7 @@ const readonlySdk = sdk.readonly(localJsonRpcProvider);
 
 // test SDKs
 const mbsSDK = (runner: Signer | providers.Provider) =>
-  MockMBSAbi__factory.connect(mockMBS, runner);
+  MBS.sdkFactory(mbsAddress, runner);
 
 const _signOffChain = (order: KaChingV1.FullOrderStruct) =>
   orderSignerSdk.signOrder(order, { chainId: '31337' });
@@ -79,10 +79,10 @@ test('debit customer with erc20', async () => {
   const amount = BigNumber.from(BigInt(3 * 10 ** 18));
   await _waitForTxn(() =>
     customerSdk.permitERC20(amount, '1h', {
-      name: 'Mock MBS',
+      name: 'Mock mbs',
       version: '1',
       chainId: '31337',
-      verifyingContract: mockMBS,
+      verifyingContract: mbsAddress,
     })
   );
   const id = parseUUID(uuid());
@@ -90,7 +90,7 @@ test('debit customer with erc20', async () => {
     id,
     customer: customer.address,
     amount,
-    currency: mockMBS,
+    currency: mbsAddress,
     expiresIn: '1m',
   });
   const orderSignature = await _signOffChain(order);
@@ -117,7 +117,7 @@ test('credit customer with erc20', async () => {
     id,
     amount,
     customer: customer.address,
-    currency: mockMBS,
+    currency: mbsAddress,
     expiresIn: '30s',
   });
   const orderSignature = await _signOffChain(order);

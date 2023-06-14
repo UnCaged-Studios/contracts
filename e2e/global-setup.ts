@@ -11,10 +11,14 @@ dotenv.config();
 
 async function _deployContract(
   contract: `${string}:${string}`,
-  privateKey: string
+  privateKey: string,
+  args?: string[]
 ) {
+  const constructor = args
+    ? `--constructor-args ${args.map((arg) => `"${arg}"`).join(' ')}`
+    : '';
   const { stdout } = await exec(
-    `forge create ${contract} --rpc-url http://127.0.0.1:8545 --private-key ${privateKey}`
+    `forge create ${contract} --rpc-url http://127.0.0.1:8545 --private-key ${privateKey} ${constructor}`.trim()
   );
   const match = /Deployed to:\s*(0x[a-fA-F0-9]{40})/.exec(stdout);
   if (!match || !match[1]) {
@@ -70,22 +74,26 @@ export default async () => {
       'src/ka-ching/KaChingCashRegisterV1.sol:KaChingCashRegisterV1',
       contractDeployer
     );
-    const mockMBS = await _deployContract(
-      'test/ka-ching/contracts/MockMBS.sol:MockMBS',
-      contractDeployer
+    const mbs = await _deployContract(
+      'src/mbs/MBSOptimismMintableERC20.sol:MBSOptimismMintableERC20',
+      contractDeployer,
+      [
+        '0x4200000000000000000000000000000000000010',
+        '0xDeaDBEEF00000000000000000000000000000000',
+      ]
     );
     const json = {
       privateKeys,
       contractDeployer,
       kaChingCashRegister,
-      mockMBS,
+      mbs,
     };
     await fs.writeJSON(path.join(__dirname, 'anvil.json'), json, {
       spaces: 2,
     });
     console.log(
       chalk.bold.green(
-        `🚀 anvil deployed contracts:\nMBS: ${mockMBS}\nKaChing: ${kaChingCashRegister}`
+        `🚀 anvil deployed contracts:\nMBS: ${mbs}\nKaChing: ${kaChingCashRegister}`
       )
     );
   } catch (error) {

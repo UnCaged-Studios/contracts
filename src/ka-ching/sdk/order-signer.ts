@@ -2,7 +2,7 @@ import { utils } from 'ethers';
 import type {
   FullOrderStruct,
   OrderItemStruct,
-} from './abi/KaChingCashRegisterV1/KaChingCashRegisterV1Abi';
+} from './abi/KaChingCashRegisterV1Abi';
 import { AdvancedSigner } from './types';
 
 const hashedItem = (item: OrderItemStruct): string =>
