@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
-import "./IOptimismMintableERC20.sol"; // assuming the interface is saved in the same directory
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "optimism-bedrock/universal/IOptimismMintableERC20.sol";
 
 /**
  * @title MyToken
  * @notice This is a sample implementation of a token contract which is both ERC20 and OptimismMintableERC20 compatible
  * and also includes the ERC20 Permit extension.
  */
-contract MyToken is ERC20, ERC20Permit, IOptimismMintableERC20 {
+contract MyToken is ERC20, ERC20Permit, ERC165, IOptimismMintableERC20 {
     address public override remoteToken;
     address public override bridge;
 
@@ -40,9 +41,10 @@ contract MyToken is ERC20, ERC20Permit, IOptimismMintableERC20 {
     }
 
     /**
-     * @notice Implementation of the {IERC165} interface.
+     * @notice Implements the {IERC165} interface checker.
+     * @param interfaceId The interface identifier, as specified in ERC-165
      */
-    function supportsInterface(bytes4 interfaceId) public view override(IERC165, ERC20, ERC20Permit) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
         return interfaceId == type(IOptimismMintableERC20).interfaceId || super.supportsInterface(interfaceId);
     }
 }
