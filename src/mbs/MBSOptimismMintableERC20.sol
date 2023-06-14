@@ -4,11 +4,8 @@ pragma solidity 0.8.19;
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import {
-    ILegacyMintableERC20,
-    IOptimismMintableERC20
-} from "optimism-bedrock/packages/contracts-bedrock/contracts/universal/IOptimismMintableERC20.sol";
-import {Semver} from "optimism-bedrock/packages/contracts-bedrock/contracts/universal/SemVer.sol";
+import {ILegacyMintableERC20, IOptimismMintableERC20} from "optimism-bedrock/universal/IOptimismMintableERC20.sol";
+import {Semver} from "optimism-bedrock/universal/SemVer.sol";
 
 contract MBSOptimismMintableERC20 is IOptimismMintableERC20, ILegacyMintableERC20, ERC20, Semver, ERC20Permit {
     address public immutable REMOTE_TOKEN;

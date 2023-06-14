@@ -38,6 +38,7 @@ export interface MBSOptimismMintableERC20AbiInterface extends utils.Interface {
     "burn(address,uint256)": FunctionFragment;
     "decimals()": FunctionFragment;
     "decreaseAllowance(address,uint256)": FunctionFragment;
+    "eip712Domain()": FunctionFragment;
     "increaseAllowance(address,uint256)": FunctionFragment;
     "l1Token()": FunctionFragment;
     "l2Bridge()": FunctionFragment;
@@ -66,6 +67,7 @@ export interface MBSOptimismMintableERC20AbiInterface extends utils.Interface {
       | "burn"
       | "decimals"
       | "decreaseAllowance"
+      | "eip712Domain"
       | "increaseAllowance"
       | "l1Token"
       | "l2Bridge"
@@ -109,6 +111,10 @@ export interface MBSOptimismMintableERC20AbiInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "decreaseAllowance",
     values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "eip712Domain",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "increaseAllowance",
@@ -177,6 +183,10 @@ export interface MBSOptimismMintableERC20AbiInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "eip712Domain",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "increaseAllowance",
     data: BytesLike
   ): Result;
@@ -209,12 +219,14 @@ export interface MBSOptimismMintableERC20AbiInterface extends utils.Interface {
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "Burn(address,uint256)": EventFragment;
+    "EIP712DomainChanged()": EventFragment;
     "Mint(address,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Burn"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "EIP712DomainChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Mint"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
@@ -238,6 +250,15 @@ export interface BurnEventObject {
 export type BurnEvent = TypedEvent<[string, BigNumber], BurnEventObject>;
 
 export type BurnEventFilter = TypedEventFilter<BurnEvent>;
+
+export interface EIP712DomainChangedEventObject {}
+export type EIP712DomainChangedEvent = TypedEvent<
+  [],
+  EIP712DomainChangedEventObject
+>;
+
+export type EIP712DomainChangedEventFilter =
+  TypedEventFilter<EIP712DomainChangedEvent>;
 
 export interface MintEventObject {
   account: string;
@@ -321,6 +342,20 @@ export interface MBSOptimismMintableERC20Abi extends BaseContract {
       subtractedValue: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
+
+    eip712Domain(
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, BigNumber, string, string, BigNumber[]] & {
+        fields: string;
+        name: string;
+        version: string;
+        chainId: BigNumber;
+        verifyingContract: string;
+        salt: string;
+        extensions: BigNumber[];
+      }
+    >;
 
     increaseAllowance(
       spender: string,
@@ -416,6 +451,20 @@ export interface MBSOptimismMintableERC20Abi extends BaseContract {
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
+  eip712Domain(
+    overrides?: CallOverrides
+  ): Promise<
+    [string, string, string, BigNumber, string, string, BigNumber[]] & {
+      fields: string;
+      name: string;
+      version: string;
+      chainId: BigNumber;
+      verifyingContract: string;
+      salt: string;
+      extensions: BigNumber[];
+    }
+  >;
+
   increaseAllowance(
     spender: string,
     addedValue: BigNumberish,
@@ -510,6 +559,20 @@ export interface MBSOptimismMintableERC20Abi extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    eip712Domain(
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, BigNumber, string, string, BigNumber[]] & {
+        fields: string;
+        name: string;
+        version: string;
+        chainId: BigNumber;
+        verifyingContract: string;
+        salt: string;
+        extensions: BigNumber[];
+      }
+    >;
+
     increaseAllowance(
       spender: string,
       addedValue: BigNumberish,
@@ -586,6 +649,9 @@ export interface MBSOptimismMintableERC20Abi extends BaseContract {
     ): BurnEventFilter;
     Burn(account?: string | null, amount?: null): BurnEventFilter;
 
+    "EIP712DomainChanged()"(): EIP712DomainChangedEventFilter;
+    EIP712DomainChanged(): EIP712DomainChangedEventFilter;
+
     "Mint(address,uint256)"(
       account?: string | null,
       amount?: null
@@ -640,6 +706,8 @@ export interface MBSOptimismMintableERC20Abi extends BaseContract {
       subtractedValue: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
+
+    eip712Domain(overrides?: CallOverrides): Promise<BigNumber>;
 
     increaseAllowance(
       spender: string,
@@ -738,6 +806,8 @@ export interface MBSOptimismMintableERC20Abi extends BaseContract {
       subtractedValue: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
+
+    eip712Domain(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     increaseAllowance(
       spender: string,
