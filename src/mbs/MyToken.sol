@@ -1,50 +1,73 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "optimism-bedrock/universal/IOptimismMintableERC20.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {ILegacyMintableERC20, IOptimismMintableERC20} from "optimism-bedrock/universal/IOptimismMintableERC20.sol";
+import {Semver} from "optimism-bedrock/universal/SemVer.sol";
 
-/**
- * @title MyToken
- * @notice This is a sample implementation of a token contract which is both ERC20 and OptimismMintableERC20 compatible
- * and also includes the ERC20 Permit extension.
- */
-contract MyToken is ERC20, ERC20Permit, ERC165, IOptimismMintableERC20 {
-    address public override remoteToken;
-    address public override bridge;
+contract MBSOptimismMintableERC20 is IOptimismMintableERC20, ILegacyMintableERC20, ERC20, Semver, ERC20Permit {
+    address public immutable REMOTE_TOKEN;
+    address public immutable BRIDGE;
 
-    constructor(address _remoteToken, address _bridge) ERC20("MyToken", "MTK") ERC20Permit("MyToken") {
-        remoteToken = _remoteToken;
-        bridge = _bridge;
+    event Mint(address indexed account, uint256 amount);
+    event Burn(address indexed account, uint256 amount);
+
+    modifier onlyBridge() {
+        require(msg.sender == BRIDGE, "OptimismMintableERC20: only bridge can mint and burn");
+        _;
     }
 
-    /**
-     * @notice Mints `_amount` tokens to address `_to`.
-     * @param _to Receiver of the tokens.
-     * @param _amount Amount of tokens to mint.
-     */
-    function mint(address _to, uint256 _amount) external override {
-        require(msg.sender == bridge, "Only bridge can mint");
+    constructor(address _bridge, address _remoteToken)
+        ERC20("MonkeyBuck", "MBS")
+        Semver(1, 0, 0)
+        ERC20Permit("MonkeyBuck")
+    {
+        REMOTE_TOKEN = _remoteToken;
+        BRIDGE = _bridge;
+    }
+
+    function mint(address _to, uint256 _amount)
+        external
+        virtual
+        override(IOptimismMintableERC20, ILegacyMintableERC20)
+        onlyBridge
+    {
         _mint(_to, _amount);
+        emit Mint(_to, _amount);
     }
 
-    /**
-     * @notice Burns `_amount` tokens from address `_from`.
-     * @param _from Address of the token holder.
-     * @param _amount Amount of tokens to burn.
-     */
-    function burn(address _from, uint256 _amount) external override {
-        require(msg.sender == bridge, "Only bridge can burn");
+    function burn(address _from, uint256 _amount)
+        external
+        virtual
+        override(IOptimismMintableERC20, ILegacyMintableERC20)
+        onlyBridge
+    {
         _burn(_from, _amount);
+        emit Burn(_from, _amount);
     }
 
-    /**
-     * @notice Implements the {IERC165} interface checker.
-     * @param interfaceId The interface identifier, as specified in ERC-165
-     */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
-        return interfaceId == type(IOptimismMintableERC20).interfaceId || super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 _interfaceId) external pure override returns (bool) {
+        bytes4 iface1 = type(IERC165).interfaceId;
+        bytes4 iface2 = type(ILegacyMintableERC20).interfaceId;
+        bytes4 iface3 = type(IOptimismMintableERC20).interfaceId;
+        return _interfaceId == iface1 || _interfaceId == iface2 || _interfaceId == iface3;
+    }
+
+    function l1Token() public view returns (address) {
+        return REMOTE_TOKEN;
+    }
+
+    function l2Bridge() public view returns (address) {
+        return BRIDGE;
+    }
+
+    function remoteToken() public view returns (address) {
+        return REMOTE_TOKEN;
+    }
+
+    function bridge() public view returns (address) {
+        return BRIDGE;
     }
 }
