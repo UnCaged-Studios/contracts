@@ -1,4 +1,4 @@
 ds-test/=lib/forge-std/lib/ds-test/src/
 forge-std/=lib/forge-std/src/
 @openzeppelin/=lib/openzeppelin-contracts/
-optimism-bedrock/=lib/optimism/packages/contracts-bedrock/contracts
+optimism-bedrock/=lib/optimism
