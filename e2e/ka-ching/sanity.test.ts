@@ -79,7 +79,7 @@ test('debit customer with erc20', async () => {
   const amount = BigNumber.from(BigInt(3 * 10 ** 18));
   await _waitForTxn(() =>
     customerSdk.permitERC20(amount, '1h', {
-      name: 'Mock mbs',
+      name: 'MonkeyBuck',
       version: '1',
       chainId: '31337',
       verifyingContract: mbsAddress,
