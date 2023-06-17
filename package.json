@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@eth-optimism/contracts-bedrock": "^0.14.0",
-    "@openzeppelin/contracts/contracts": "^4.9.1",
+    "@openzeppelin/contracts": "^4.9.1",
     "ethers": "^5.7.2",
     "ms": "^2.1.3"
   },
