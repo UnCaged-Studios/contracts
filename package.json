@@ -64,12 +64,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/UnCaged-Studios/solana-program-library.git"
+    "url": "git+https://github.com/UnCaged-Studios/evm-contracts-library.git"
   },
   "bugs": {
-    "url": "https://github.com/UnCaged-Studios/solana-program-library/issues"
+    "url": "https://github.com/UnCaged-Studios/evm-contracts-library/issues"
   },
-  "homepage": "https://github.com/UnCaged-Studios/solana-program-library#readme",
+  "homepage": "https://github.com/UnCaged-Studios/evm-contracts-library#readme",
   "author": "perestom@gmail.com",
   "license": "MIT"
 }
