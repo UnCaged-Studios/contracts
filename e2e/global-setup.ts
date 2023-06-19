@@ -9,12 +9,26 @@ const exec = promisify(child_process.exec);
 
 dotenv.config();
 
+const predefinedWalletsIdx = {
+  kaChing_deployer: 0,
+  mbs_deployer: 1,
+  kaChing_cashier: 3,
+  kaChing_customer: 4,
+  mbs_OptimismBridge: 5,
+  alice: 6,
+  bob: 7,
+};
+
 async function _deployContract(
   contract: `${string}:${string}`,
-  privateKey: string
+  privateKey: string,
+  args?: string[]
 ) {
+  const constructor = args
+    ? `--constructor-args ${args.map((arg) => `"${arg}"`).join(' ')}`
+    : '';
   const { stdout } = await exec(
-    `forge create ${contract} --rpc-url http://127.0.0.1:8545 --private-key ${privateKey}`
+    `forge create ${contract} --rpc-url http://127.0.0.1:8545 --private-key ${privateKey} ${constructor}`.trim()
   );
   const match = /Deployed to:\s*(0x[a-fA-F0-9]{40})/.exec(stdout);
   if (!match || !match[1]) {
@@ -30,24 +44,32 @@ async function _anvilProcessHandler(
     null
   >
 ) {
-  return await new Promise<{ privateKeys: string[] }>((resolve) => {
-    const _privateKeys: string[] = [];
-    proc.stdout.on('data', (data) => {
-      console.log(chalk.italic.gray(data));
-      if (data.toString().includes('Listening on 127.0.0.1:8545')) {
-        resolve({ privateKeys: _privateKeys });
-      }
-      data
-        .toString()
-        .split('\n')
-        .forEach((line: string) => {
-          const privateKeyMatch = line.match(/^\((\d+)\) (0x[a-fA-F0-9]{64})/);
-          if (privateKeyMatch) {
-            _privateKeys.push(privateKeyMatch[2]);
-          }
-        });
-    });
-  });
+  return await new Promise<{ privateKeys: string[]; publicKeys: string[] }>(
+    (resolve) => {
+      const privateKeys: string[] = [];
+      const publicKeys: string[] = [];
+      proc.stdout.on('data', (data) => {
+        console.log(chalk.italic.gray(data));
+        if (data.toString().includes('Listening on 127.0.0.1:8545')) {
+          resolve({ privateKeys, publicKeys });
+        }
+        data
+          .toString()
+          .split('\n')
+          .forEach((line: string) => {
+            const privateKeyMatch = line.match(
+              /^\((\d+)\) (0x[a-fA-F0-9]{64})/
+            );
+            const pubKeyMatch = line.match(/^\((\d+)\) "(0x[a-fA-F0-9]{40})"/);
+            if (privateKeyMatch) {
+              privateKeys.push(privateKeyMatch[2]);
+            } else if (pubKeyMatch) {
+              publicKeys.push(pubKeyMatch[2]);
+            }
+          });
+      });
+    }
+  );
 }
 
 export default async () => {
@@ -64,28 +86,44 @@ export default async () => {
     });
     // eslint-disable-next-line
     (global as any).anvil = proc;
-    const { privateKeys } = await _anvilProcessHandler(proc);
-    const contractDeployer = privateKeys[0];
-    const kaChingCashRegister = await _deployContract(
+    const { privateKeys, publicKeys } = await _anvilProcessHandler(proc);
+    const kaChingContractDeployer =
+      privateKeys[predefinedWalletsIdx.kaChing_deployer];
+    const mbsContractDeployer = privateKeys[predefinedWalletsIdx.mbs_deployer];
+
+    const bridgeAddress = publicKeys[predefinedWalletsIdx.mbs_OptimismBridge];
+
+    const kaChing = await _deployContract(
       'src/ka-ching/KaChingCashRegisterV1.sol:KaChingCashRegisterV1',
-      contractDeployer
+      kaChingContractDeployer
     );
-    const mockMBS = await _deployContract(
-      'test/ka-ching/contracts/MockMBS.sol:MockMBS',
-      contractDeployer
+    const mockRemoteToken = '0xDeaDBEEF00000000000000000000000000000000';
+    const mbs = await _deployContract(
+      'src/mbs/MonkeyLeagueOptimismMintableERC20.sol:MonkeyLeagueOptimismMintableERC20',
+      mbsContractDeployer,
+      [bridgeAddress, mockRemoteToken]
     );
     const json = {
-      privateKeys,
-      contractDeployer,
-      kaChingCashRegister,
-      mockMBS,
+      privateKeys: {
+        kaChingDeployer: kaChingContractDeployer,
+        mbsDeployer: mbsContractDeployer,
+        optimismBridge: privateKeys[predefinedWalletsIdx.mbs_OptimismBridge],
+        cashier: privateKeys[predefinedWalletsIdx.kaChing_cashier],
+        customer: privateKeys[predefinedWalletsIdx.kaChing_customer],
+        alice: privateKeys[predefinedWalletsIdx.alice],
+        bob: privateKeys[predefinedWalletsIdx.bob],
+      },
+      contracts: {
+        kaChingCashRegister: kaChing,
+        mbs,
+      },
     };
     await fs.writeJSON(path.join(__dirname, 'anvil.json'), json, {
       spaces: 2,
     });
     console.log(
       chalk.bold.green(
-        `🚀 anvil deployed contracts:\nMBS: ${mockMBS}\nKaChing: ${kaChingCashRegister}`
+        `🚀 anvil deployed contracts:\nMBS: ${mbs}\nKaChing: ${kaChing}`
       )
     );
   } catch (error) {

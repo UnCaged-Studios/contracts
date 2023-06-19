@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.15;
 
 import "forge-std/Test.sol";
 import "./contracts/TestableCashRegisterV1.sol";
-import "./contracts/MockMBS.sol";
+import "../../src/mbs/MonkeyLeagueOptimismMintableERC20.sol";
 import "./contracts/SigUtils.sol";
 
 contract KaChingCashRegisterV1Test is Test {
     KaChingCashRegisterV1Testable public cashRegister;
     SigUtils public sigUtils;
 
-    MockMBS public mockMBS;
+    MonkeyLeagueOptimismMintableERC20 public mockMBS;
 
     uint256 public signerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
     uint128 public uuid = uint128(uint256(keccak256(abi.encodePacked("550e8400-e29b-41d4-a716-446655440000"))));
@@ -37,14 +37,20 @@ contract KaChingCashRegisterV1Test is Test {
         return (order, signature);
     }
 
+    function _mint(address to, uint256 amount) internal {
+        vm.prank(0xdEADBEeF00000000000000000000000000000000);
+        mockMBS.mint(to, amount);
+    }
+
     function setUp() public {
         cashRegister = new KaChingCashRegisterV1Testable();
-        mockMBS = new MockMBS();
+        mockMBS =
+        new MonkeyLeagueOptimismMintableERC20(0xdEADBEeF00000000000000000000000000000000, 0x4F0dDcE25D496698e9e3F6218c019AED3e862aA7);
         sigUtils = new SigUtils(mockMBS.DOMAIN_SEPARATOR());
     }
 
     function testCreditCustomerWithERC20() public {
-        mockMBS.mint(address(cashRegister), 3e18);
+        _mint(address(cashRegister), 3e18);
 
         OrderItem[] memory items = new OrderItem[](1);
         items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true});
@@ -65,7 +71,7 @@ contract KaChingCashRegisterV1Test is Test {
     }
 
     function testDebitCustomerWtihERC20Permit() public {
-        mockMBS.mint(customer, 3e18);
+        _mint(customer, 3e18);
 
         OrderItem[] memory items = new OrderItem[](1);
         items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: false});
@@ -114,7 +120,7 @@ contract KaChingCashRegisterV1Test is Test {
     }
 
     function testRevertWhenProcessingOrderTwice() public {
-        mockMBS.mint(address(cashRegister), 3e18);
+        _mint(address(cashRegister), 3e18);
         // Create an order
         OrderItem[] memory items = new OrderItem[](1);
         items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true});
@@ -187,7 +193,7 @@ contract KaChingCashRegisterV1Test is Test {
     }
 
     function testRevertWhenOrderSignedByDifferentSigner() public {
-        mockMBS.mint(address(cashRegister), 3e18);
+        _mint(address(cashRegister), 3e18);
 
         OrderItem[] memory items = new OrderItem[](1);
         items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true});

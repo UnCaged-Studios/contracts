@@ -7,7 +7,7 @@ import { AdvancedSigner } from './types';
 export type {
   FullOrderStruct,
   OrderItemStruct,
-} from './abi/KaChingCashRegisterV1/KaChingCashRegisterV1Abi';
+} from './abi/KaChingCashRegisterV1Abi';
 
 export function sdkFactory(contractAddress: string) {
   return {

@@ -1,4 +1,4 @@
-import { FullOrderStruct } from './abi/KaChingCashRegisterV1/KaChingCashRegisterV1Abi';
+import { FullOrderStruct } from './abi/KaChingCashRegisterV1Abi';
 import { coreSdkFactory } from './core';
 import { utils, BigNumberish, Contract, Signer, BigNumber } from 'ethers';
 import type { TypedDataSigner } from '@ethersproject/abstract-signer';

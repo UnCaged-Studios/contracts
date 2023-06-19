@@ -65,6 +65,7 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
     "CASHIER_ROLE()": FunctionFragment;
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "addCashier(address)": FunctionFragment;
+    "eip712Domain()": FunctionFragment;
     "getOrderSigners()": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
@@ -83,6 +84,7 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
       | "CASHIER_ROLE"
       | "DEFAULT_ADMIN_ROLE"
       | "addCashier"
+      | "eip712Domain"
       | "getOrderSigners"
       | "getRoleAdmin"
       | "grantRole"
@@ -105,6 +107,10 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "addCashier", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "eip712Domain",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "getOrderSigners",
     values?: undefined
@@ -160,6 +166,10 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "addCashier", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "eip712Domain",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getOrderSigners",
     data: BytesLike
   ): Result;
@@ -196,17 +206,28 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
   ): Result;
 
   events: {
+    "EIP712DomainChanged()": EventFragment;
     "OrderFullySettled(uint128,address)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "EIP712DomainChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OrderFullySettled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
 }
+
+export interface EIP712DomainChangedEventObject {}
+export type EIP712DomainChangedEvent = TypedEvent<
+  [],
+  EIP712DomainChangedEventObject
+>;
+
+export type EIP712DomainChangedEventFilter =
+  TypedEventFilter<EIP712DomainChangedEvent>;
 
 export interface OrderFullySettledEventObject {
   orderId: BigNumber;
@@ -293,6 +314,20 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
+    eip712Domain(
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, BigNumber, string, string, BigNumber[]] & {
+        fields: string;
+        name: string;
+        version: string;
+        chainId: BigNumber;
+        verifyingContract: string;
+        salt: string;
+        extensions: BigNumber[];
+      }
+    >;
+
     getOrderSigners(overrides?: CallOverrides): Promise<[string[]]>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
@@ -357,6 +392,20 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
+  eip712Domain(
+    overrides?: CallOverrides
+  ): Promise<
+    [string, string, string, BigNumber, string, string, BigNumber[]] & {
+      fields: string;
+      name: string;
+      version: string;
+      chainId: BigNumber;
+      verifyingContract: string;
+      salt: string;
+      extensions: BigNumber[];
+    }
+  >;
+
   getOrderSigners(overrides?: CallOverrides): Promise<string[]>;
 
   getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
@@ -418,6 +467,20 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
 
     addCashier(cashier: string, overrides?: CallOverrides): Promise<void>;
 
+    eip712Domain(
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, BigNumber, string, string, BigNumber[]] & {
+        fields: string;
+        name: string;
+        version: string;
+        chainId: BigNumber;
+        verifyingContract: string;
+        salt: string;
+        extensions: BigNumber[];
+      }
+    >;
+
     getOrderSigners(overrides?: CallOverrides): Promise<string[]>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
@@ -471,6 +534,9 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
   };
 
   filters: {
+    "EIP712DomainChanged()"(): EIP712DomainChangedEventFilter;
+    EIP712DomainChanged(): EIP712DomainChangedEventFilter;
+
     "OrderFullySettled(uint128,address)"(
       orderId?: BigNumberish | null,
       customer?: string | null
@@ -523,6 +589,8 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
       cashier: string,
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
+
+    eip712Domain(overrides?: CallOverrides): Promise<BigNumber>;
 
     getOrderSigners(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -593,6 +661,8 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
       cashier: string,
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
+
+    eip712Domain(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getOrderSigners(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

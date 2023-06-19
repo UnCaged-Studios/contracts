@@ -1,14 +1,13 @@
 #!/bin/bash
 
 mode=$1
-contractName=$2
+filePath=$2
+contractName=$3
 
 if [[ $mode == "test" ]]; then
-  filePath="test/ka-ching/contracts"
-  outputDir="e2e/ka-ching/abi/$contractName"
+  outputDir="e2e/sdk/abi/$contractName"
 elif [[ $mode == "prod" ]]; then
-  filePath="src/ka-ching"
-  outputDir="src/ka-ching/sdk/abi/$contractName"
+  outputDir=$filePath"/sdk/abi"
 else
   echo "Invalid mode. Use 'test' or 'prod'."
   exit 1
