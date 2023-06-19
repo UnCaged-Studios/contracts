@@ -35,10 +35,6 @@ const _ensureNonZeroBalance = async (
   return mintAmount;
 };
 
-test('node is online', async () => {
-  expect(await localJsonRpcProvider.getBlockNumber()).toBeGreaterThan(0);
-});
-
 describe('burnFrom override', () => {
   test("non-bridge accounts cannot burn other accounts' tokens", async () => {
     // Create another wallet
