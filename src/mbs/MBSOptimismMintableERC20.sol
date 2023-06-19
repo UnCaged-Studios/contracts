@@ -1,17 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
-import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 import {OptimismMintableERC20} from "optimism-bedrock/universal/OptimismMintableERC20.sol";
+import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
+import {ERC20Burnable} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 /**
  * @title MBSOptimismMintableERC20
- * @notice This contract extends the OptimismMintableERC20 contract and the ERC20Permit contract to create a mintable and burnable ERC20 token with permit functionality on the Optimism network.
+ * @notice This contract is a variant of OptimismMintableERC20, incorporating permit functionality (ERC20Permit) and burnability (ERC20Burnable).
+ *  It allows for a mintable, burnable ERC20 token with permit functionality on the Optimism network.
+ *  This version of the token also enables the L2 Standard Bridge to burn tokens.
  */
-contract MBSOptimismMintableERC20 is OptimismMintableERC20, ERC20Permit {
+contract MBSOptimismMintableERC20 is OptimismMintableERC20, ERC20Permit, ERC20Burnable {
     /**
-     * @notice Constructs the MBSOptimismMintableERC20 contract.
-     * @param _bridge The address of the L2 standard bridge.
+     * @notice Constructs the MBSOptimismMintableERC20 contract with specified parameters.
+     * @param _bridge The address of the L2 standard bridge, capable of minting and burning tokens.
      * @param _remoteToken The address of the corresponding L1 token.
      */
     constructor(address _bridge, address _remoteToken)
@@ -20,20 +23,15 @@ contract MBSOptimismMintableERC20 is OptimismMintableERC20, ERC20Permit {
     {}
 
     /**
-     * @notice Burns tokens from a given address. If the sender is the bridge, the tokens are burnt directly. If the sender is not the bridge, the sender must have enough allowance to burn the tokens.
-     * @dev Overrides OptimismMintableERC20's burn function.
-     * @param _from The address to burn tokens from.
+     * @notice Overrides the burnFrom function from ERC20Burnable to facilitate token burning by the bridge.
+     * @param _account The account from which tokens will be burned.
      * @param _amount The amount of tokens to burn.
      */
-    function burn(address _from, uint256 _amount) external override {
+    function burnFrom(address _account, uint256 _amount) public virtual override {
         if (msg.sender == BRIDGE) {
-            _burn(_from, _amount);
+            _burn(_account, _amount); // Direct burn if the caller is the bridge
         } else {
-            uint256 currentAllowance = allowance(_from, msg.sender);
-            require(currentAllowance >= _amount, "ERC20: burn amount exceeds allowance");
-            _burn(_from, _amount);
-            _approve(_from, msg.sender, currentAllowance - _amount);
+            ERC20Burnable.burnFrom(_account, _amount); // Otherwise, leverage the burnFrom method in ERC20Burnable
         }
-        emit Burn(_from, _amount);
     }
 }

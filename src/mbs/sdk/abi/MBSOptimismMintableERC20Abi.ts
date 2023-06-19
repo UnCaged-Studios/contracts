@@ -35,7 +35,9 @@ export interface MBSOptimismMintableERC20AbiInterface extends utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "bridge()": FunctionFragment;
+    "burn(uint256)": FunctionFragment;
     "burn(address,uint256)": FunctionFragment;
+    "burnFrom(address,uint256)": FunctionFragment;
     "decimals()": FunctionFragment;
     "decreaseAllowance(address,uint256)": FunctionFragment;
     "eip712Domain()": FunctionFragment;
@@ -64,7 +66,9 @@ export interface MBSOptimismMintableERC20AbiInterface extends utils.Interface {
       | "approve"
       | "balanceOf"
       | "bridge"
-      | "burn"
+      | "burn(uint256)"
+      | "burn(address,uint256)"
+      | "burnFrom"
       | "decimals"
       | "decreaseAllowance"
       | "eip712Domain"
@@ -104,7 +108,15 @@ export interface MBSOptimismMintableERC20AbiInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "bridge", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "burn",
+    functionFragment: "burn(uint256)",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "burn(address,uint256)",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "burnFrom",
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
@@ -176,7 +188,15 @@ export interface MBSOptimismMintableERC20AbiInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "bridge", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "burn(uint256)",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "burn(address,uint256)",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "burnFrom", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "decreaseAllowance",
@@ -329,8 +349,19 @@ export interface MBSOptimismMintableERC20Abi extends BaseContract {
 
     bridge(overrides?: CallOverrides): Promise<[string]>;
 
-    burn(
+    "burn(uint256)"(
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    "burn(address,uint256)"(
       _from: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    burnFrom(
+      _account: string,
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
@@ -437,8 +468,19 @@ export interface MBSOptimismMintableERC20Abi extends BaseContract {
 
   bridge(overrides?: CallOverrides): Promise<string>;
 
-  burn(
+  "burn(uint256)"(
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  "burn(address,uint256)"(
     _from: string,
+    _amount: BigNumberish,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  burnFrom(
+    _account: string,
     _amount: BigNumberish,
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
@@ -545,8 +587,19 @@ export interface MBSOptimismMintableERC20Abi extends BaseContract {
 
     bridge(overrides?: CallOverrides): Promise<string>;
 
-    burn(
+    "burn(uint256)"(
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "burn(address,uint256)"(
       _from: string,
+      _amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    burnFrom(
+      _account: string,
       _amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -693,8 +746,19 @@ export interface MBSOptimismMintableERC20Abi extends BaseContract {
 
     bridge(overrides?: CallOverrides): Promise<BigNumber>;
 
-    burn(
+    "burn(uint256)"(
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    "burn(address,uint256)"(
       _from: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    burnFrom(
+      _account: string,
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
@@ -793,8 +857,19 @@ export interface MBSOptimismMintableERC20Abi extends BaseContract {
 
     bridge(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    burn(
+    "burn(uint256)"(
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    "burn(address,uint256)"(
       _from: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    burnFrom(
+      _account: string,
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
