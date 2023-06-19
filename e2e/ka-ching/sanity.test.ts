@@ -8,24 +8,20 @@ import {
   BigNumber,
 } from 'ethers';
 import { parse as parseUUID, v4 as uuid } from 'uuid';
-import {
-  privateKeys,
-  kaChingCashRegister,
-  contractDeployer,
-  mbs as mbsAddress,
-} from '../anvil.json';
+import { privateKeys, contracts } from '../anvil.json';
 import { KaChingV1 } from '../../dist/cjs';
 import { MBS } from '../../dist/cjs';
 
 // wallets
 const localJsonRpcProvider = new ethers.providers.JsonRpcProvider();
-const deployer = new Wallet(contractDeployer, localJsonRpcProvider);
-const cashier = new Wallet(privateKeys[3], localJsonRpcProvider);
+const deployer = new Wallet(privateKeys.kaChingDeployer, localJsonRpcProvider);
+const bridge = new Wallet(privateKeys.optimismBridge, localJsonRpcProvider);
+const cashier = new Wallet(privateKeys.cashier, localJsonRpcProvider);
+const customer = new Wallet(privateKeys.customer, localJsonRpcProvider);
 const orderSigner = Wallet.createRandom(localJsonRpcProvider);
-const customer = new Wallet(privateKeys[4], localJsonRpcProvider);
 
 // SDKs under test
-const sdk = KaChingV1.sdkFactory(kaChingCashRegister);
+const sdk = KaChingV1.sdkFactory(contracts.kaChingCashRegister);
 const deployerSdk = sdk.deployer(deployer);
 const cashierSdk = sdk.cashier(cashier);
 const customerSdk = sdk.customer(customer);
@@ -34,7 +30,7 @@ const readonlySdk = sdk.readonly(localJsonRpcProvider);
 
 // test SDKs
 const mbsSDK = (runner: Signer | providers.Provider) =>
-  MBS.sdkFactory(mbsAddress, runner);
+  MBS.sdkFactory(contracts.mbs, runner);
 
 const _signOffChain = (order: KaChingV1.FullOrderStruct) =>
   orderSignerSdk.signOrder(order, { chainId: '31337' });
@@ -48,7 +44,7 @@ const _ensureNonZeroBalance = async (
   walletAddress: string,
   mintAmount = BigNumber.from(BigInt(5 * 10 ** 18))
 ) => {
-  const tokenContract = mbsSDK(deployer);
+  const tokenContract = mbsSDK(bridge);
   const balance = await tokenContract.balanceOf(walletAddress);
   if (balance.gt(0)) {
     return balance;
@@ -82,7 +78,7 @@ test('debit customer with erc20', async () => {
       name: 'MonkeyLeague',
       version: '1',
       chainId: '31337',
-      verifyingContract: mbsAddress,
+      verifyingContract: contracts.mbs,
     })
   );
   const id = parseUUID(uuid());
@@ -90,7 +86,7 @@ test('debit customer with erc20', async () => {
     id,
     customer: customer.address,
     amount,
-    currency: mbsAddress,
+    currency: contracts.mbs,
     expiresIn: '1m',
   });
   const orderSignature = await _signOffChain(order);
@@ -105,7 +101,9 @@ test('debit customer with erc20', async () => {
 }, 30_000);
 
 test('credit customer with erc20', async () => {
-  const cashRegister_b0 = await _ensureNonZeroBalance(kaChingCashRegister);
+  const cashRegister_b0 = await _ensureNonZeroBalance(
+    contracts.kaChingCashRegister
+  );
 
   const mbs = mbsSDK(localJsonRpcProvider);
   const customer_b0 = await mbs.balanceOf(customer.address);
@@ -117,7 +115,7 @@ test('credit customer with erc20', async () => {
     id,
     amount,
     customer: customer.address,
-    currency: mbsAddress,
+    currency: contracts.mbs,
     expiresIn: '30s',
   });
   const orderSignature = await _signOffChain(order);

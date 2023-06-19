@@ -9,6 +9,16 @@ const exec = promisify(child_process.exec);
 
 dotenv.config();
 
+const predefinedWalletsIdx = {
+  kaChing_deployer: 0,
+  mbs_deployer: 1,
+  kaChing_cashier: 3,
+  kaChing_customer: 4,
+  mbs_OptimismBridge: 5,
+  alice: 6,
+  bob: 7,
+};
+
 async function _deployContract(
   contract: `${string}:${string}`,
   privateKey: string,
@@ -77,30 +87,43 @@ export default async () => {
     // eslint-disable-next-line
     (global as any).anvil = proc;
     const { privateKeys, publicKeys } = await _anvilProcessHandler(proc);
-    const contractDeployerIdx = 0;
-    const contractDeployer = privateKeys[contractDeployerIdx];
-    const contractDeployerPubkey = publicKeys[contractDeployerIdx];
-    const kaChingCashRegister = await _deployContract(
+    const kaChingContractDeployer =
+      privateKeys[predefinedWalletsIdx.kaChing_deployer];
+    const mbsContractDeployer = privateKeys[predefinedWalletsIdx.mbs_deployer];
+
+    const bridgeAddress = publicKeys[predefinedWalletsIdx.mbs_OptimismBridge];
+
+    const kaChing = await _deployContract(
       'src/ka-ching/KaChingCashRegisterV1.sol:KaChingCashRegisterV1',
-      contractDeployer
+      kaChingContractDeployer
     );
+    const mockRemoteToken = '0xDeaDBEEF00000000000000000000000000000000';
     const mbs = await _deployContract(
       'src/mbs/MBSOptimismMintableERC20.sol:MBSOptimismMintableERC20',
-      contractDeployer,
-      [contractDeployerPubkey, '0xDeaDBEEF00000000000000000000000000000000']
+      mbsContractDeployer,
+      [bridgeAddress, mockRemoteToken]
     );
     const json = {
-      privateKeys,
-      contractDeployer,
-      kaChingCashRegister,
-      mbs,
+      privateKeys: {
+        kaChingDeployer: kaChingContractDeployer,
+        mbsDeployer: mbsContractDeployer,
+        optimismBridge: privateKeys[predefinedWalletsIdx.mbs_OptimismBridge],
+        cashier: privateKeys[predefinedWalletsIdx.kaChing_cashier],
+        customer: privateKeys[predefinedWalletsIdx.kaChing_customer],
+        alice: privateKeys[predefinedWalletsIdx.alice],
+        bob: privateKeys[predefinedWalletsIdx.bob],
+      },
+      contracts: {
+        kaChingCashRegister: kaChing,
+        mbs,
+      },
     };
     await fs.writeJSON(path.join(__dirname, 'anvil.json'), json, {
       spaces: 2,
     });
     console.log(
       chalk.bold.green(
-        `🚀 anvil deployed contracts:\nMBS: ${mbs}\nKaChing: ${kaChingCashRegister}`
+        `🚀 anvil deployed contracts:\nMBS: ${mbs}\nKaChing: ${kaChing}`
       )
     );
   } catch (error) {
