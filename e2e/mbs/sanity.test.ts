@@ -1,39 +1,13 @@
 import { expect, test, describe } from '@jest/globals';
+import { Wallet, BigNumber } from 'ethers';
+import { privateKeys } from '../anvil.json';
 import {
-  Wallet,
-  Signer,
-  providers,
-  ContractTransaction,
-  ethers,
-  BigNumber,
-} from 'ethers';
-import { contracts, privateKeys } from '../anvil.json';
-import { MBS } from '../../dist/cjs';
-
-// wallets
-const localJsonRpcProvider = new ethers.providers.JsonRpcProvider();
-const bridge = new Wallet(privateKeys.optimismBridge, localJsonRpcProvider);
-
-const mbsSDK = (runner: Signer | providers.Provider) =>
-  MBS.sdkFactory(contracts.mbs, runner);
-
-const _waitForTxn = async (sendTxn: () => Promise<ContractTransaction>) => {
-  const resp = await sendTxn();
-  await resp.wait();
-};
-
-const _ensureNonZeroBalance = async (
-  walletAddress: string,
-  mintAmount = BigNumber.from(BigInt(5 * 10 ** 18))
-) => {
-  const tokenContract = mbsSDK(bridge);
-  const balance = await tokenContract.balanceOf(walletAddress);
-  if (balance.gt(0)) {
-    return balance;
-  }
-  await _waitForTxn(() => tokenContract.mint(walletAddress, mintAmount));
-  return mintAmount;
-};
+  _ensureNonZeroBalance,
+  _waitForTxn,
+  bridge,
+  localJsonRpcProvider,
+  mbsSDK,
+} from '../test-utils';
 
 describe('burnFrom override', () => {
   test("non-bridge accounts cannot burn other accounts' tokens", async () => {

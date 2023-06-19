@@ -1,21 +1,18 @@
 import { expect, test, beforeAll } from '@jest/globals';
-import {
-  Wallet,
-  Signer,
-  providers,
-  ContractTransaction,
-  ethers,
-  BigNumber,
-} from 'ethers';
+import { Wallet, BigNumber } from 'ethers';
 import { parse as parseUUID, v4 as uuid } from 'uuid';
 import { privateKeys, contracts } from '../anvil.json';
+import {
+  _ensureNonZeroBalance,
+  _waitForTxn,
+  localJsonRpcProvider,
+  mbsSDK,
+} from '../test-utils';
+
 import { KaChingV1 } from '../../dist/cjs';
-import { MBS } from '../../dist/cjs';
 
 // wallets
-const localJsonRpcProvider = new ethers.providers.JsonRpcProvider();
 const deployer = new Wallet(privateKeys.kaChingDeployer, localJsonRpcProvider);
-const bridge = new Wallet(privateKeys.optimismBridge, localJsonRpcProvider);
 const cashier = new Wallet(privateKeys.cashier, localJsonRpcProvider);
 const customer = new Wallet(privateKeys.customer, localJsonRpcProvider);
 const orderSigner = Wallet.createRandom(localJsonRpcProvider);
@@ -28,30 +25,8 @@ const customerSdk = sdk.customer(customer);
 const orderSignerSdk = sdk.orderSigner(orderSigner);
 const readonlySdk = sdk.readonly(localJsonRpcProvider);
 
-// test SDKs
-const mbsSDK = (runner: Signer | providers.Provider) =>
-  MBS.sdkFactory(contracts.mbs, runner);
-
 const _signOffChain = (order: KaChingV1.FullOrderStruct) =>
   orderSignerSdk.signOrder(order, { chainId: '31337' });
-
-const _waitForTxn = async (sendTxn: () => Promise<ContractTransaction>) => {
-  const resp = await sendTxn();
-  await resp.wait();
-};
-
-const _ensureNonZeroBalance = async (
-  walletAddress: string,
-  mintAmount = BigNumber.from(BigInt(5 * 10 ** 18))
-) => {
-  const tokenContract = mbsSDK(bridge);
-  const balance = await tokenContract.balanceOf(walletAddress);
-  if (balance.gt(0)) {
-    return balance;
-  }
-  await _waitForTxn(() => tokenContract.mint(walletAddress, mintAmount));
-  return mintAmount;
-};
 
 let _orders: Uint8Array[];
 
