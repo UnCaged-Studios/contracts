@@ -29,7 +29,7 @@
     "test:unit": "forge test -vvv",
     "test:e2e": "jest",
     "abi:generate:prod:KaChingCashRegisterV1": "./script/abi-generate.sh prod src/ka-ching KaChingCashRegisterV1",
-    "abi:generate:test:MBSOptimismMintableERC20": "./script/abi-generate.sh prod src/mbs MBSOptimismMintableERC20",
+    "abi:generate:test:MonkeyLeagueOptimismMintableERC20": "./script/abi-generate.sh prod src/mbs MonkeyLeagueOptimismMintableERC20",
     "release": "release-it",
     "anvil": "ts-node -e \"require('./e2e/global-setup').default()\""
   },

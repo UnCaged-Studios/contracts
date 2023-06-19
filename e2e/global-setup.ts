@@ -99,7 +99,7 @@ export default async () => {
     );
     const mockRemoteToken = '0xDeaDBEEF00000000000000000000000000000000';
     const mbs = await _deployContract(
-      'src/mbs/MBSOptimismMintableERC20.sol:MBSOptimismMintableERC20',
+      'src/mbs/MonkeyLeagueOptimismMintableERC20.sol:MonkeyLeagueOptimismMintableERC20',
       mbsContractDeployer,
       [bridgeAddress, mockRemoteToken]
     );
