@@ -28,8 +28,9 @@
     "test": "npm-run-all test:*",
     "test:unit": "forge test -vvv",
     "test:e2e": "jest",
-    "abi:generate:prod:KaChingCashRegisterV1": "./script/abi-generate.sh prod src/ka-ching KaChingCashRegisterV1",
-    "abi:generate:test:MonkeyLeagueOptimismMintableERC20": "./script/abi-generate.sh prod src/mbs MonkeyLeagueOptimismMintableERC20",
+    "abi:generate:prod:KaChingCashRegisterV1": "./script/abi-generate.sh src/ka-ching KaChingCashRegisterV1",
+    "abi:generate:prod:MonkeyLeagueOptimismMintableERC20": "./script/abi-generate.sh src/mbs-optimism MonkeyLeagueOptimismMintableERC20",
+    "abi:generate:prod:MonkeyLeagueERC20": "./script/abi-generate.sh src/mbs MonkeyLeagueERC20",
     "release": "release-it",
     "anvil": "ts-node -e \"require('./e2e/global-setup').default()\""
   },

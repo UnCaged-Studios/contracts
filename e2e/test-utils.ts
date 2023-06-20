@@ -6,7 +6,7 @@ import {
   providers,
 } from 'ethers';
 import { privateKeys, contracts } from './anvil.json';
-import { MBS } from '../dist/cjs';
+import { MBSOptimism } from '../dist/cjs';
 
 export const localJsonRpcProvider = new providers.JsonRpcProvider();
 
@@ -16,7 +16,7 @@ export const bridge = new Wallet(
 );
 
 export const mbsSDK = (runner: Signer | providers.Provider) =>
-  MBS.sdkFactory(contracts.mbs, runner);
+  MBSOptimism.sdkFactory(contracts.mbsOptimism, runner);
 
 export const _waitForTxn = async (
   sendTxn: () => Promise<ContractTransaction>

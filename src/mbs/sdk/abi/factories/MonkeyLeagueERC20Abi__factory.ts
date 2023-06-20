@@ -5,24 +5,13 @@
 import { Contract, Signer, utils } from "ethers";
 import type { Provider } from "@ethersproject/providers";
 import type {
-  MBSOptimismMintableERC20Abi,
-  MBSOptimismMintableERC20AbiInterface,
-} from "../MBSOptimismMintableERC20Abi";
+  MonkeyLeagueERC20Abi,
+  MonkeyLeagueERC20AbiInterface,
+} from "../MonkeyLeagueERC20Abi";
 
 const _abi = [
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_bridge",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "_remoteToken",
-        type: "address",
-      },
-    ],
+    inputs: [],
     stateMutability: "nonpayable",
     type: "constructor",
   },
@@ -69,25 +58,6 @@ const _abi = [
   },
   {
     anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "Burn",
-    type: "event",
-  },
-  {
-    anonymous: false,
     inputs: [],
     name: "EIP712DomainChanged",
     type: "event",
@@ -98,17 +68,17 @@ const _abi = [
       {
         indexed: true,
         internalType: "address",
-        name: "account",
+        name: "previousOwner",
         type: "address",
       },
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
+        indexed: true,
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
       },
     ],
-    name: "Mint",
+    name: "OwnershipTransferred",
     type: "event",
   },
   {
@@ -138,38 +108,12 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "BRIDGE",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "DOMAIN_SEPARATOR",
     outputs: [
       {
         internalType: "bytes32",
         name: "",
         type: "bytes32",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "REMOTE_TOKEN",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
       },
     ],
     stateMutability: "view",
@@ -243,19 +187,6 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "bridge",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "uint256",
@@ -272,30 +203,12 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_from",
+        name: "account",
         type: "address",
       },
       {
         internalType: "uint256",
-        name: "_amount",
-        type: "uint256",
-      },
-    ],
-    name: "burn",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_account",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "_amount",
+        name: "amount",
         type: "uint256",
       },
     ],
@@ -409,41 +322,15 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "l1Token",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "l2Bridge",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "address",
-        name: "_to",
+        name: "to",
         type: "address",
       },
       {
         internalType: "uint256",
-        name: "_amount",
+        name: "amount",
         type: "uint256",
       },
     ],
@@ -479,6 +366,19 @@ const _abi = [
         internalType: "uint256",
         name: "",
         type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "owner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
       },
     ],
     stateMutability: "view",
@@ -529,34 +429,9 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "remoteToken",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes4",
-        name: "_interfaceId",
-        type: "bytes4",
-      },
-    ],
-    name: "supportsInterface",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "pure",
+    name: "renounceOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -639,33 +514,33 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "version",
-    outputs: [
+    inputs: [
       {
-        internalType: "string",
-        name: "",
-        type: "string",
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
       },
     ],
-    stateMutability: "view",
+    name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
 ] as const;
 
-export class MBSOptimismMintableERC20Abi__factory {
+export class MonkeyLeagueERC20Abi__factory {
   static readonly abi = _abi;
-  static createInterface(): MBSOptimismMintableERC20AbiInterface {
-    return new utils.Interface(_abi) as MBSOptimismMintableERC20AbiInterface;
+  static createInterface(): MonkeyLeagueERC20AbiInterface {
+    return new utils.Interface(_abi) as MonkeyLeagueERC20AbiInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): MBSOptimismMintableERC20Abi {
+  ): MonkeyLeagueERC20Abi {
     return new Contract(
       address,
       _abi,
       signerOrProvider
-    ) as MBSOptimismMintableERC20Abi;
+    ) as MonkeyLeagueERC20Abi;
   }
 }

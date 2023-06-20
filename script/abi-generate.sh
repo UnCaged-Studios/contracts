@@ -1,8 +1,8 @@
 #!/bin/bash
 
-mode=$1
-filePath=$2
-contractName=$3
+mode=prod
+filePath=$1
+contractName=$2
 
 if [[ $mode == "test" ]]; then
   outputDir="e2e/sdk/abi/$contractName"

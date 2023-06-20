@@ -97,11 +97,14 @@ export default async () => {
       'src/ka-ching/KaChingCashRegisterV1.sol:KaChingCashRegisterV1',
       kaChingContractDeployer
     );
-    const mockRemoteToken = '0xDeaDBEEF00000000000000000000000000000000';
-    const mbs = await _deployContract(
-      'src/mbs/MonkeyLeagueOptimismMintableERC20.sol:MonkeyLeagueOptimismMintableERC20',
+    const mbsToken = await _deployContract(
+      'src/mbs/MonkeyLeagueERC20.sol:MonkeyLeagueERC20',
+      mbsContractDeployer
+    );
+    const mbsOptimism = await _deployContract(
+      'src/mbs-optimism/MonkeyLeagueOptimismMintableERC20.sol:MonkeyLeagueOptimismMintableERC20',
       mbsContractDeployer,
-      [bridgeAddress, mockRemoteToken]
+      [bridgeAddress, mbsToken]
     );
     const json = {
       privateKeys: {
@@ -115,7 +118,8 @@ export default async () => {
       },
       contracts: {
         kaChingCashRegister: kaChing,
-        mbs,
+        mbsOptimism,
+        mbsToken,
       },
     };
     await fs.writeJSON(path.join(__dirname, 'anvil.json'), json, {
@@ -123,7 +127,13 @@ export default async () => {
     });
     console.log(
       chalk.bold.green(
-        `🚀 anvil deployed contracts:\nMBS: ${mbs}\nKaChing: ${kaChing}`
+        `🚀 anvil deployed contracts:\n${[
+          ['MBS Optimism', mbsOptimism],
+          ['MBS', mbsToken],
+          ['KaChing', kaChing],
+        ]
+          .map(([k, v]) => `${k}: ${v}`)
+          .join('\n')}`
       )
     );
   } catch (error) {

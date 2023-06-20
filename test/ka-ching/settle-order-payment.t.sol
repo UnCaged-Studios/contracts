@@ -3,7 +3,7 @@ pragma solidity ^0.8.15;
 
 import "forge-std/Test.sol";
 import "./contracts/TestableCashRegisterV1.sol";
-import "../../src/mbs/MonkeyLeagueOptimismMintableERC20.sol";
+import "../../src/mbs-optimism/MonkeyLeagueOptimismMintableERC20.sol";
 import "./contracts/SigUtils.sol";
 
 contract KaChingCashRegisterV1Test is Test {
