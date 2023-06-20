@@ -26,7 +26,7 @@ import type {
   OnEvent,
 } from "./common";
 
-export interface MBSTokenAbiInterface extends utils.Interface {
+export interface MonkeyLeagueERC20AbiInterface extends utils.Interface {
   functions: {
     "DOMAIN_SEPARATOR()": FunctionFragment;
     "allowance(address,address)": FunctionFragment;
@@ -252,12 +252,12 @@ export type TransferEvent = TypedEvent<
 
 export type TransferEventFilter = TypedEventFilter<TransferEvent>;
 
-export interface MBSTokenAbi extends BaseContract {
+export interface MonkeyLeagueERC20Abi extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: MBSTokenAbiInterface;
+  interface: MonkeyLeagueERC20AbiInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,

@@ -7,15 +7,15 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 
 /**
- * @title MBSToken
+ * @title MonkeyLeagueERC20
  * @dev This contract implements a standard ERC20 token with burning and permit functionality,
  * with the addition of an ownership concept for minting new tokens.
  */
-contract MBSToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
+contract MonkeyLeagueERC20 is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     /**
      * @dev Constructor that gives msg.sender all of existing tokens.
      */
-    constructor() ERC20("MBSToken", "MBS") ERC20Permit("MBSToken") {
+    constructor() ERC20("MonkeyLeague", "MBS") ERC20Permit("MonkeyLeague") {
         _mint(msg.sender, 1000000000 * 10 ** decimals());
     }
 

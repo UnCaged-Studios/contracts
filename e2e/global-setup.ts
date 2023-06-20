@@ -98,11 +98,11 @@ export default async () => {
       kaChingContractDeployer
     );
     const mbsToken = await _deployContract(
-      'src/mbs/MBSToken.sol:MBSToken',
+      'src/mbs/MonkeyLeagueERC20.sol:MonkeyLeagueERC20',
       mbsContractDeployer
     );
     const mbsOptimism = await _deployContract(
-      'src/mbs-optimism/MBSTokenOptimismMintableERC20.sol:MBSTokenOptimismMintableERC20',
+      'src/mbs-optimism/MonkeyLeagueOptimismMintableERC20.sol:MonkeyLeagueOptimismMintableERC20',
       mbsContractDeployer,
       [bridgeAddress, mbsToken]
     );
