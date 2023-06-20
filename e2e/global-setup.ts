@@ -49,7 +49,9 @@ async function _anvilProcessHandler(
       const privateKeys: string[] = [];
       const publicKeys: string[] = [];
       proc.stdout.on('data', (data) => {
-        console.log(chalk.italic.gray(data));
+        if (process.env.ANVIL_VERBOSE === 'true') {
+          console.log(chalk.italic.gray(data));
+        }
         if (data.toString().includes('Listening on 127.0.0.1:8545')) {
           resolve({ privateKeys, publicKeys });
         }
@@ -92,10 +94,12 @@ export default async () => {
     const mbsContractDeployer = privateKeys[predefinedWalletsIdx.mbs_deployer];
 
     const bridgeAddress = publicKeys[predefinedWalletsIdx.mbs_OptimismBridge];
+    const cashierAddress = publicKeys[predefinedWalletsIdx.kaChing_cashier];
 
     const kaChing = await _deployContract(
       'src/ka-ching/KaChingCashRegisterV1.sol:KaChingCashRegisterV1',
-      kaChingContractDeployer
+      kaChingContractDeployer,
+      [cashierAddress]
     );
     const mbsToken = await _deployContract(
       'src/mbs/MonkeyLeagueERC20.sol:MonkeyLeagueERC20',

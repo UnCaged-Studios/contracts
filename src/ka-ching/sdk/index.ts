@@ -4,6 +4,7 @@ import { customerSdkFactory } from './customer';
 import type { providers, Signer } from 'ethers';
 import { readonlySdkFactory } from './readonly';
 import { AdvancedSigner } from './types';
+import { cashierSdkFactory } from './cahiser';
 export type {
   FullOrderStruct,
   OrderItemStruct,
@@ -17,8 +18,6 @@ export function sdkFactory(contractAddress: string) {
       customerSdkFactory(contractAddress, customer),
     orderSigner: (signer: AdvancedSigner) =>
       orderSignerSdkFactory(contractAddress, signer),
-    // TODO - expose only relevant functions
-    deployer: (deployer: Signer) => coreSdkFactory(contractAddress, deployer),
-    cashier: (cashier: Signer) => coreSdkFactory(contractAddress, cashier),
+    cashier: (cashier: Signer) => cashierSdkFactory(contractAddress, cashier),
   };
 }

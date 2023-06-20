@@ -12,14 +12,12 @@ import {
 import { KaChingV1 } from '../../dist/cjs';
 
 // wallets
-const deployer = new Wallet(privateKeys.kaChingDeployer, localJsonRpcProvider);
 const cashier = new Wallet(privateKeys.cashier, localJsonRpcProvider);
 const customer = new Wallet(privateKeys.customer, localJsonRpcProvider);
 const orderSigner = Wallet.createRandom(localJsonRpcProvider);
 
 // SDKs under test
 const sdk = KaChingV1.sdkFactory(contracts.kaChingCashRegister);
-const deployerSdk = sdk.deployer(deployer);
 const cashierSdk = sdk.cashier(cashier);
 const customerSdk = sdk.customer(customer);
 const orderSignerSdk = sdk.orderSigner(orderSigner);
@@ -31,7 +29,6 @@ const _signOffChain = (order: KaChingV1.FullOrderStruct) =>
 let _orders: Uint8Array[];
 
 beforeAll(async () => {
-  await _waitForTxn(() => deployerSdk.addCashier(cashier.address));
   await _waitForTxn(() => cashierSdk.setOrderSigners([orderSigner.address]));
   _orders = [];
 }, 30_000);

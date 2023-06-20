@@ -63,50 +63,27 @@ export type FullOrderStructOutput = [
 export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
   functions: {
     "CASHIER_ROLE()": FunctionFragment;
-    "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "addCashier(address)": FunctionFragment;
     "eip712Domain()": FunctionFragment;
     "getOrderSigners()": FunctionFragment;
-    "getRoleAdmin(bytes32)": FunctionFragment;
-    "grantRole(bytes32,address)": FunctionFragment;
-    "hasRole(bytes32,address)": FunctionFragment;
     "isOrderProcessed(uint128)": FunctionFragment;
-    "removeCashier(address)": FunctionFragment;
-    "renounceRole(bytes32,address)": FunctionFragment;
-    "revokeRole(bytes32,address)": FunctionFragment;
     "setOrderSigners(address[])": FunctionFragment;
     "settleOrderPayment((uint128,uint32,uint32,address,(uint256,address,bool)[]),bytes)": FunctionFragment;
-    "supportsInterface(bytes4)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "CASHIER_ROLE"
-      | "DEFAULT_ADMIN_ROLE"
-      | "addCashier"
       | "eip712Domain"
       | "getOrderSigners"
-      | "getRoleAdmin"
-      | "grantRole"
-      | "hasRole"
       | "isOrderProcessed"
-      | "removeCashier"
-      | "renounceRole"
-      | "revokeRole"
       | "setOrderSigners"
       | "settleOrderPayment"
-      | "supportsInterface"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "CASHIER_ROLE",
     values?: undefined
   ): string;
-  encodeFunctionData(
-    functionFragment: "DEFAULT_ADMIN_ROLE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(functionFragment: "addCashier", values: [string]): string;
   encodeFunctionData(
     functionFragment: "eip712Domain",
     values?: undefined
@@ -116,32 +93,8 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getRoleAdmin",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "grantRole",
-    values: [BytesLike, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "hasRole",
-    values: [BytesLike, string]
-  ): string;
-  encodeFunctionData(
     functionFragment: "isOrderProcessed",
     values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "removeCashier",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "renounceRole",
-    values: [BytesLike, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "revokeRole",
-    values: [BytesLike, string]
   ): string;
   encodeFunctionData(
     functionFragment: "setOrderSigners",
@@ -151,20 +104,11 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
     functionFragment: "settleOrderPayment",
     values: [FullOrderStruct, BytesLike]
   ): string;
-  encodeFunctionData(
-    functionFragment: "supportsInterface",
-    values: [BytesLike]
-  ): string;
 
   decodeFunctionResult(
     functionFragment: "CASHIER_ROLE",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "DEFAULT_ADMIN_ROLE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "addCashier", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "eip712Domain",
     data: BytesLike
@@ -174,24 +118,9 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getRoleAdmin",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
-  decodeFunctionResult(
     functionFragment: "isOrderProcessed",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "removeCashier",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "renounceRole",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setOrderSigners",
     data: BytesLike
@@ -200,24 +129,14 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
     functionFragment: "settleOrderPayment",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "supportsInterface",
-    data: BytesLike
-  ): Result;
 
   events: {
     "EIP712DomainChanged()": EventFragment;
     "OrderFullySettled(uint128,address)": EventFragment;
-    "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
-    "RoleGranted(bytes32,address,address)": EventFragment;
-    "RoleRevoked(bytes32,address,address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "EIP712DomainChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OrderFullySettled"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
 }
 
 export interface EIP712DomainChangedEventObject {}
@@ -240,43 +159,6 @@ export type OrderFullySettledEvent = TypedEvent<
 
 export type OrderFullySettledEventFilter =
   TypedEventFilter<OrderFullySettledEvent>;
-
-export interface RoleAdminChangedEventObject {
-  role: string;
-  previousAdminRole: string;
-  newAdminRole: string;
-}
-export type RoleAdminChangedEvent = TypedEvent<
-  [string, string, string],
-  RoleAdminChangedEventObject
->;
-
-export type RoleAdminChangedEventFilter =
-  TypedEventFilter<RoleAdminChangedEvent>;
-
-export interface RoleGrantedEventObject {
-  role: string;
-  account: string;
-  sender: string;
-}
-export type RoleGrantedEvent = TypedEvent<
-  [string, string, string],
-  RoleGrantedEventObject
->;
-
-export type RoleGrantedEventFilter = TypedEventFilter<RoleGrantedEvent>;
-
-export interface RoleRevokedEventObject {
-  role: string;
-  account: string;
-  sender: string;
-}
-export type RoleRevokedEvent = TypedEvent<
-  [string, string, string],
-  RoleRevokedEventObject
->;
-
-export type RoleRevokedEventFilter = TypedEventFilter<RoleRevokedEvent>;
 
 export interface KaChingCashRegisterV1Abi extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -307,13 +189,6 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
   functions: {
     CASHIER_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
-
-    addCashier(
-      cashier: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>;
-
     eip712Domain(
       overrides?: CallOverrides
     ): Promise<
@@ -330,41 +205,10 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
 
     getOrderSigners(overrides?: CallOverrides): Promise<[string[]]>;
 
-    getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
-
-    grantRole(
-      role: BytesLike,
-      account: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>;
-
-    hasRole(
-      role: BytesLike,
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
     isOrderProcessed(
       orderId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    removeCashier(
-      cashier: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>;
-
-    renounceRole(
-      role: BytesLike,
-      account: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>;
-
-    revokeRole(
-      role: BytesLike,
-      account: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>;
 
     setOrderSigners(
       newSigners: string[],
@@ -376,21 +220,9 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
       signature: BytesLike,
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
-
-    supportsInterface(
-      interfaceId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
   };
 
   CASHIER_ROLE(overrides?: CallOverrides): Promise<string>;
-
-  DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
-
-  addCashier(
-    cashier: string,
-    overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>;
 
   eip712Domain(
     overrides?: CallOverrides
@@ -408,41 +240,10 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
 
   getOrderSigners(overrides?: CallOverrides): Promise<string[]>;
 
-  getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
-
-  grantRole(
-    role: BytesLike,
-    account: string,
-    overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>;
-
-  hasRole(
-    role: BytesLike,
-    account: string,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
   isOrderProcessed(
     orderId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
-
-  removeCashier(
-    cashier: string,
-    overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>;
-
-  renounceRole(
-    role: BytesLike,
-    account: string,
-    overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>;
-
-  revokeRole(
-    role: BytesLike,
-    account: string,
-    overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>;
 
   setOrderSigners(
     newSigners: string[],
@@ -455,17 +256,8 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  supportsInterface(
-    interfaceId: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
   callStatic: {
     CASHIER_ROLE(overrides?: CallOverrides): Promise<string>;
-
-    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
-
-    addCashier(cashier: string, overrides?: CallOverrides): Promise<void>;
 
     eip712Domain(
       overrides?: CallOverrides
@@ -483,38 +275,10 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
 
     getOrderSigners(overrides?: CallOverrides): Promise<string[]>;
 
-    getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
-
-    grantRole(
-      role: BytesLike,
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    hasRole(
-      role: BytesLike,
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
     isOrderProcessed(
       orderId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    removeCashier(cashier: string, overrides?: CallOverrides): Promise<void>;
-
-    renounceRole(
-      role: BytesLike,
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    revokeRole(
-      role: BytesLike,
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     setOrderSigners(
       newSigners: string[],
@@ -526,11 +290,6 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
       signature: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    supportsInterface(
-      interfaceId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
   };
 
   filters: {
@@ -545,92 +304,18 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
       orderId?: BigNumberish | null,
       customer?: string | null
     ): OrderFullySettledEventFilter;
-
-    "RoleAdminChanged(bytes32,bytes32,bytes32)"(
-      role?: BytesLike | null,
-      previousAdminRole?: BytesLike | null,
-      newAdminRole?: BytesLike | null
-    ): RoleAdminChangedEventFilter;
-    RoleAdminChanged(
-      role?: BytesLike | null,
-      previousAdminRole?: BytesLike | null,
-      newAdminRole?: BytesLike | null
-    ): RoleAdminChangedEventFilter;
-
-    "RoleGranted(bytes32,address,address)"(
-      role?: BytesLike | null,
-      account?: string | null,
-      sender?: string | null
-    ): RoleGrantedEventFilter;
-    RoleGranted(
-      role?: BytesLike | null,
-      account?: string | null,
-      sender?: string | null
-    ): RoleGrantedEventFilter;
-
-    "RoleRevoked(bytes32,address,address)"(
-      role?: BytesLike | null,
-      account?: string | null,
-      sender?: string | null
-    ): RoleRevokedEventFilter;
-    RoleRevoked(
-      role?: BytesLike | null,
-      account?: string | null,
-      sender?: string | null
-    ): RoleRevokedEventFilter;
   };
 
   estimateGas: {
     CASHIER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    addCashier(
-      cashier: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>;
-
     eip712Domain(overrides?: CallOverrides): Promise<BigNumber>;
 
     getOrderSigners(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getRoleAdmin(
-      role: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    grantRole(
-      role: BytesLike,
-      account: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>;
-
-    hasRole(
-      role: BytesLike,
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     isOrderProcessed(
       orderId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    removeCashier(
-      cashier: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>;
-
-    renounceRole(
-      role: BytesLike,
-      account: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>;
-
-    revokeRole(
-      role: BytesLike,
-      account: string,
-      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     setOrderSigners(
@@ -642,67 +327,19 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
       order: FullOrderStruct,
       signature: BytesLike,
       overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>;
-
-    supportsInterface(
-      interfaceId: BytesLike,
-      overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
     CASHIER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    DEFAULT_ADMIN_ROLE(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    addCashier(
-      cashier: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>;
-
     eip712Domain(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getOrderSigners(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    getRoleAdmin(
-      role: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    grantRole(
-      role: BytesLike,
-      account: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>;
-
-    hasRole(
-      role: BytesLike,
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     isOrderProcessed(
       orderId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    removeCashier(
-      cashier: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>;
-
-    renounceRole(
-      role: BytesLike,
-      account: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>;
-
-    revokeRole(
-      role: BytesLike,
-      account: string,
-      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     setOrderSigners(
@@ -714,11 +351,6 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
       order: FullOrderStruct,
       signature: BytesLike,
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>;
-
-    supportsInterface(
-      interfaceId: BytesLike,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }
