@@ -4,7 +4,6 @@ pragma solidity 0.8.15;
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /// @dev Struct representing a single order item.
@@ -26,21 +25,31 @@ struct FullOrder {
 /// @title KaChingCashRegisterV1
 /// @dev This contract defines the KaChing cash register functionality.
 /// @notice It includes functions for managing orders and signers, and for settling payments.
-contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
+/// The role of the cashier is only assignable upon deployment and cannot be changed.
+contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
     bytes32 private constant _ORDER_ITEM_HASH = keccak256("OrderItem(uint256 amount,address currency,bool credit)");
     bytes32 private constant _FULL_ORDER_HASH =
         keccak256("FullOrder(uint128 id,uint32 expiry,uint32 notBefore,address customer,bytes32 itemsHash)");
     mapping(uint128 => bool) private _orderProcessed;
     address[] private _orderSignerAddresses;
 
-    bytes32 public constant CASHIER_ROLE = keccak256("CASHIER_ROLE");
+    /// @dev The cashier is an address capable of updating the order signers.
+    address public immutable CASHIER_ROLE;
 
     /// @dev Event emitted when an order is fully settled.
     event OrderFullySettled(uint128 indexed orderId, address indexed customer);
 
-    /// @dev Contract constructor sets initial role assignments.
-    constructor() EIP712("KaChingCashRegisterV1", "1") {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    /// @dev Contract constructor sets initial cashier.
+    /// @param _cashier Address of the cashier.
+    constructor(address _cashier) EIP712("KaChingCashRegisterV1", "1") {
+        require(_cashier != address(0), "Cashier address cannot be 0x0");
+        CASHIER_ROLE = _cashier;
+    }
+
+    /// @dev Modifier to only allow the cashier to execute a function.
+    modifier onlyCashier() {
+        require(msg.sender == CASHIER_ROLE, "Caller is not a cashier");
+        _;
     }
 
     /// @dev Internal function to calculate the hash of an order.
@@ -133,18 +142,10 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
         return _orderProcessed[orderId];
     }
 
-    /// @notice External function to add a cashier.
-    function addCashier(address cashier) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        grantRole(CASHIER_ROLE, cashier);
-    }
-
-    /// @notice External function to remove a cashier.
-    function removeCashier(address cashier) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        renounceRole(CASHIER_ROLE, cashier);
-    }
-
-    /// @notice External function to set order signers.
-    function setOrderSigners(address[] memory newSigners) external onlyRole(CASHIER_ROLE) {
+    /// @notice Updates the list of order signers.
+    /// @dev Only the cashier can update this list.
+    /// @param newSigners New list of signers.
+    function setOrderSigners(address[] memory newSigners) external onlyCashier {
         require(newSigners.length <= 3, "Cannot set more than 3 signers");
         _orderSignerAddresses = newSigners;
     }

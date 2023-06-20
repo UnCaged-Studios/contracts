@@ -16,17 +16,21 @@ contract KaChingCashRegisterV1Test is Test {
     uint128 public uuid = uint128(uint256(keccak256(abi.encodePacked("550e8400-e29b-41d4-a716-446655440000"))));
     address public orderSigner = vm.addr(signerPrivateKey);
     address public customer = vm.addr(0xA11CE);
+    address public cashier = vm.addr(0xB0B1);
+
     uint32 public baselineBlocktime = 1684911164;
-    bytes32 public constant CASHIER_ROLE = keccak256("CASHIER_ROLE");
 
     function _createAndSignOrder(OrderItem[] memory items, uint32 expiry, uint32 notBefore)
         internal
         returns (FullOrder memory, bytes memory)
     {
-        cashRegister.addCashier(0x7FA9385bE102ac3EAc297483Dd6233D62b3e1496);
         address[] memory newSigners = new address[](1);
         newSigners[0] = orderSigner;
+
+        vm.startPrank(cashier);
         cashRegister.setOrderSigners(newSigners);
+        vm.stopPrank();
+
         FullOrder memory order =
             FullOrder({id: uuid, expiry: expiry, customer: customer, notBefore: notBefore, items: items});
         bytes32 hash = cashRegister.getEIP712Hash(order);
@@ -43,7 +47,7 @@ contract KaChingCashRegisterV1Test is Test {
     }
 
     function setUp() public {
-        cashRegister = new KaChingCashRegisterV1Testable();
+        cashRegister = new KaChingCashRegisterV1Testable(cashier);
         mockMBS =
         new MonkeyLeagueOptimismMintableERC20(0xdEADBEeF00000000000000000000000000000000, 0x4F0dDcE25D496698e9e3F6218c019AED3e862aA7);
         sigUtils = new SigUtils(mockMBS.DOMAIN_SEPARATOR());
@@ -62,8 +66,6 @@ contract KaChingCashRegisterV1Test is Test {
         vm.prank(customer);
         cashRegister.settleOrderPayment(order, signature);
 
-        address cashier = vm.addr(0xB0B1);
-        cashRegister.addCashier(cashier);
         vm.prank(cashier);
         assertTrue(cashRegister.isOrderProcessed(uuid));
         assertEq(mockMBS.balanceOf(customer), 1e18, "customer");

@@ -9,20 +9,10 @@ contract KaChingCashRegisterV1Test is Test {
 
     uint128 public uuid = uint128(uint256(keccak256(abi.encodePacked("550e8400-e29b-41d4-a716-446655440000"))));
     address public customer = vm.addr(0xA11CE);
-    bytes32 public constant CASHIER_ROLE = keccak256("CASHIER_ROLE");
+    address public cahiser = vm.addr(0xCa11);
 
     function setUp() public {
-        cashRegister = new KaChingCashRegisterV1Testable();
-    }
-
-    function testAddCashier() public {
-        // Initial assumption: The cashier is not yet a cashier
-        assertFalse(cashRegister.hasRole(CASHIER_ROLE, address(this)));
-
-        cashRegister.addCashier(address(this));
-
-        // After adding, the cashier should have the cashier role
-        assertTrue(cashRegister.hasRole(CASHIER_ROLE, address(this)));
+        cashRegister = new KaChingCashRegisterV1Testable(cahiser);
     }
 
     function testsetOrderSigners() public {
@@ -30,10 +20,7 @@ contract KaChingCashRegisterV1Test is Test {
         newSigners[0] = vm.addr(0xB0B1);
         newSigners[1] = vm.addr(0xB0B2);
 
-        address newCashier = vm.addr(0xCa11);
-        cashRegister.addCashier(newCashier);
-
-        vm.startPrank(newCashier);
+        vm.startPrank(cahiser);
         cashRegister.setOrderSigners(newSigners);
         address[] memory cashRegisterSigners = cashRegister.getOrderSigners();
 
@@ -41,13 +28,6 @@ contract KaChingCashRegisterV1Test is Test {
         for (uint256 i = 0; i < newSigners.length; i++) {
             assertEq(cashRegisterSigners[i], newSigners[i]);
         }
-    }
-
-    function testRevertWhenAddingCashierNotByAdmin() public {
-        // Attempt to add a cashier by someone who is not an admin should fail
-        vm.startPrank(customer);
-        vm.expectRevert();
-        cashRegister.addCashier(customer);
     }
 
     function testRevertWhenOverridingSignersNotByCashier() public {
