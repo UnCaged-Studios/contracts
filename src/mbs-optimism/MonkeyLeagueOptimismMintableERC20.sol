@@ -4,7 +4,6 @@ pragma solidity 0.8.15;
 import {OptimismMintableERC20} from "optimism-bedrock/universal/OptimismMintableERC20.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {ERC20Burnable} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title MonkeyLeagueOptimismMintableERC20
@@ -12,7 +11,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  *  It allows for a mintable, burnable ERC20 token with permit functionality on the Optimism network.
  *  This version of the token also enables the L2 Standard Bridge to burn tokens.
  */
-contract MonkeyLeagueOptimismMintableERC20 is OptimismMintableERC20, ERC20Permit, ERC20Burnable, Ownable {
+contract MonkeyLeagueOptimismMintableERC20 is OptimismMintableERC20, ERC20Permit, ERC20Burnable {
     /**
      * @notice Constructs the MonkeyLeagueOptimismMintableERC20 contract with specified parameters.
      * @param _bridge The address of the L2 standard bridge, capable of minting and burning tokens.
