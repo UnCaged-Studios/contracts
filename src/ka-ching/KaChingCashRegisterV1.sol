@@ -7,21 +7,25 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
+/// @dev Struct representing a single order item.
 struct OrderItem {
-    uint256 amount;
-    address currency;
-    bool credit;
+    uint256 amount; // Amount of the item
+    address currency; // Currency of the item
+    bool credit; // Credit flag for the item
 }
 
+/// @dev Struct representing a full order.
 struct FullOrder {
-    uint128 id;
-    uint32 expiry;
-    uint32 notBefore;
-    address customer;
-    OrderItem[] items;
+    uint128 id; // Order id
+    uint32 expiry; // Order expiry
+    uint32 notBefore; // Order start time
+    address customer; // Address of the customer
+    OrderItem[] items; // Items of the order
 }
 
-// FIXME - add docs as comments
+/// @title KaChingCashRegisterV1
+/// @dev This contract defines the KaChing cash register functionality.
+/// @notice It includes functions for managing orders and signers, and for settling payments.
 contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
     bytes32 private constant _ORDER_ITEM_HASH = keccak256("OrderItem(uint256 amount,address currency,bool credit)");
     bytes32 private constant _FULL_ORDER_HASH =
@@ -30,16 +34,16 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
     address[] private _orderSignerAddresses;
 
     bytes32 public constant CASHIER_ROLE = keccak256("CASHIER_ROLE");
-    // bytes32 public constant GOVERNOR_ROLE = keccak256("GOVERNOR_ROLE");
 
+    /// @dev Event emitted when an order is fully settled.
     event OrderFullySettled(uint128 indexed orderId, address indexed customer);
 
+    /// @dev Contract constructor sets initial role assignments.
     constructor() EIP712("KaChingCashRegisterV1", "1") {
-        // FIXME - set admin as GOVERNOR_ROLE
-        // check that DEFAULT_ADMIN_ROLE is not 0x00
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
+    /// @dev Internal function to calculate the hash of an order.
     function _getFullOrderHash(FullOrder memory order) internal pure returns (bytes32) {
         bytes memory itemsPacked = new bytes(32 * order.items.length);
         unchecked {
@@ -59,6 +63,7 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
         );
     }
 
+    /// @dev Internal function to check if the signer of an order is valid.
     function _isOrderSignerValid(FullOrder memory order, bytes memory signature) internal view returns (bool) {
         bytes32 fullOrderHash = _getFullOrderHash(order);
         address signer = ECDSA.recover(_hashTypedDataV4(fullOrderHash), signature);
@@ -75,6 +80,7 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
         return isSignerValid;
     }
 
+    /// @dev Internal function to check balances of all items in an order.
     function _checkBalances(FullOrder calldata order, address to) internal view {
         unchecked {
             for (uint256 i = 0; i < order.items.length; i++) {
@@ -89,6 +95,7 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
         }
     }
 
+    /// @dev Internal function to perform transfers of all items in an order.
     function _performTransfers(FullOrder calldata order, address to) internal {
         unchecked {
             for (uint256 i = 0; i < order.items.length; i++) {
@@ -103,6 +110,7 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
         }
     }
 
+    /// @notice External function to settle an order's payment.
     function settleOrderPayment(FullOrder calldata order, bytes calldata signature) external nonReentrant {
         // read-only validations
         require(msg.sender == order.customer, "Customer does not match sender address");
@@ -120,18 +128,22 @@ contract KaChingCashRegisterV1 is EIP712, AccessControl, ReentrancyGuard {
         emit OrderFullySettled({orderId: order.id, customer: msg.sender});
     }
 
+    /// @notice External function to check if an order has been processed.
     function isOrderProcessed(uint128 orderId) external view returns (bool) {
         return _orderProcessed[orderId];
     }
 
+    /// @notice External function to add a cashier.
     function addCashier(address cashier) external onlyRole(DEFAULT_ADMIN_ROLE) {
         grantRole(CASHIER_ROLE, cashier);
     }
 
+    /// @notice External function to remove a cashier.
     function removeCashier(address cashier) external onlyRole(DEFAULT_ADMIN_ROLE) {
         renounceRole(CASHIER_ROLE, cashier);
     }
 
+    /// @notice External function to set order signers.
     function setOrderSigners(address[] memory newSigners) external onlyRole(CASHIER_ROLE) {
         require(newSigners.length <= 3, "Cannot set more than 3 signers");
         _orderSignerAddresses = newSigners;
