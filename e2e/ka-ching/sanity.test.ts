@@ -53,7 +53,7 @@ test('debit customer with erc20', async () => {
       name: 'MonkeyLeague',
       version: '1',
       chainId: '31337',
-      verifyingContract: contracts.mbs,
+      verifyingContract: contracts.mbsOptimism,
     })
   );
   const id = parseUUID(uuid());
@@ -61,7 +61,7 @@ test('debit customer with erc20', async () => {
     id,
     customer: customer.address,
     amount,
-    currency: contracts.mbs,
+    currency: contracts.mbsOptimism,
     expiresIn: '1m',
   });
   const orderSignature = await _signOffChain(order);
@@ -90,7 +90,7 @@ test('credit customer with erc20', async () => {
     id,
     amount,
     customer: customer.address,
-    currency: contracts.mbs,
+    currency: contracts.mbsOptimism,
     expiresIn: '30s',
   });
   const orderSignature = await _signOffChain(order);

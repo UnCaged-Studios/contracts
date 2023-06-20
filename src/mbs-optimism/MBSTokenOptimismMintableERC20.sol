@@ -7,14 +7,14 @@ import {ERC20Burnable} from "@openzeppelin/contracts/token/ERC20/extensions/ERC2
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
- * @title MonkeyLeagueOptimismMintableERC20
+ * @title MBSTokenOptimismMintableERC20
  * @notice This contract is a variant of OptimismMintableERC20, incorporating permit functionality (ERC20Permit) and burnability (ERC20Burnable).
  *  It allows for a mintable, burnable ERC20 token with permit functionality on the Optimism network.
  *  This version of the token also enables the L2 Standard Bridge to burn tokens.
  */
-contract MonkeyLeagueOptimismMintableERC20 is OptimismMintableERC20, ERC20Permit, ERC20Burnable, Ownable {
+contract MBSTokenOptimismMintableERC20 is OptimismMintableERC20, ERC20Permit, ERC20Burnable, Ownable {
     /**
-     * @notice Constructs the MonkeyLeagueOptimismMintableERC20 contract with specified parameters.
+     * @notice Constructs the MBSTokenOptimismMintableERC20 contract with specified parameters.
      * @param _bridge The address of the L2 standard bridge, capable of minting and burning tokens.
      * @param _remoteToken The address of the corresponding L1 token.
      */
