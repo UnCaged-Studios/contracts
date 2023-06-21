@@ -124,10 +124,6 @@ const currentSigners = await cashierSdk.getOrderSigners();
 
 This smart contract and SDK are licensed under the MIT License - see the [LICENSE.md](../LICENSE) file for details.
 
-## Contact
-
-For more information or help with the smart contract or SDK, please contact [provide contact information].
-
 ## Acknowledgments
 
 - The smart contract utilizes OpenZeppelin's smart contract security standards for secure, robust operation.
