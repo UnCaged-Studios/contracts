@@ -3,7 +3,12 @@ import { coreSdkFactory } from './core';
 import { utils, BigNumberish, Contract, Signer, BigNumber } from 'ethers';
 import type { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { abi, types } from './permit';
-import { toEpoch } from './commons';
+import {
+  SerializedOrder,
+  deserializeOrder,
+  isSerializedOrder,
+  toEpoch,
+} from './commons';
 
 type TypedDataDomain = {
   name: string;
@@ -51,8 +56,14 @@ export function customerSdkFactory(
   };
 
   return {
-    settleOrderPayment(order: FullOrderStruct, signature: string) {
-      return _sdk.settleOrderPayment(order, signature);
+    settleOrderPayment(
+      order: FullOrderStruct | SerializedOrder,
+      signature: string
+    ) {
+      const _order: FullOrderStruct = isSerializedOrder(order)
+        ? deserializeOrder(order)
+        : order;
+      return _sdk.settleOrderPayment(_order, signature);
     },
     permitERC20(
       amount: BigNumber,

@@ -1,7 +1,7 @@
 import { BigNumber, BigNumberish, providers } from 'ethers';
 import ms from 'ms';
 import { coreSdkFactory } from './core';
-import { toEpoch } from './commons';
+import { deserializeOrder, serializeOrder, toEpoch } from './commons';
 
 function serializeOrderId(orderId: Uint8Array) {
   if (orderId.length != 16) {
@@ -28,18 +28,6 @@ type QueryEventsBlockFilters = {
   fromBlockOrBlockhash?: string | number | undefined;
   toBlock?: string | number | undefined;
 };
-
-// type Serializable =
-//   | string
-//   | number
-//   | boolean
-//   | null
-//   | { [K in string | number]: Serializable }
-//   | Serializable[];
-
-// type InferSerializable<T> = {
-//   [P in keyof T as T[P] extends Serializable ? P : never]: T[P];
-// };
 
 export function readonlySdkFactory(
   contractAddress: string,
@@ -93,6 +81,8 @@ export function readonlySdkFactory(
       debitCustomerWithERC20(params: UnaryOrderParams) {
         return _unaryOrder(params, false);
       },
+      serialize: serializeOrder,
+      deserialize: deserializeOrder,
     },
     events: {
       OrderFullySettled: {

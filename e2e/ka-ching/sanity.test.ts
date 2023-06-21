@@ -109,3 +109,32 @@ test('OrderFullySettled event', async () => {
   expect(byCustomer.length).toBe(2);
   expect(byOrderId_1.length).toBe(1);
 }, 30_000);
+
+test.only('credit customer with erc20', async () => {
+  const cashRegister_b0 = await _ensureNonZeroBalance(
+    contracts.kaChingCashRegister
+  );
+
+  // const mbs = mbsSDK(localJsonRpcProvider);
+  // const customer_b0 = await mbs.balanceOf(customer.address);
+  expect(cashRegister_b0.toBigInt()).toBeGreaterThan(BigInt(0));
+
+  const amount = cashRegister_b0;
+  const id = parseUUID(uuid());
+  const order = readonlySdk.orders.creditCustomerWithERC20({
+    id,
+    amount,
+    customer: customer.address,
+    currency: contracts.mbsOptimism,
+    expiresIn: '30s',
+  });
+  const h = readonlySdk.orders.serialize(order);
+  // const orderSignature = await _signOffChain(order);
+  const o = readonlySdk.orders.deserialize(h);
+  expect(h).toEqual(o);
+  // await _waitForTxn(() =>
+  //   customerSdk.settleOrderPayment(order, orderSignature)
+  // );
+  // const customer_b1 = await mbs.balanceOf(customer.address);
+  // expect(customer_b1.toBigInt()).toBe(customer_b0.add(amount).toBigInt());
+}, 30_000);
