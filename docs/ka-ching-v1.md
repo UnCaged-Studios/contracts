@@ -66,9 +66,12 @@ const { KaChingV1 } = require('@uncaged-studios/evm-contracts-library');
 const sdk = KaChingV1.sdkFactory(`0x${string}`);
 ```
 
-### Create an order:
+### Step 1: Create an order:
+
+> off-chain backend operation
 
 ```ts
+const readonlySdk = sdk.readonly(rpcProvider);
 const order = readonlySdk.orders.debitCustomerWithERC20({
   id,
   customer: `0x${string}`,
@@ -78,17 +81,25 @@ const order = readonlySdk.orders.debitCustomerWithERC20({
 });
 ```
 
-### Sign an order:
+### Step 2: Sign an order:
+
+> off-chain backend operation
 
 ```ts
+// orderSigner is a wallet
+const orderSignerSdk = sdk.orderSigner(orderSigner);
 const orderSignature = await orderSignerSdk.signOrder(order, {
   chainId: '31337',
 });
 ```
 
-### Settle an order's payment:
+### Step 2: Settle an order's payment:
+
+> on-chain frontend operation (dApp)
 
 ```ts
+// customer is a wallet
+const customerSdk = sdk.customer(customer);
 await customerSdk.settleOrderPayment(order, orderSignature);
 ```
 
