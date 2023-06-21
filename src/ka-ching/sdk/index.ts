@@ -1,4 +1,3 @@
-import { coreSdkFactory } from './core';
 import { orderSignerSdkFactory } from './order-signer';
 import { customerSdkFactory } from './customer';
 import type { providers, Signer } from 'ethers';

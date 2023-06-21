@@ -1,30 +1,123 @@
-# Ka-Ching Decentralized Point-of-Sale (PoS) System
+# KaChingCashRegisterV1
 
-### ⚠️ **Disclaimer: This project is currently in its development phase and not ready for production use.**
+KaChingCashRegisterV1 is a decentralized point-of-sale (PoS) system deployed on the Ethereum blockchain. As a part of Ka-Ching, it's essentially a blockchain-based digital checkout counter that enables transactions without any central authority. It utilizes the EIP712 and ECDSA standards for cryptographic operations and the IERC20 standard for token transactions. The key feature of this system is the use of off-chain EIP712 signed orders, which combine the safety and transparency of on-chain transactions with the efficiency of off-chain processes. The system validates orders for authorized signers, expiry, and usage to prevent fraud and double-spending.
 
-Ka-Ching is a decentralized point-of-sale (PoS) system, essentially a blockchain-based digital checkout counter that enables transactions without any central authority. Its key feature is the use of off-chain EIP712 signed orders, which blend the safety and transparency of on-chain transactions with the effectiveness of off-chain processes. The system validates orders for authorized signers, expiry, and usage to prevent fraud and double-spending.
+## Interface
 
-## Overview
+Users can interact with this smart contract through an Ethereum wallet that supports contract interaction.
 
-The system includes two main components:
+- You can use the high-level provided SDK. ([see SDK docs](./ka-ching-v1.md#sdk)) for further details.
+- Alternatively, you can consume the ABI directly from the `@uncaged-studios/evm-contracts-library` npm package, at `node_modules/@uncaged-studios/evm-contracts-library/src/abi`
 
-- **Smart Contracts**: Serving as the backbone of the system, handling transactions, and maintaining the integrity and security of the system.
-- **TypeScript SDK**: Facilitating interaction with the smart contracts, providing convenient and type-safe methods to interact with the Ka-Ching system from a TypeScript (or JavaScript) environment.
+## Functions and Features
 
-## Features (Work-In-Progress)
+The smart contract provides several functions for managing orders and payments:
 
-1. **Off-chain Signed Orders**: Combining the security and transparency of on-chain transactions with the efficiency and flexibility of off-chain operations.
-2. **ERC20 Token Support**: Transactions are currently limited to ERC20 tokens, allowing debit and credit operations on these tokens.
-3. **Role-based interactions**: Different roles (deployer, cashier, customer, and order signer) are defined with distinct permissions and capabilities.
+1. `settleOrderPayment`: Used to settle an order's payment, it requires the order data and a signature as parameters.
+2. `isOrderProcessed`: Checks if an order has been processed, requiring the order ID as a parameter.
+3. `setOrderSigners`: Updates the list of order signers, can only be called by the cashier. Requires a list of new signers' addresses as parameters.
+4. `getOrderSigners`: Returns the list of current order signers.
 
-For detailed insights into the API, high-level design, and system usage examples, please stay tuned for upcoming updates to this documentation.
+The smart contract's key features, some of which are still a work-in-progress, include:
 
-## Contributions and Feedback
+1. Off-chain Signed Orders: Combines the security and transparency of on-chain transactions with the efficiency and flexibility of off-chain operations.
+2. ERC20 Token Support: Transactions are currently limited to ERC20 tokens, supporting debit and credit operations on these tokens.
 
-We encourage you to contribute to Ka-Ching! Whether you're fixing a bug, proposing a new feature, or providing feedback on our work, we welcome all contributions.
+## Prerequisites
 
-Please note that this project is released with a [Contributor Code of Conduct](https://www.contributor-covenant.org/). By participating in this project you agree to abide by its terms.
+Before interacting with the contract, users must:
+
+1. Have an Ethereum wallet that supports contract interactions.
+2. Own enough tokens for making payments, depending on the specific order.
+
+## Risks
+
+Users should be aware of the following risks when using this smart contract:
+
+- Smart contract bugs: Despite efforts to ensure the contract is secure and bug-free, there is always a risk of undiscovered bugs that could lead to loss of funds.
+- Financial risks: Misuse of the contract functions or sending transactions to incorrect addresses may result in the loss of funds.
+- Ethereum transaction costs: Each transaction will require a certain amount of gas to be paid in ETH.
+
+Ensure a full understanding of the contract functions before interacting with it.
+
+## SDK
+
+The KaChingV1 SDK provides methods to interact with the KaChingV1 smart contract. The SDK is built on ethers.js.
+
+```bash
+npm i @uncaged-studios/evm-contracts-library
+```
+
+Consume package:
+
+```ts
+import { KaChingV1 } from '@uncaged-studios/evm-contracts-library';
+```
+
+or
+
+```js
+const { KaChingV1 } = require('@uncaged-studios/evm-contracts-library');
+```
+
+To initialize:
+
+```ts
+const sdk = KaChingV1.sdkFactory(contracts.kaChingCashRegister);
+```
+
+Create an order:
+
+```ts
+const order = readonlySdk.orders.debitCustomerWithERC20({
+  id,
+  customer: customer.address,
+  amount,
+  currency: contracts.mbsOptimism,
+  expiresIn: '1m',
+});
+```
+
+Sign an order:
+
+```ts
+const orderSignature = await orderSignerSdk.signOrder(order, {
+  chainId: '31337',
+});
+```
+
+Settle an order's payment:
+
+```ts
+await customerSdk.settleOrderPayment(order, orderSignature);
+```
+
+Retrieve Order Events:
+
+```ts
+const allEvents = await readonlySdk.events.OrderFullySettled.findAll();
+```
+
+Set and Get Order Signers:
+
+```ts
+await cashierSdk.setOrderSigners([orderSigner.address]);
+const currentSigners = await cashierSdk.getOrderSigners();
+```
 
 ## License
 
-Ka-Ching is [MIT licensed](LICENSE).
+This smart contract and SDK are licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
+## Contact
+
+For more information or help with the smart contract or SDK, please contact [provide contact information].
+
+## Acknowledgments
+
+- The smart contract utilizes OpenZeppelin's smart contract security standards for secure, robust operation.
+- The SDK is built on the popular Ethereum library, ethers.js.
+
+```
+
+```

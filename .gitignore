@@ -12,5 +12,4 @@ out/
 
 dist/
 node_modules
-*.abi.json
 e2e/anvil.json

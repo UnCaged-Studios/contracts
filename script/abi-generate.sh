@@ -13,4 +13,4 @@ else
   exit 1
 fi
 
-forge inspect $filePath/$contractName.sol:$contractName abi > $contractName.abi.json && typechain --target=ethers-v5 --out-dir=$outputDir $contractName'.abi.json'
+forge inspect $filePath/$contractName.sol:$contractName abi > src/abi/$contractName.abi.json && typechain --target=ethers-v5 --out-dir=$outputDir src/abi/$contractName'.abi.json'
