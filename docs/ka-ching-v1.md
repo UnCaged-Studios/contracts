@@ -1,6 +1,15 @@
 # KaChingCashRegisterV1
 
-KaChingCashRegisterV1 is a decentralized point-of-sale (PoS) system deployed on the Ethereum blockchain. As a part of Ka-Ching, it's essentially a blockchain-based digital checkout counter that enables transactions without any central authority. It utilizes the EIP712 and ECDSA standards for cryptographic operations and the IERC20 standard for token transactions. The key feature of this system is the use of off-chain EIP712 signed orders, which combine the safety and transparency of on-chain transactions with the efficiency of off-chain processes. The system validates orders for authorized signers, expiry, and usage to prevent fraud and double-spending.
+# KaChingCashRegisterV1
+
+KaChingCashRegisterV1, is a decentralized point-of-sale (PoS) system leveraging the Ethereum blockchain.
+
+It operates as a digital checkout counter, facilitating transactions with no central authority. Utilizing EIP712 and ECDSA for cryptographic functions and the IERC20 standard for token transactions, the system fosters security and transparency. Its distinctive feature is the use of off-chain EIP712 signed orders, marrying on-chain safety with off-chain efficacy. This feature validates orders based on authorized signers, expiration, and usage, significantly mitigating the risks of fraud and double-spending.
+
+This smart contract presents the following primary features:
+
+1. **Off-chain Signed Orders**: Enhances the blend of on-chain security and off-chain efficiency.
+2. **ERC20 Token Support**: Currently, transactions are only possible using ERC20 tokens, providing support for debit and credit operations.
 
 ## Interface
 
@@ -9,7 +18,7 @@ Users can interact with this smart contract through an Ethereum wallet that supp
 - You can use the high-level provided SDK. ([see SDK docs](./ka-ching-v1.md#sdk)) for further details.
 - Alternatively, you can consume the ABI directly from the `@uncaged-studios/evm-contracts-library` npm package, at `node_modules/@uncaged-studios/evm-contracts-library/src/abi`
 
-## Functions and Features
+## Functions
 
 The smart contract provides several functions for managing orders and payments:
 
@@ -17,11 +26,6 @@ The smart contract provides several functions for managing orders and payments:
 2. `isOrderProcessed`: Checks if an order has been processed, requiring the order ID as a parameter.
 3. `setOrderSigners`: Updates the list of order signers, can only be called by the cashier. Requires a list of new signers' addresses as parameters.
 4. `getOrderSigners`: Returns the list of current order signers.
-
-The smart contract's key features, some of which are still a work-in-progress, include:
-
-1. Off-chain Signed Orders: Combines the security and transparency of on-chain transactions with the efficiency and flexibility of off-chain operations.
-2. ERC20 Token Support: Transactions are currently limited to ERC20 tokens, supporting debit and credit operations on these tokens.
 
 ## Prerequisites
 
@@ -48,37 +52,35 @@ The KaChingV1 SDK provides methods to interact with the KaChingV1 smart contract
 npm i @uncaged-studios/evm-contracts-library
 ```
 
-Consume package:
+### Consume package:
 
 ```ts
+// esm
 import { KaChingV1 } from '@uncaged-studios/evm-contracts-library';
-```
-
-or
-
-```js
+// commonjs
 const { KaChingV1 } = require('@uncaged-studios/evm-contracts-library');
 ```
 
-To initialize:
+### Initialize:
 
 ```ts
-const sdk = KaChingV1.sdkFactory(contracts.kaChingCashRegister);
+// pass the deployed contract address
+const sdk = KaChingV1.sdkFactory(`0x${string}`);
 ```
 
-Create an order:
+### Create an order:
 
 ```ts
 const order = readonlySdk.orders.debitCustomerWithERC20({
   id,
-  customer: customer.address,
-  amount,
-  currency: contracts.mbsOptimism,
-  expiresIn: '1m',
+  customer: `0x${string}`,
+  amount: BigNumber.from(42),
+  currency: `0x${string}`,
+  expiresIn: '1m', // accepts various time formats, e.g. '2.5 hrs', '10m', '1y', '5s'
 });
 ```
 
-Sign an order:
+### Sign an order:
 
 ```ts
 const orderSignature = await orderSignerSdk.signOrder(order, {
@@ -86,28 +88,32 @@ const orderSignature = await orderSignerSdk.signOrder(order, {
 });
 ```
 
-Settle an order's payment:
+### Settle an order's payment:
 
 ```ts
 await customerSdk.settleOrderPayment(order, orderSignature);
 ```
 
-Retrieve Order Events:
+### Retrieve Order Events:
 
 ```ts
-const allEvents = await readonlySdk.events.OrderFullySettled.findAll();
+const [FooOrderFullySettledEvent] =
+  await readonlySdk.events.OrderFullySettled.findByOrderId('foo');
+
+const CustomerOrderFullySettledEvents =
+  await readonlySdk.events.OrderFullySettled.findByCustomer(`0x{string}`);
 ```
 
-Set and Get Order Signers:
+### Set and Get Order Signers:
 
 ```ts
-await cashierSdk.setOrderSigners([orderSigner.address]);
+await cashierSdk.setOrderSigners([`0x${string}`]);
 const currentSigners = await cashierSdk.getOrderSigners();
 ```
 
 ## License
 
-This smart contract and SDK are licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+This smart contract and SDK are licensed under the MIT License - see the [LICENSE.md](../LICENSE) file for details.
 
 ## Contact
 
@@ -116,8 +122,4 @@ For more information or help with the smart contract or SDK, please contact [pro
 ## Acknowledgments
 
 - The smart contract utilizes OpenZeppelin's smart contract security standards for secure, robust operation.
-- The SDK is built on the popular Ethereum library, ethers.js.
-
-```
-
-```
+- The SDK is built on the popular Ethereum library, ethers.js (v5).
