@@ -16,7 +16,8 @@
   "types": "./dist/esm/index.d.ts",
   "files": [
     "dist",
-    "docs"
+    "docs",
+    "src/abi"
   ],
   "scripts": {
     "lint": "eslint . --ext .ts --fix",
