@@ -2,6 +2,7 @@ import { BigNumber, BigNumberish, providers } from 'ethers';
 import ms from 'ms';
 import { coreSdkFactory } from './core';
 import { toEpoch } from './commons';
+import { serializeOrder } from './order-serialization';
 
 function serializeOrderId(orderId: Uint8Array) {
   if (orderId.length != 16) {
@@ -28,18 +29,6 @@ type QueryEventsBlockFilters = {
   fromBlockOrBlockhash?: string | number | undefined;
   toBlock?: string | number | undefined;
 };
-
-// type Serializable =
-//   | string
-//   | number
-//   | boolean
-//   | null
-//   | { [K in string | number]: Serializable }
-//   | Serializable[];
-
-// type InferSerializable<T> = {
-//   [P in keyof T as T[P] extends Serializable ? P : never]: T[P];
-// };
 
 export function readonlySdkFactory(
   contractAddress: string,
@@ -88,10 +77,12 @@ export function readonlySdkFactory(
   return {
     orders: {
       creditCustomerWithERC20(params: UnaryOrderParams) {
-        return _unaryOrder(params, true);
+        const order = _unaryOrder(params, true);
+        return { order, serializedOrder: serializeOrder(order) };
       },
       debitCustomerWithERC20(params: UnaryOrderParams) {
-        return _unaryOrder(params, false);
+        const order = _unaryOrder(params, false);
+        return { order, serializedOrder: serializeOrder(order) };
       },
     },
     events: {

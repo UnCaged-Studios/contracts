@@ -54,7 +54,7 @@ test('debit customer with erc20', async () => {
     })
   );
   const id = parseUUID(uuid());
-  const order = readonlySdk.orders.debitCustomerWithERC20({
+  const { order, serializedOrder } = readonlySdk.orders.debitCustomerWithERC20({
     id,
     customer: customer.address,
     amount,
@@ -63,7 +63,7 @@ test('debit customer with erc20', async () => {
   });
   const orderSignature = await _signOffChain(order);
   await _waitForTxn(() =>
-    customerSdk.settleOrderPayment(order, orderSignature)
+    customerSdk.settleOrderPayment(serializedOrder, orderSignature)
   );
   const customer_b1 = await mbsSDK(localJsonRpcProvider).balanceOf(
     customer.address
@@ -83,16 +83,18 @@ test('credit customer with erc20', async () => {
 
   const amount = cashRegister_b0;
   const id = parseUUID(uuid());
-  const order = readonlySdk.orders.creditCustomerWithERC20({
-    id,
-    amount,
-    customer: customer.address,
-    currency: contracts.mbsOptimism,
-    expiresIn: '30s',
-  });
+  const { order, serializedOrder } = readonlySdk.orders.creditCustomerWithERC20(
+    {
+      id,
+      amount,
+      customer: customer.address,
+      currency: contracts.mbsOptimism,
+      expiresIn: '30s',
+    }
+  );
   const orderSignature = await _signOffChain(order);
   await _waitForTxn(() =>
-    customerSdk.settleOrderPayment(order, orderSignature)
+    customerSdk.settleOrderPayment(serializedOrder, orderSignature)
   );
   const customer_b1 = await mbs.balanceOf(customer.address);
   expect(customer_b1.toBigInt()).toBe(customer_b0.add(amount).toBigInt());
