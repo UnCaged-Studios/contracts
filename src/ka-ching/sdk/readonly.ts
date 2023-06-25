@@ -1,7 +1,8 @@
 import { BigNumber, BigNumberish, providers } from 'ethers';
 import ms from 'ms';
 import { coreSdkFactory } from './core';
-import { deserializeOrder, serializeOrder, toEpoch } from './commons';
+import { toEpoch } from './commons';
+import { deserializeOrder, serializeOrder } from './order-serialization';
 
 function serializeOrderId(orderId: Uint8Array) {
   if (orderId.length != 16) {
