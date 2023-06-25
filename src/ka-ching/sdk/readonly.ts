@@ -2,7 +2,7 @@ import { BigNumber, BigNumberish, providers } from 'ethers';
 import ms from 'ms';
 import { coreSdkFactory } from './core';
 import { toEpoch } from './commons';
-import { deserializeOrder, serializeOrder } from './order-serialization';
+import { serializeOrder } from './order-serialization';
 
 function serializeOrderId(orderId: Uint8Array) {
   if (orderId.length != 16) {
@@ -77,13 +77,13 @@ export function readonlySdkFactory(
   return {
     orders: {
       creditCustomerWithERC20(params: UnaryOrderParams) {
-        return _unaryOrder(params, true);
+        const order = _unaryOrder(params, true);
+        return { order, serializedOrder: serializeOrder(order) };
       },
       debitCustomerWithERC20(params: UnaryOrderParams) {
-        return _unaryOrder(params, false);
+        const order = _unaryOrder(params, false);
+        return { order, serializedOrder: serializeOrder(order) };
       },
-      serialize: serializeOrder,
-      deserialize: deserializeOrder,
     },
     events: {
       OrderFullySettled: {

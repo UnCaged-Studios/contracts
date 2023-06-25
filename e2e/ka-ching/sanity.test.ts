@@ -10,7 +10,6 @@ import {
 } from '../test-utils';
 
 import { KaChingV1 } from '../../dist/cjs';
-import { serializeOrder } from '../../dist/cjs/ka-ching/sdk/order-serialization';
 
 // wallets
 const cashier = new Wallet(privateKeys.cashier, localJsonRpcProvider);
@@ -55,7 +54,7 @@ test('debit customer with erc20', async () => {
     })
   );
   const id = parseUUID(uuid());
-  const order = readonlySdk.orders.debitCustomerWithERC20({
+  const { order, serializedOrder } = readonlySdk.orders.debitCustomerWithERC20({
     id,
     customer: customer.address,
     amount,
@@ -64,7 +63,7 @@ test('debit customer with erc20', async () => {
   });
   const orderSignature = await _signOffChain(order);
   await _waitForTxn(() =>
-    customerSdk.settleOrderPayment(serializeOrder(order), orderSignature)
+    customerSdk.settleOrderPayment(serializedOrder, orderSignature)
   );
   const customer_b1 = await mbsSDK(localJsonRpcProvider).balanceOf(
     customer.address
@@ -84,16 +83,18 @@ test('credit customer with erc20', async () => {
 
   const amount = cashRegister_b0;
   const id = parseUUID(uuid());
-  const order = readonlySdk.orders.creditCustomerWithERC20({
-    id,
-    amount,
-    customer: customer.address,
-    currency: contracts.mbsOptimism,
-    expiresIn: '30s',
-  });
+  const { order, serializedOrder } = readonlySdk.orders.creditCustomerWithERC20(
+    {
+      id,
+      amount,
+      customer: customer.address,
+      currency: contracts.mbsOptimism,
+      expiresIn: '30s',
+    }
+  );
   const orderSignature = await _signOffChain(order);
   await _waitForTxn(() =>
-    customerSdk.settleOrderPayment(serializeOrder(order), orderSignature)
+    customerSdk.settleOrderPayment(serializedOrder, orderSignature)
   );
   const customer_b1 = await mbs.balanceOf(customer.address);
   expect(customer_b1.toBigInt()).toBe(customer_b0.add(amount).toBigInt());
@@ -110,32 +111,3 @@ test('OrderFullySettled event', async () => {
   expect(byCustomer.length).toBe(2);
   expect(byOrderId_1.length).toBe(1);
 }, 30_000);
-
-// test.skip('credit customer with erc20', async () => {
-//   const cashRegister_b0 = await _ensureNonZeroBalance(
-//     contracts.kaChingCashRegister
-//   );
-
-//   // const mbs = mbsSDK(localJsonRpcProvider);
-//   // const customer_b0 = await mbs.balanceOf(customer.address);
-//   expect(cashRegister_b0.toBigInt()).toBeGreaterThan(BigInt(0));
-
-//   const amount = cashRegister_b0;
-//   const id = parseUUID(uuid());
-//   const order = readonlySdk.orders.creditCustomerWithERC20({
-//     id,
-//     amount,
-//     customer: customer.address,
-//     currency: contracts.mbsOptimism,
-//     expiresIn: '30s',
-//   });
-//   const serializedOrder = readonlySdk.orders.serialize(order);
-//   // const orderSignature = await _signOffChain(order);
-//   const o = readonlySdk.orders.deserialize(serializedOrder);
-//   expect({}).toEqual(o);
-//   // await _waitForTxn(() =>
-//   //   customerSdk.settleOrderPayment(order, orderSignature)
-//   // );
-//   // const customer_b1 = await mbs.balanceOf(customer.address);
-//   // expect(customer_b1.toBigInt()).toBe(customer_b0.add(amount).toBigInt());
-// }, 30_000);

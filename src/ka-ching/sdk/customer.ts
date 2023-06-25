@@ -1,14 +1,9 @@
-import { FullOrderStruct } from './abi/KaChingCashRegisterV1Abi';
 import { coreSdkFactory } from './core';
 import { utils, BigNumberish, Contract, Signer, BigNumber } from 'ethers';
 import type { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { abi, types } from './permit';
 import { toEpoch } from './commons';
-import {
-  SerializedOrder,
-  deserializeOrder,
-  isSerializedOrder,
-} from './order-serialization';
+import { SerializedOrder, deserializeOrder } from './order-serialization';
 
 type TypedDataDomain = {
   name: string;

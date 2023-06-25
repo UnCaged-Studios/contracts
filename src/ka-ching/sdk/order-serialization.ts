@@ -1,13 +1,12 @@
-import { FullOrderStruct } from './abi/KaChingCashRegisterV1Abi';
+import {
+  FullOrderStruct,
+  OrderItemStruct,
+} from './abi/KaChingCashRegisterV1Abi';
 import { KaChingCashRegisterV1Abi__factory } from './abi';
 
 const contractInterface = KaChingCashRegisterV1Abi__factory.createInterface();
 
 export type SerializedOrder = `0x${string}`;
-
-export function isSerializedOrder(o: unknown): o is SerializedOrder {
-  return typeof o === 'string' && o.startsWith('0x');
-}
 
 export function serializeOrder(order: FullOrderStruct): `0x${string}` {
   return contractInterface.encodeFunctionData('settleOrderPayment', [
@@ -32,10 +31,16 @@ export function deserializeOrder(data: `0x${string}`): FullOrderStruct {
     expiry: order.expiry,
     notBefore: order.notBefore,
     customer: order.customer,
-    items: order.items.map(([amount, currency, credit]: any) => ({
-      amount,
-      currency,
-      credit,
-    })),
+    items: order.items.map(
+      ([amount, currency, credit]: [
+        OrderItemStruct['amount'],
+        OrderItemStruct['currency'],
+        OrderItemStruct['credit']
+      ]) => ({
+        amount,
+        currency,
+        credit,
+      })
+    ),
   };
 }
