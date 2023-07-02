@@ -129,7 +129,7 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
     /// @notice Updates the list of order signers.
     /// @dev Only the cashier can update this list.
     /// @param newSigners New list of signers.
-    function setOrderSigners(address[] memory newSigners) external onlyCashier {
+    function setOrderSigners(address[] calldata newSigners) external onlyCashier {
         require(newSigners.length <= 3, "Cannot set more than 3 signers");
         _orderSignerAddresses = newSigners;
     }
