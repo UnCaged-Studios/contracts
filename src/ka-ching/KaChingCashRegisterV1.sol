@@ -89,21 +89,6 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
         return isSignerValid;
     }
 
-    /// @dev Internal function to check balances of all items in an order.
-    function _checkBalances(FullOrder calldata order, address to) internal view {
-        unchecked {
-            for (uint256 i = 0; i < order.items.length; i++) {
-                OrderItem calldata item = order.items[i];
-                IERC20 token = IERC20(item.currency);
-                if (item.credit) {
-                    require(token.balanceOf(address(this)) >= item.amount, "Contract does not have enough tokens");
-                } else {
-                    require(token.balanceOf(to) >= item.amount, "Customer does not have enough tokens");
-                }
-            }
-        }
-    }
-
     /// @dev Internal function to perform transfers of all items in an order.
     function _performTransfers(FullOrder calldata order, address to) internal {
         unchecked {
@@ -127,7 +112,6 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
         require(block.timestamp >= order.notBefore, "Order cannot be used yet");
         require(_isOrderSignerValid(order, signature), "Invalid signature");
         require(false == _orderProcessed[order.id], "Order already processed");
-        _checkBalances({order: order, to: msg.sender});
 
         // change state
         _orderProcessed[order.id] = true;
