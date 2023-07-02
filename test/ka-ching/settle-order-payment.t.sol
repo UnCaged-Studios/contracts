@@ -221,4 +221,20 @@ contract KaChingCashRegisterV1Test is Test {
         vm.expectRevert("Invalid signature");
         cashRegister.settleOrderPayment(order, signature);
     }
+
+    function testRevertWhenOrderItemsIsEmpty() public {
+        // Create an order
+        OrderItem[] memory items = new OrderItem[](0);
+
+        (FullOrder memory order, bytes memory signature) =
+            _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
+
+        // Change the blocktime to the valid order time
+        vm.warp(baselineBlocktime);
+        vm.prank(customer);
+
+        // Try to process the order with the customer as the signer, but not using vm.prank(customer)
+        vm.expectRevert("Order must contain at least one item");
+        cashRegister.settleOrderPayment(order, signature);
+    }
 }
