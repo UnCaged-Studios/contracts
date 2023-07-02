@@ -5,6 +5,7 @@ libs = ["lib"]
 solc = "0.8.15"
 optimizer = true
 optimizer_runs = 9999999
+auto_detect_solc = true
 # TBD yul
 # see size breakdown (24kb limit)
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
