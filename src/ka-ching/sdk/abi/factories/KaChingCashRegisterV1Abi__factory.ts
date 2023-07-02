@@ -63,6 +63,31 @@ const _abi = [
     type: "event",
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "signer1",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "signer2",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "signer3",
+        type: "address",
+      },
+    ],
+    name: "OrderSignersUpdated",
+    type: "event",
+  },
+  {
     inputs: [],
     name: "CASHIER_ROLE",
     outputs: [

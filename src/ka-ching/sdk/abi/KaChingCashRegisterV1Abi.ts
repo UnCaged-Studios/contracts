@@ -133,10 +133,12 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
   events: {
     "EIP712DomainChanged()": EventFragment;
     "OrderFullySettled(uint128,address)": EventFragment;
+    "OrderSignersUpdated(address,address,address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "EIP712DomainChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OrderFullySettled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OrderSignersUpdated"): EventFragment;
 }
 
 export interface EIP712DomainChangedEventObject {}
@@ -159,6 +161,19 @@ export type OrderFullySettledEvent = TypedEvent<
 
 export type OrderFullySettledEventFilter =
   TypedEventFilter<OrderFullySettledEvent>;
+
+export interface OrderSignersUpdatedEventObject {
+  signer1: string;
+  signer2: string;
+  signer3: string;
+}
+export type OrderSignersUpdatedEvent = TypedEvent<
+  [string, string, string],
+  OrderSignersUpdatedEventObject
+>;
+
+export type OrderSignersUpdatedEventFilter =
+  TypedEventFilter<OrderSignersUpdatedEvent>;
 
 export interface KaChingCashRegisterV1Abi extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -304,6 +319,17 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
       orderId?: BigNumberish | null,
       customer?: string | null
     ): OrderFullySettledEventFilter;
+
+    "OrderSignersUpdated(address,address,address)"(
+      signer1?: string | null,
+      signer2?: string | null,
+      signer3?: string | null
+    ): OrderSignersUpdatedEventFilter;
+    OrderSignersUpdated(
+      signer1?: string | null,
+      signer2?: string | null,
+      signer3?: string | null
+    ): OrderSignersUpdatedEventFilter;
   };
 
   estimateGas: {
