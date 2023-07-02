@@ -60,8 +60,9 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
                 bytes32 itemHash = keccak256(
                     abi.encode(_ORDER_ITEM_HASH, order.items[i].amount, order.items[i].currency, order.items[i].credit)
                 );
+                uint256 baseIndex = i * 32;
                 for (uint256 j = 0; j < 32; j++) {
-                    itemsPacked[i * 32 + j] = itemHash[j];
+                    itemsPacked[baseIndex + j] = itemHash[j];
                 }
             }
         }
