@@ -20,6 +20,7 @@ struct FullOrder {
     uint32 notBefore; // Order start time
     address customer; // Address of the customer
     OrderItem[1] items; // Items of the order
+    address cashRegister;
 }
 
 /// @title KaChingCashRegisterV1
@@ -28,8 +29,9 @@ struct FullOrder {
 /// The role of the cashier is only assignable upon deployment and cannot be changed.
 contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
     bytes32 private constant _ORDER_ITEM_HASH = keccak256("OrderItem(uint256 amount,bool credit)");
-    bytes32 private constant _FULL_ORDER_HASH =
-        keccak256("FullOrder(uint128 id,uint32 expiry,uint32 notBefore,address customer,bytes32 itemsHash)");
+    bytes32 private constant _FULL_ORDER_HASH = keccak256(
+        "FullOrder(uint128 id,uint32 expiry,uint32 notBefore,address customer,bytes32 itemsHash,address cashRegister)"
+    );
     uint256 private constant MAX_SIGNERS = 3; // Added constant for max signers
 
     mapping(uint128 => bool) private _orderProcessed;
@@ -75,7 +77,13 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
         }
         return keccak256(
             abi.encode(
-                _FULL_ORDER_HASH, order.id, order.expiry, order.notBefore, order.customer, keccak256(itemsPacked)
+                _FULL_ORDER_HASH,
+                order.id,
+                order.expiry,
+                order.notBefore,
+                order.customer,
+                keccak256(itemsPacked),
+                order.cashRegister
             )
         );
     }
@@ -125,6 +133,9 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
         view
     {
         require(sender == order.customer, "Customer does not match sender address");
+        require(
+            address(this) == order.cashRegister, "CashRegister address in order does not match this contract address"
+        );
         require(block.timestamp < order.expiry, "Order is expired");
         require(block.timestamp >= order.notBefore, "Order cannot be used yet");
         require(_isOrderSignerValid(order, signature), "Invalid signature");

@@ -247,6 +247,11 @@ const _abi = [
             name: "items",
             type: "tuple[1]",
           },
+          {
+            internalType: "address",
+            name: "cashRegister",
+            type: "address",
+          },
         ],
         internalType: "struct FullOrder",
         name: "order",
@@ -303,6 +308,11 @@ const _abi = [
             internalType: "struct OrderItem[1]",
             name: "items",
             type: "tuple[1]",
+          },
+          {
+            internalType: "address",
+            name: "cashRegister",
+            type: "address",
           },
         ],
         internalType: "struct FullOrder",
