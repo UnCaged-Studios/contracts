@@ -72,6 +72,33 @@ test('debit customer with erc20', async () => {
   _orders.push(id);
 }, 30_000);
 
+test('debit customer with erc20 and built-in permit', async () => {
+  const customer_b0 = await _ensureNonZeroBalance(customer.address);
+  const amount = BigNumber.from(BigInt(2 * 10 ** 18));
+  const id = parseUUID(uuid());
+  const { order, serializedOrder } = readonlySdk.orders.debitCustomerWithERC20({
+    id,
+    customer: customer.address,
+    amount,
+    currency: contracts.mbsOptimism,
+    expiresIn: '1m',
+  });
+  const orderSignature = await _signOffChain(order);
+  await _waitForTxn(() =>
+    customerSdk.settleOrderPaymentWithPermit(serializedOrder, orderSignature, {
+      name: 'MonkeyLeague',
+      version: '1',
+      chainId: '31337',
+      verifyingContract: contracts.mbsOptimism,
+    })
+  );
+  const customer_b1 = await mbsSDK(localJsonRpcProvider).balanceOf(
+    customer.address
+  );
+  expect(customer_b1.toBigInt()).toBe(customer_b0.sub(amount).toBigInt());
+  _orders.push(id);
+}, 30_000);
+
 test('credit customer with erc20', async () => {
   const cashRegister_b0 = await _ensureNonZeroBalance(
     contracts.kaChingCashRegister
@@ -107,7 +134,7 @@ test('OrderFullySettled event', async () => {
     readonlySdk.events.OrderFullySettled.findByOrderId(_orders[1]),
     readonlySdk.events.OrderFullySettled.findByCustomer(customer.address),
   ]);
-  expect(allEvents.length).toBe(2);
-  expect(byCustomer.length).toBe(2);
+  expect(allEvents.length).toBe(3);
+  expect(byCustomer.length).toBe(3);
   expect(byOrderId_1.length).toBe(1);
 }, 30_000);
