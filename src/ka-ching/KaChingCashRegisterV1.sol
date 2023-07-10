@@ -97,7 +97,15 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
     }
 
     /// @dev Internal function to perform transfers of all items in an order.
-    function _performTransfers(FullOrder calldata order, address to) internal {
+    function _performTransfers(
+        FullOrder calldata order,
+        address to,
+        bool usePermit,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) internal {
         unchecked {
             for (uint256 i = 0; i < order.items.length; i++) {
                 OrderItem calldata item = order.items[i];
@@ -105,6 +113,10 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
                 if (item.credit) {
                     token.transfer(to, item.amount);
                 } else {
+                    if (usePermit) {
+                        IERC20Permit permitToken = IERC20Permit(item.currency);
+                        permitToken.permit(to, address(this), item.amount, deadline, v, r, s);
+                    }
                     token.transferFrom(to, address(this), item.amount);
                 }
             }
@@ -123,25 +135,29 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
         require(false == _orderProcessed[order.id], "Order already processed");
     }
 
-    function _settleOrderPaymentExecution(FullOrder calldata order, address sender) internal {
-        // change state
-        _orderProcessed[order.id] = true;
-        _performTransfers({order: order, to: sender});
-
-        // event
-        emit OrderFullySettled({orderId: order.id, customer: sender});
-    }
-
     /// @notice External function to settle an order's payment.
     function settleOrderPayment(FullOrder calldata order, bytes calldata signature) external nonReentrant {
         // read-only validations
         _settleOrderPaymentValidation({order: order, signature: signature, sender: msg.sender});
 
         // change state
-        _settleOrderPaymentExecution({order: order, sender: msg.sender});
+        _orderProcessed[order.id] = true;
+        // Deadline, v, r, s parameters are not used hence passed as default
+        _performTransfers({
+            order: order,
+            to: msg.sender,
+            usePermit: false,
+            deadline: uint256(0),
+            v: 0,
+            r: bytes32(0),
+            s: bytes32(0)
+        });
+
+        // event
+        emit OrderFullySettled({orderId: order.id, customer: msg.sender});
     }
 
-    /// @notice External function to settle an order's payment.
+    /// @notice External function to settle an order's payment with invoking erc20 permit.
     function settleOrderPaymentWithPermit(
         FullOrder calldata order,
         bytes calldata signature,
@@ -154,16 +170,11 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
         _settleOrderPaymentValidation({order: order, signature: signature, sender: msg.sender});
 
         // change state
-        unchecked {
-            for (uint256 i = 0; i < order.items.length; i++) {
-                OrderItem calldata item = order.items[i];
-                if (!item.credit) {
-                    IERC20Permit token = IERC20Permit(item.currency);
-                    token.permit(msg.sender, address(this), item.amount, deadline, v, r, s);
-                }
-            }
-        }
-        _settleOrderPaymentExecution({order: order, sender: msg.sender});
+        _orderProcessed[order.id] = true;
+        _performTransfers({order: order, to: msg.sender, usePermit: true, deadline: deadline, v: v, r: r, s: s});
+
+        // event
+        emit OrderFullySettled({orderId: order.id, customer: msg.sender});
     }
 
     /// @notice External function to check if an order has been processed.
