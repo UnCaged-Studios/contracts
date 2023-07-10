@@ -3,6 +3,7 @@ import ms from 'ms';
 import { coreSdkFactory } from './core';
 import { toEpoch } from './commons';
 import { serializeOrder } from './order-serialization';
+import { OrderItemStruct } from './abi/KaChingCashRegisterV1Abi';
 
 function serializeOrderId(orderId: Uint8Array) {
   if (orderId.length != 16) {
@@ -50,7 +51,7 @@ export function readonlySdkFactory(
       customer,
       expiry: toEpoch(expiresIn),
       notBefore: startsIn ? toEpoch(startsIn) : 0,
-      items: [{ amount, currency, credit }],
+      items: [{ amount, currency, credit }] as [OrderItemStruct],
     };
   };
 

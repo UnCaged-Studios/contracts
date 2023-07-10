@@ -219,9 +219,9 @@
                 "type": "bool"
               }
             ],
-            "internalType": "struct OrderItem[]",
+            "internalType": "struct OrderItem[1]",
             "name": "items",
-            "type": "tuple[]"
+            "type": "tuple[1]"
           }
         ],
         "internalType": "struct FullOrder",
@@ -281,9 +281,9 @@
                 "type": "bool"
               }
             ],
-            "internalType": "struct OrderItem[]",
+            "internalType": "struct OrderItem[1]",
             "name": "items",
-            "type": "tuple[]"
+            "type": "tuple[1]"
           }
         ],
         "internalType": "struct FullOrder",

@@ -64,5 +64,5 @@ export function deserializeOrder(
     position += 130;
   }
 
-  return { id, expiry, notBefore, customer, items };
+  return { id, expiry, notBefore, customer, items: [items[0]] };
 }

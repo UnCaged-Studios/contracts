@@ -37,7 +37,7 @@ test('node is online', async () => {
   expect(await localJsonRpcProvider.getBlockNumber()).toBeGreaterThan(0);
 });
 
-test('cashier wallet can perform actions', async () => {
+test('order signers is set properly', async () => {
   expect(await cashierSdk.getOrderSigners()).toEqual([orderSigner.address]);
 });
 

@@ -20,7 +20,7 @@ struct FullOrder {
     uint32 expiry; // Order expiry
     uint32 notBefore; // Order start time
     address customer; // Address of the customer
-    OrderItem[] items; // Items of the order
+    OrderItem[1] items; // Items of the order
 }
 
 /// @title KaChingCashRegisterV1
@@ -106,20 +106,16 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
         bytes32 r,
         bytes32 s
     ) internal {
-        unchecked {
-            for (uint256 i = 0; i < order.items.length; i++) {
-                OrderItem calldata item = order.items[i];
-                IERC20 token = IERC20(item.currency);
-                if (item.credit) {
-                    token.transfer(to, item.amount);
-                } else {
-                    if (usePermit) {
-                        IERC20Permit permitToken = IERC20Permit(item.currency);
-                        permitToken.permit(to, address(this), item.amount, deadline, v, r, s);
-                    }
-                    token.transferFrom(to, address(this), item.amount);
-                }
+        OrderItem calldata item = order.items[0];
+        IERC20 token = IERC20(item.currency);
+        if (item.credit) {
+            token.transfer(to, item.amount);
+        } else {
+            if (usePermit) {
+                IERC20Permit permitToken = IERC20Permit(item.currency);
+                permitToken.permit(to, address(this), item.amount, deadline, v, r, s);
             }
+            token.transferFrom(to, address(this), item.amount);
         }
     }
 
@@ -130,7 +126,6 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
         require(sender == order.customer, "Customer does not match sender address");
         require(block.timestamp < order.expiry, "Order is expired");
         require(block.timestamp >= order.notBefore, "Order cannot be used yet");
-        require(order.items.length > 0, "Order must contain at least one item"); // Added explicit check for order items
         require(_isOrderSignerValid(order, signature), "Invalid signature");
         require(false == _orderProcessed[order.id], "Order already processed");
     }
