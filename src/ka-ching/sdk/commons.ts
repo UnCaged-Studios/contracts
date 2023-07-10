@@ -2,12 +2,16 @@ import { utils, BigNumber } from 'ethers';
 import ms from 'ms';
 import { FullOrderStruct } from './abi/KaChingCashRegisterV1Abi';
 
-export function toEpoch(until: string): number {
+export function toEpoch(until: number | string): number {
+  const _epoch = (n: number) => Math.floor((Date.now() + n) / 1000);
+  if (typeof until === 'number') {
+    return _epoch(until);
+  }
   const durationMs = ms(until);
   if (!durationMs) {
     throw new Error(`Invalid duration format: ${until}`);
   }
-  return Math.floor((Date.now() + durationMs) / 1000);
+  return _epoch(durationMs);
 }
 
 export type SerializedOrder = `0x${string}`;
