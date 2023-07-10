@@ -32,13 +32,11 @@ export function deserializeOrder(data: `0x${string}`): FullOrderStruct {
     notBefore: order.notBefore,
     customer: order.customer,
     items: order.items.map(
-      ([amount, currency, credit]: [
+      ([amount, credit]: [
         OrderItemStruct['amount'],
-        OrderItemStruct['currency'],
         OrderItemStruct['credit']
       ]) => ({
         amount,
-        currency,
         credit,
       })
     ),

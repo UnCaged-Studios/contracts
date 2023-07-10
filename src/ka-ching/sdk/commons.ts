@@ -31,7 +31,6 @@ export function serializeOrder(order: FullOrderStruct): `0x${string}` {
   const itemsData = order.items
     .map((item) => [
       utils.hexZeroPad(utils.hexlify(item.amount), 32),
-      utils.hexlify(utils.toUtf8Bytes(item.currency)),
       item.credit ? '01' : '00',
     ])
     .join('');
@@ -55,12 +54,8 @@ export function deserializeOrder(
   let position = 264;
   while (position < hexString.length) {
     const amount = BigNumber.from(hexString.slice(position, position + 64));
-    const currencyBytes = utils.arrayify(
-      `0x${hexString.slice(position + 64, position + 128)}`
-    );
-    const currency = utils.toUtf8String(currencyBytes);
     const credit = hexString.slice(position + 128, position + 130) === '01';
-    items.push({ amount, currency, credit });
+    items.push({ amount, credit });
     position += 130;
   }
 

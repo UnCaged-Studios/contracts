@@ -17,6 +17,11 @@ const _abi = [
         name: "_cashier",
         type: "address",
       },
+      {
+        internalType: "address",
+        name: "_erc20Token",
+        type: "address",
+      },
     ],
     stateMutability: "nonpayable",
     type: "constructor",
@@ -90,6 +95,19 @@ const _abi = [
   {
     inputs: [],
     name: "CASHIER_ROLE",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "ERC20_CURRENCY",
     outputs: [
       {
         internalType: "address",
@@ -220,11 +238,6 @@ const _abi = [
                 type: "uint256",
               },
               {
-                internalType: "address",
-                name: "currency",
-                type: "address",
-              },
-              {
                 internalType: "bool",
                 name: "credit",
                 type: "bool",
@@ -280,11 +293,6 @@ const _abi = [
                 internalType: "uint256",
                 name: "amount",
                 type: "uint256",
-              },
-              {
-                internalType: "address",
-                name: "currency",
-                type: "address",
               },
               {
                 internalType: "bool",

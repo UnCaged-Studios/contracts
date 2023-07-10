@@ -21,7 +21,6 @@ type UnaryOrderParams = {
   id: Uint8Array;
   customer: string;
   amount: BigNumber;
-  currency: string;
   expiresIn: string;
   startsIn?: string;
 };
@@ -38,7 +37,7 @@ export function readonlySdkFactory(
   const _sdk = coreSdkFactory(contractAddress, provider);
 
   const _unaryOrder = (
-    { id, amount, currency, expiresIn, startsIn, customer }: UnaryOrderParams,
+    { id, amount, expiresIn, startsIn, customer }: UnaryOrderParams,
     credit: boolean
   ) => {
     if (ms(startsIn || '0') >= ms(expiresIn)) {
@@ -51,7 +50,7 @@ export function readonlySdkFactory(
       customer,
       expiry: toEpoch(expiresIn),
       notBefore: startsIn ? toEpoch(startsIn) : 0,
-      items: [{ amount, currency, credit }] as [OrderItemStruct],
+      items: [{ amount, credit }] as [OrderItemStruct],
     };
   };
 

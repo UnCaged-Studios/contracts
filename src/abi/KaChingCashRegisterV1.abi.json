@@ -5,6 +5,11 @@
         "internalType": "address",
         "name": "_cashier",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_erc20Token",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -79,6 +84,19 @@
   {
     "inputs": [],
     "name": "CASHIER_ROLE",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "ERC20_CURRENCY",
     "outputs": [
       {
         "internalType": "address",
@@ -209,11 +227,6 @@
                 "type": "uint256"
               },
               {
-                "internalType": "address",
-                "name": "currency",
-                "type": "address"
-              },
-              {
                 "internalType": "bool",
                 "name": "credit",
                 "type": "bool"
@@ -269,11 +282,6 @@
                 "internalType": "uint256",
                 "name": "amount",
                 "type": "uint256"
-              },
-              {
-                "internalType": "address",
-                "name": "currency",
-                "type": "address"
               },
               {
                 "internalType": "bool",

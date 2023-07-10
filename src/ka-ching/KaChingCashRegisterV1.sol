@@ -10,7 +10,6 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 /// @dev Struct representing a single order item.
 struct OrderItem {
     uint256 amount; // Amount of the item
-    address currency; // Currency of the item
     bool credit; // Credit flag for the item
 }
 
@@ -28,7 +27,7 @@ struct FullOrder {
 /// @notice It includes functions for managing orders and signers, and for settling payments.
 /// The role of the cashier is only assignable upon deployment and cannot be changed.
 contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
-    bytes32 private constant _ORDER_ITEM_HASH = keccak256("OrderItem(uint256 amount,address currency,bool credit)");
+    bytes32 private constant _ORDER_ITEM_HASH = keccak256("OrderItem(uint256 amount,bool credit)");
     bytes32 private constant _FULL_ORDER_HASH =
         keccak256("FullOrder(uint128 id,uint32 expiry,uint32 notBefore,address customer,bytes32 itemsHash)");
     uint256 private constant MAX_SIGNERS = 3; // Added constant for max signers
@@ -39,6 +38,9 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
     /// @dev The cashier is an address capable of updating the order signers.
     address public immutable CASHIER_ROLE;
 
+    /// @dev The ERC20 token supported for settle payments.
+    address public immutable ERC20_CURRENCY;
+
     /// @dev Event emitted when an order is fully settled.
     event OrderFullySettled(uint128 indexed orderId, address indexed customer);
 
@@ -47,9 +49,10 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
 
     /// @dev Contract constructor sets initial cashier.
     /// @param _cashier Address of the cashier.
-    constructor(address _cashier) EIP712("KaChingCashRegisterV1", "1") {
+    constructor(address _cashier, address _erc20Token) EIP712("KaChingCashRegisterV1", "1") {
         require(_cashier != address(0), "Cashier address cannot be 0x0");
         CASHIER_ROLE = _cashier;
+        ERC20_CURRENCY = _erc20Token;
     }
 
     /// @dev Modifier to only allow the cashier to execute a function.
@@ -63,9 +66,7 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
         bytes memory itemsPacked = new bytes(32 * order.items.length);
         unchecked {
             for (uint256 i = 0; i < order.items.length; i++) {
-                bytes32 itemHash = keccak256(
-                    abi.encode(_ORDER_ITEM_HASH, order.items[i].amount, order.items[i].currency, order.items[i].credit)
-                );
+                bytes32 itemHash = keccak256(abi.encode(_ORDER_ITEM_HASH, order.items[i].amount, order.items[i].credit));
                 uint256 baseIndex = i * 32;
                 for (uint256 j = 0; j < 32; j++) {
                     itemsPacked[baseIndex + j] = itemHash[j];
@@ -107,12 +108,12 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
         bytes32 s
     ) internal {
         OrderItem calldata item = order.items[0];
-        IERC20 token = IERC20(item.currency);
+        IERC20 token = IERC20(ERC20_CURRENCY);
         if (item.credit) {
             token.transfer(to, item.amount);
         } else {
             if (usePermit) {
-                IERC20Permit permitToken = IERC20Permit(item.currency);
+                IERC20Permit permitToken = IERC20Permit(ERC20_CURRENCY);
                 permitToken.permit(to, address(this), item.amount, deadline, v, r, s);
             }
             token.transferFrom(to, address(this), item.amount);

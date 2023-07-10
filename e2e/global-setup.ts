@@ -96,11 +96,6 @@ export default async () => {
     const bridgeAddress = publicKeys[predefinedWalletsIdx.mbs_OptimismBridge];
     const cashierAddress = publicKeys[predefinedWalletsIdx.kaChing_cashier];
 
-    const kaChing = await _deployContract(
-      'src/ka-ching/KaChingCashRegisterV1.sol:KaChingCashRegisterV1',
-      kaChingContractDeployer,
-      [cashierAddress]
-    );
     const mbsToken = await _deployContract(
       'src/mbs/MonkeyLeagueERC20.sol:MonkeyLeagueERC20',
       mbsContractDeployer
@@ -109,6 +104,11 @@ export default async () => {
       'src/mbs-optimism/MonkeyLeagueOptimismMintableERC20.sol:MonkeyLeagueOptimismMintableERC20',
       mbsContractDeployer,
       [bridgeAddress, mbsToken]
+    );
+    const kaChing = await _deployContract(
+      'src/ka-ching/KaChingCashRegisterV1.sol:KaChingCashRegisterV1',
+      kaChingContractDeployer,
+      [cashierAddress, mbsOptimism]
     );
     const json = {
       privateKeys: {
