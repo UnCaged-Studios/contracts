@@ -4,6 +4,7 @@ pragma solidity 0.8.15;
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /// @dev Struct representing a single order item.
@@ -110,22 +111,59 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
         }
     }
 
-    /// @notice External function to settle an order's payment.
-    function settleOrderPayment(FullOrder calldata order, bytes calldata signature) external nonReentrant {
-        // read-only validations
-        require(msg.sender == order.customer, "Customer does not match sender address");
+    function _settleOrderPaymentValidation(FullOrder calldata order, bytes calldata signature, address sender)
+        internal
+        view
+    {
+        require(sender == order.customer, "Customer does not match sender address");
         require(block.timestamp < order.expiry, "Order is expired");
         require(block.timestamp >= order.notBefore, "Order cannot be used yet");
         require(order.items.length > 0, "Order must contain at least one item"); // Added explicit check for order items
         require(_isOrderSignerValid(order, signature), "Invalid signature");
         require(false == _orderProcessed[order.id], "Order already processed");
+    }
 
+    function _settleOrderPaymentExecution(FullOrder calldata order, address sender) internal {
         // change state
         _orderProcessed[order.id] = true;
-        _performTransfers({order: order, to: msg.sender});
+        _performTransfers({order: order, to: sender});
 
         // event
-        emit OrderFullySettled({orderId: order.id, customer: msg.sender});
+        emit OrderFullySettled({orderId: order.id, customer: sender});
+    }
+
+    /// @notice External function to settle an order's payment.
+    function settleOrderPayment(FullOrder calldata order, bytes calldata signature) external nonReentrant {
+        // read-only validations
+        _settleOrderPaymentValidation({order: order, signature: signature, sender: msg.sender});
+
+        // change state
+        _settleOrderPaymentExecution({order: order, sender: msg.sender});
+    }
+
+    /// @notice External function to settle an order's payment.
+    function settleOrderPaymentWithPermit(
+        FullOrder calldata order,
+        bytes calldata signature,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external nonReentrant {
+        // read-only validations
+        _settleOrderPaymentValidation({order: order, signature: signature, sender: msg.sender});
+
+        // change state
+        unchecked {
+            for (uint256 i = 0; i < order.items.length; i++) {
+                OrderItem calldata item = order.items[i];
+                if (!item.credit) {
+                    IERC20Permit token = IERC20Permit(item.currency);
+                    token.permit(msg.sender, address(this), item.amount, deadline, v, r, s);
+                }
+            }
+        }
+        _settleOrderPaymentExecution({order: order, sender: msg.sender});
     }
 
     /// @notice External function to check if an order has been processed.

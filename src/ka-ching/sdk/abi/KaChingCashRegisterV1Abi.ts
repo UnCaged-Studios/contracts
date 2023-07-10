@@ -68,6 +68,7 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
     "isOrderProcessed(uint128)": FunctionFragment;
     "setOrderSigners(address[])": FunctionFragment;
     "settleOrderPayment((uint128,uint32,uint32,address,(uint256,address,bool)[]),bytes)": FunctionFragment;
+    "settleOrderPaymentWithPermit((uint128,uint32,uint32,address,(uint256,address,bool)[]),bytes,uint256,uint8,bytes32,bytes32)": FunctionFragment;
   };
 
   getFunction(
@@ -78,6 +79,7 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
       | "isOrderProcessed"
       | "setOrderSigners"
       | "settleOrderPayment"
+      | "settleOrderPaymentWithPermit"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -104,6 +106,17 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
     functionFragment: "settleOrderPayment",
     values: [FullOrderStruct, BytesLike]
   ): string;
+  encodeFunctionData(
+    functionFragment: "settleOrderPaymentWithPermit",
+    values: [
+      FullOrderStruct,
+      BytesLike,
+      BigNumberish,
+      BigNumberish,
+      BytesLike,
+      BytesLike
+    ]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "CASHIER_ROLE",
@@ -127,6 +140,10 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "settleOrderPayment",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "settleOrderPaymentWithPermit",
     data: BytesLike
   ): Result;
 
@@ -235,6 +252,16 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
       signature: BytesLike,
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
+
+    settleOrderPaymentWithPermit(
+      order: FullOrderStruct,
+      signature: BytesLike,
+      deadline: BigNumberish,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
   };
 
   CASHIER_ROLE(overrides?: CallOverrides): Promise<string>;
@@ -271,6 +298,16 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
+  settleOrderPaymentWithPermit(
+    order: FullOrderStruct,
+    signature: BytesLike,
+    deadline: BigNumberish,
+    v: BigNumberish,
+    r: BytesLike,
+    s: BytesLike,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
     CASHIER_ROLE(overrides?: CallOverrides): Promise<string>;
 
@@ -303,6 +340,16 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
     settleOrderPayment(
       order: FullOrderStruct,
       signature: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    settleOrderPaymentWithPermit(
+      order: FullOrderStruct,
+      signature: BytesLike,
+      deadline: BigNumberish,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -354,6 +401,16 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
       signature: BytesLike,
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
+
+    settleOrderPaymentWithPermit(
+      order: FullOrderStruct,
+      signature: BytesLike,
+      deadline: BigNumberish,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -376,6 +433,16 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
     settleOrderPayment(
       order: FullOrderStruct,
       signature: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    settleOrderPaymentWithPermit(
+      order: FullOrderStruct,
+      signature: BytesLike,
+      deadline: BigNumberish,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
   };

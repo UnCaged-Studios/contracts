@@ -250,6 +250,88 @@ const _abi = [
     stateMutability: "nonpayable",
     type: "function",
   },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "uint128",
+            name: "id",
+            type: "uint128",
+          },
+          {
+            internalType: "uint32",
+            name: "expiry",
+            type: "uint32",
+          },
+          {
+            internalType: "uint32",
+            name: "notBefore",
+            type: "uint32",
+          },
+          {
+            internalType: "address",
+            name: "customer",
+            type: "address",
+          },
+          {
+            components: [
+              {
+                internalType: "uint256",
+                name: "amount",
+                type: "uint256",
+              },
+              {
+                internalType: "address",
+                name: "currency",
+                type: "address",
+              },
+              {
+                internalType: "bool",
+                name: "credit",
+                type: "bool",
+              },
+            ],
+            internalType: "struct OrderItem[]",
+            name: "items",
+            type: "tuple[]",
+          },
+        ],
+        internalType: "struct FullOrder",
+        name: "order",
+        type: "tuple",
+      },
+      {
+        internalType: "bytes",
+        name: "signature",
+        type: "bytes",
+      },
+      {
+        internalType: "uint256",
+        name: "deadline",
+        type: "uint256",
+      },
+      {
+        internalType: "uint8",
+        name: "v",
+        type: "uint8",
+      },
+      {
+        internalType: "bytes32",
+        name: "r",
+        type: "bytes32",
+      },
+      {
+        internalType: "bytes32",
+        name: "s",
+        type: "bytes32",
+      },
+    ],
+    name: "settleOrderPaymentWithPermit",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
 ] as const;
 
 export class KaChingCashRegisterV1Abi__factory {
