@@ -49,14 +49,15 @@ export function deserializeOrder(
   const expiry = BigNumber.from(hexString.slice(64, 128));
   const notBefore = BigNumber.from(hexString.slice(128, 192));
   const customer = utils.getAddress(`0x${hexString.slice(192, 264)}`);
-  const cashRegister = utils.getAddress(`0x${hexString.slice(264, 336)}`);
+
   const items = [];
-  let position = 336;
+  let position = 264;
   while (position < hexString.length) {
     const amount = BigNumber.from(hexString.slice(position, position + 64));
     const credit = hexString.slice(position + 128, position + 130) === '01';
     items.push({ amount, credit });
     position += 130;
   }
-  return { id, expiry, notBefore, customer, items: [items[0]], cashRegister };
+
+  return { id, expiry, notBefore, customer, items: [items[0]] };
 }

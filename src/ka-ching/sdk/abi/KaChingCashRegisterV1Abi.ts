@@ -39,7 +39,6 @@ export type FullOrderStruct = {
   notBefore: BigNumberish;
   customer: string;
   items: [OrderItemStruct];
-  cashRegister: string;
 };
 
 export type FullOrderStructOutput = [
@@ -47,15 +46,13 @@ export type FullOrderStructOutput = [
   number,
   number,
   string,
-  [OrderItemStructOutput],
-  string
+  [OrderItemStructOutput]
 ] & {
   id: BigNumber;
   expiry: number;
   notBefore: number;
   customer: string;
   items: [OrderItemStructOutput];
-  cashRegister: string;
 };
 
 export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
@@ -66,8 +63,8 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
     "getOrderSigners()": FunctionFragment;
     "isOrderProcessed(uint128)": FunctionFragment;
     "setOrderSigners(address[])": FunctionFragment;
-    "settleOrderPayment((uint128,uint32,uint32,address,tuple[1],address),bytes)": FunctionFragment;
-    "settleOrderPaymentWithPermit((uint128,uint32,uint32,address,tuple[1],address),bytes,uint256,uint8,bytes32,bytes32)": FunctionFragment;
+    "settleOrderPayment((uint128,uint32,uint32,address,tuple[1]),bytes)": FunctionFragment;
+    "settleOrderPaymentWithPermit((uint128,uint32,uint32,address,tuple[1]),bytes,uint256,uint8,bytes32,bytes32)": FunctionFragment;
   };
 
   getFunction(

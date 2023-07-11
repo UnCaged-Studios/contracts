@@ -16,7 +16,6 @@ export function serializeOrder(order: FullOrderStruct): `0x${string}` {
       notBefore: order.notBefore,
       customer: order.customer,
       items: order.items,
-      cashRegister: order.cashRegister,
     },
     '0x', // signature is not needed for serialization
   ]) as `0x${string}`;
@@ -41,6 +40,5 @@ export function deserializeOrder(data: `0x${string}`): FullOrderStruct {
         credit,
       })
     ),
-    cashRegister: order.cashRegister,
   };
 }

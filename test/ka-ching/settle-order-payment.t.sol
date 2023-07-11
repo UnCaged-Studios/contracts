@@ -31,14 +31,8 @@ contract KaChingCashRegisterV1Test is Test {
         cashRegister.setOrderSigners(newSigners);
         vm.stopPrank();
 
-        FullOrder memory order = FullOrder({
-            id: uuid,
-            expiry: expiry,
-            customer: customer,
-            notBefore: notBefore,
-            items: items,
-            cashRegister: address(cashRegister)
-        });
+        FullOrder memory order =
+            FullOrder({id: uuid, expiry: expiry, customer: customer, notBefore: notBefore, items: items});
         bytes32 hash = cashRegister.getEIP712Hash(order);
         vm.startPrank(orderSigner);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerPrivateKey, hash);
@@ -207,8 +201,7 @@ contract KaChingCashRegisterV1Test is Test {
             expiry: baselineBlocktime + 1,
             customer: customer,
             notBefore: baselineBlocktime - 1,
-            items: items,
-            cashRegister: address(cashRegister)
+            items: items
         });
         vm.startPrank(newOrderSigner); // Use the new signer address here
         bytes32 hash = cashRegister.getEIP712Hash(order);

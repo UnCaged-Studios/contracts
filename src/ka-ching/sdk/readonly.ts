@@ -51,7 +51,6 @@ export function readonlySdkFactory(
       expiry: toEpoch(expiresIn),
       notBefore: startsIn ? toEpoch(startsIn) : 0,
       items: [{ amount, credit }] as [OrderItemStruct],
-      cashRegister: contractAddress,
     };
   };
 

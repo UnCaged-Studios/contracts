@@ -235,11 +235,6 @@
             "internalType": "struct OrderItem[1]",
             "name": "items",
             "type": "tuple[1]"
-          },
-          {
-            "internalType": "address",
-            "name": "cashRegister",
-            "type": "address"
           }
         ],
         "internalType": "struct FullOrder",
@@ -297,11 +292,6 @@
             "internalType": "struct OrderItem[1]",
             "name": "items",
             "type": "tuple[1]"
-          },
-          {
-            "internalType": "address",
-            "name": "cashRegister",
-            "type": "address"
           }
         ],
         "internalType": "struct FullOrder",

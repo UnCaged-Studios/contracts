@@ -47,7 +47,6 @@ export function orderSignerSdkFactory(
           { name: 'notBefore', type: 'uint32' },
           { name: 'customer', type: 'address' },
           { name: 'itemsHash', type: 'bytes32' },
-          { name: 'cashRegister', type: 'address' },
         ],
       },
       values
