@@ -20,7 +20,7 @@ export function customerSdkFactory(
 
   const _permitERC20 = async (
     amount: BigNumber,
-    deadlineIn: string,
+    deadlineIn: number | string,
     domain: TypedDataDomain
   ) => {
     const erc20 = new Contract(domain.verifyingContract, abi, customer);
@@ -38,16 +38,25 @@ export function customerSdkFactory(
       types,
       values
     );
-    const permitSignature = utils.splitSignature(signedTypedData);
-    return erc20.permit(
-      values.owner,
-      values.spender,
-      values.value,
-      values.deadline,
-      permitSignature.v,
-      permitSignature.r,
-      permitSignature.s
-    );
+    const { v, r, s } = utils.splitSignature(signedTypedData);
+    return {
+      payload: {
+        deadline: values.deadline,
+        v,
+        r,
+        s,
+      },
+      sendTxn: () =>
+        erc20.permit(
+          values.owner,
+          values.spender,
+          values.value,
+          values.deadline,
+          v,
+          r,
+          s
+        ),
+    };
   };
 
   return {
@@ -55,12 +64,41 @@ export function customerSdkFactory(
       const _order = deserializeOrder(order);
       return _sdk.settleOrderPayment(_order, signature);
     },
-    permitERC20(
+    async settleOrderPaymentWithPermit(
+      order: SerializedOrder,
+      signature: string,
+      domain: TypedDataDomain
+    ) {
+      const _order = deserializeOrder(order);
+      const [debitOrderItem, ...rest] = _order.items.filter(
+        (x) => false === x.credit
+      );
+      if (rest.length > 0) {
+        throw new Error(
+          `found more than a single debit ERC20, cannot invoke permit`
+        );
+      }
+      const { payload } = await _permitERC20(
+        BigNumber.from(debitOrderItem.amount),
+        toEpoch('5m'),
+        domain
+      );
+      return _sdk.settleOrderPaymentWithPermit(
+        _order,
+        signature,
+        payload.deadline,
+        payload.v,
+        payload.r,
+        payload.s
+      );
+    },
+    async permitERC20(
       amount: BigNumber,
       deadlineIn: string,
       domain: TypedDataDomain
     ) {
-      return _permitERC20(amount, deadlineIn, domain);
+      const { sendTxn } = await _permitERC20(amount, deadlineIn, domain);
+      return sendTxn();
     },
   };
 }

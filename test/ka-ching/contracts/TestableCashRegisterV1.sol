@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "../../../src/ka-ching/KaChingCashRegisterV1.sol";
 
 contract KaChingCashRegisterV1Testable is KaChingCashRegisterV1 {
-    constructor(address _cashier) KaChingCashRegisterV1(_cashier) {}
+    constructor(address _cashier, address _erc20Token) KaChingCashRegisterV1(_cashier, _erc20Token) {}
 
     function getEIP712Hash(FullOrder calldata order) external view returns (bytes32) {
         bytes32 fullOrderHash = _getFullOrderHash(order);

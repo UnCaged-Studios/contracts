@@ -10,7 +10,6 @@ const hashedItem = (item: OrderItemStruct): string =>
     .from({
       OrderItem: [
         { name: 'amount', type: 'uint256' },
-        { name: 'currency', type: 'address' },
         { name: 'credit', type: 'bool' },
       ],
     })

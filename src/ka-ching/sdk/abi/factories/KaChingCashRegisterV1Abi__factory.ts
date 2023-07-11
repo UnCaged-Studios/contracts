@@ -17,6 +17,11 @@ const _abi = [
         name: "_cashier",
         type: "address",
       },
+      {
+        internalType: "address",
+        name: "_erc20Token",
+        type: "address",
+      },
     ],
     stateMutability: "nonpayable",
     type: "constructor",
@@ -90,6 +95,19 @@ const _abi = [
   {
     inputs: [],
     name: "CASHIER_ROLE",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "ERC20_CURRENCY",
     outputs: [
       {
         internalType: "address",
@@ -220,19 +238,14 @@ const _abi = [
                 type: "uint256",
               },
               {
-                internalType: "address",
-                name: "currency",
-                type: "address",
-              },
-              {
                 internalType: "bool",
                 name: "credit",
                 type: "bool",
               },
             ],
-            internalType: "struct OrderItem[]",
+            internalType: "struct OrderItem[1]",
             name: "items",
-            type: "tuple[]",
+            type: "tuple[1]",
           },
         ],
         internalType: "struct FullOrder",
@@ -246,6 +259,83 @@ const _abi = [
       },
     ],
     name: "settleOrderPayment",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "uint128",
+            name: "id",
+            type: "uint128",
+          },
+          {
+            internalType: "uint32",
+            name: "expiry",
+            type: "uint32",
+          },
+          {
+            internalType: "uint32",
+            name: "notBefore",
+            type: "uint32",
+          },
+          {
+            internalType: "address",
+            name: "customer",
+            type: "address",
+          },
+          {
+            components: [
+              {
+                internalType: "uint256",
+                name: "amount",
+                type: "uint256",
+              },
+              {
+                internalType: "bool",
+                name: "credit",
+                type: "bool",
+              },
+            ],
+            internalType: "struct OrderItem[1]",
+            name: "items",
+            type: "tuple[1]",
+          },
+        ],
+        internalType: "struct FullOrder",
+        name: "order",
+        type: "tuple",
+      },
+      {
+        internalType: "bytes",
+        name: "signature",
+        type: "bytes",
+      },
+      {
+        internalType: "uint256",
+        name: "deadline",
+        type: "uint256",
+      },
+      {
+        internalType: "uint8",
+        name: "v",
+        type: "uint8",
+      },
+      {
+        internalType: "bytes32",
+        name: "r",
+        type: "bytes32",
+      },
+      {
+        internalType: "bytes32",
+        name: "s",
+        type: "bytes32",
+      },
+    ],
+    name: "settleOrderPaymentWithPermit",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

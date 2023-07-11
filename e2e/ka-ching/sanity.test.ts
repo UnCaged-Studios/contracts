@@ -37,7 +37,7 @@ test('node is online', async () => {
   expect(await localJsonRpcProvider.getBlockNumber()).toBeGreaterThan(0);
 });
 
-test('cashier wallet can perform actions', async () => {
+test('order signers is set properly', async () => {
   expect(await cashierSdk.getOrderSigners()).toEqual([orderSigner.address]);
 });
 
@@ -58,12 +58,37 @@ test('debit customer with erc20', async () => {
     id,
     customer: customer.address,
     amount,
-    currency: contracts.mbsOptimism,
     expiresIn: '1m',
   });
   const orderSignature = await _signOffChain(order);
   await _waitForTxn(() =>
     customerSdk.settleOrderPayment(serializedOrder, orderSignature)
+  );
+  const customer_b1 = await mbsSDK(localJsonRpcProvider).balanceOf(
+    customer.address
+  );
+  expect(customer_b1.toBigInt()).toBe(customer_b0.sub(amount).toBigInt());
+  _orders.push(id);
+}, 30_000);
+
+test('debit customer with erc20 and built-in permit', async () => {
+  const customer_b0 = await _ensureNonZeroBalance(customer.address);
+  const amount = BigNumber.from(BigInt(2 * 10 ** 18));
+  const id = parseUUID(uuid());
+  const { order, serializedOrder } = readonlySdk.orders.debitCustomerWithERC20({
+    id,
+    customer: customer.address,
+    amount,
+    expiresIn: '1m',
+  });
+  const orderSignature = await _signOffChain(order);
+  await _waitForTxn(() =>
+    customerSdk.settleOrderPaymentWithPermit(serializedOrder, orderSignature, {
+      name: 'MonkeyLeague',
+      version: '1',
+      chainId: '31337',
+      verifyingContract: contracts.mbsOptimism,
+    })
   );
   const customer_b1 = await mbsSDK(localJsonRpcProvider).balanceOf(
     customer.address
@@ -88,7 +113,6 @@ test('credit customer with erc20', async () => {
       id,
       amount,
       customer: customer.address,
-      currency: contracts.mbsOptimism,
       expiresIn: '30s',
     }
   );
@@ -107,7 +131,7 @@ test('OrderFullySettled event', async () => {
     readonlySdk.events.OrderFullySettled.findByOrderId(_orders[1]),
     readonlySdk.events.OrderFullySettled.findByCustomer(customer.address),
   ]);
-  expect(allEvents.length).toBe(2);
-  expect(byCustomer.length).toBe(2);
+  expect(allEvents.length).toBe(3);
+  expect(byCustomer.length).toBe(3);
   expect(byOrderId_1.length).toBe(1);
 }, 30_000);

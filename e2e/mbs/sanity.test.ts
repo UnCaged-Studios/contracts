@@ -31,7 +31,7 @@ describe('burnFrom override', () => {
     } catch (error) {
       /* test passed if we reached here */
     }
-  });
+  }, 30_000);
 
   test('bridge can burn tokens', async () => {
     // Create Alice's wallet

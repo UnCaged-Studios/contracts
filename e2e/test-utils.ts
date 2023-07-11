@@ -27,7 +27,7 @@ export const _waitForTxn = async (
 
 export const _ensureNonZeroBalance = async (
   walletAddress: string,
-  mintAmount = BigNumber.from(BigInt(5 * 10 ** 18))
+  mintAmount = BigNumber.from(BigInt(10 * 10 ** 18))
 ) => {
   const tokenContract = mbsSDK(bridge);
   const balance = await tokenContract.balanceOf(walletAddress);

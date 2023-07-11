@@ -20,7 +20,7 @@ contract KaChingCashRegisterV1Test is Test {
 
     uint32 public baselineBlocktime = 1684911164;
 
-    function _createAndSignOrder(OrderItem[] memory items, uint32 expiry, uint32 notBefore)
+    function _createAndSignOrder(OrderItem[1] memory items, uint32 expiry, uint32 notBefore)
         internal
         returns (FullOrder memory, bytes memory)
     {
@@ -47,17 +47,17 @@ contract KaChingCashRegisterV1Test is Test {
     }
 
     function setUp() public {
-        cashRegister = new KaChingCashRegisterV1Testable(cashier);
         mockMBS =
         new MonkeyLeagueOptimismMintableERC20(0xdEADBEeF00000000000000000000000000000000, 0x4F0dDcE25D496698e9e3F6218c019AED3e862aA7);
+        cashRegister = new KaChingCashRegisterV1Testable(cashier, address(mockMBS));
+
         sigUtils = new SigUtils(mockMBS.DOMAIN_SEPARATOR());
     }
 
     function testCreditCustomerWithERC20() public {
         _mint(address(cashRegister), 3e18);
 
-        OrderItem[] memory items = new OrderItem[](1);
-        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true});
+        OrderItem[1] memory items = [OrderItem({amount: 1e18, credit: true})];
 
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
@@ -75,8 +75,7 @@ contract KaChingCashRegisterV1Test is Test {
     function testDebitCustomerWtihERC20Permit() public {
         _mint(customer, 3e18);
 
-        OrderItem[] memory items = new OrderItem[](1);
-        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: false});
+        OrderItem[1] memory items = [OrderItem({amount: 1e18, credit: false})];
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
 
@@ -100,7 +99,7 @@ contract KaChingCashRegisterV1Test is Test {
     }
 
     function testRevertWhenOrderExpired() public {
-        OrderItem[] memory items = new OrderItem[](0);
+        OrderItem[1] memory items = [OrderItem({amount: 1e18, credit: false})];
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime - 1, baselineBlocktime);
 
@@ -111,7 +110,7 @@ contract KaChingCashRegisterV1Test is Test {
     }
 
     function testRevertWhenOrderNotBefore() public {
-        OrderItem[] memory items = new OrderItem[](0);
+        OrderItem[1] memory items = [OrderItem({amount: 1e18, credit: false})];
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime + 1);
 
@@ -124,8 +123,7 @@ contract KaChingCashRegisterV1Test is Test {
     function testRevertWhenProcessingOrderTwice() public {
         _mint(address(cashRegister), 3e18);
         // Create an order
-        OrderItem[] memory items = new OrderItem[](1);
-        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true});
+        OrderItem[1] memory items = [OrderItem({amount: 1e18, credit: true})];
 
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
@@ -142,14 +140,13 @@ contract KaChingCashRegisterV1Test is Test {
 
     function testRevertWhenInvalidSignature() public {
         // Create an order
-        OrderItem[] memory items = new OrderItem[](1);
-        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true});
+        OrderItem[1] memory items = [OrderItem({amount: 1e18, credit: true})];
 
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
 
-        // Invalidate the signature by altering the first byte
-        signature[0] = bytes1(uint8(signature[0]) ^ 0xff);
+        // Invalidate the signature by altering a byte
+        signature[1] = bytes1(uint8(signature[1]) ^ 0xa);
 
         vm.prank(customer);
         vm.warp(baselineBlocktime);
@@ -161,8 +158,7 @@ contract KaChingCashRegisterV1Test is Test {
 
     function testRevertWhenOrderAlteredAfterSignature() public {
         // Create an order
-        OrderItem[] memory items = new OrderItem[](1);
-        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true});
+        OrderItem[1] memory items = [OrderItem({amount: 1e18, credit: true})];
 
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
@@ -180,8 +176,7 @@ contract KaChingCashRegisterV1Test is Test {
 
     function testRevertWhenCustomerIsSignerButNotMsgSender() public {
         // Create an order
-        OrderItem[] memory items = new OrderItem[](1);
-        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true});
+        OrderItem[1] memory items = [OrderItem({amount: 1e18, credit: true})];
 
         (FullOrder memory order, bytes memory signature) =
             _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
@@ -197,8 +192,7 @@ contract KaChingCashRegisterV1Test is Test {
     function testRevertWhenOrderSignedByDifferentSigner() public {
         _mint(address(cashRegister), 3e18);
 
-        OrderItem[] memory items = new OrderItem[](1);
-        items[0] = OrderItem({amount: 1e18, currency: address(mockMBS), credit: true});
+        OrderItem[1] memory items = [OrderItem({amount: 1e18, credit: true})];
 
         uint256 newSignerPrivateKey = 0xbc0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff81; // New private key
         address newOrderSigner = vm.addr(newSignerPrivateKey); // New signer address
@@ -219,22 +213,6 @@ contract KaChingCashRegisterV1Test is Test {
         vm.warp(baselineBlocktime);
 
         vm.expectRevert("Invalid signature");
-        cashRegister.settleOrderPayment(order, signature);
-    }
-
-    function testRevertWhenOrderItemsIsEmpty() public {
-        // Create an order
-        OrderItem[] memory items = new OrderItem[](0);
-
-        (FullOrder memory order, bytes memory signature) =
-            _createAndSignOrder(items, baselineBlocktime + 1, baselineBlocktime - 1);
-
-        // Change the blocktime to the valid order time
-        vm.warp(baselineBlocktime);
-        vm.prank(customer);
-
-        // Try to process the order with the customer as the signer, but not using vm.prank(customer)
-        vm.expectRevert("Order must contain at least one item");
         cashRegister.settleOrderPayment(order, signature);
     }
 }

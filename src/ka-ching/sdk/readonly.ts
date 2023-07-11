@@ -3,6 +3,7 @@ import ms from 'ms';
 import { coreSdkFactory } from './core';
 import { toEpoch } from './commons';
 import { serializeOrder } from './order-serialization';
+import { OrderItemStruct } from './abi/KaChingCashRegisterV1Abi';
 
 function serializeOrderId(orderId: Uint8Array) {
   if (orderId.length != 16) {
@@ -20,7 +21,6 @@ type UnaryOrderParams = {
   id: Uint8Array;
   customer: string;
   amount: BigNumber;
-  currency: string;
   expiresIn: string;
   startsIn?: string;
 };
@@ -37,7 +37,7 @@ export function readonlySdkFactory(
   const _sdk = coreSdkFactory(contractAddress, provider);
 
   const _unaryOrder = (
-    { id, amount, currency, expiresIn, startsIn, customer }: UnaryOrderParams,
+    { id, amount, expiresIn, startsIn, customer }: UnaryOrderParams,
     credit: boolean
   ) => {
     if (ms(startsIn || '0') >= ms(expiresIn)) {
@@ -50,7 +50,7 @@ export function readonlySdkFactory(
       customer,
       expiry: toEpoch(expiresIn),
       notBefore: startsIn ? toEpoch(startsIn) : 0,
-      items: [{ amount, currency, credit }],
+      items: [{ amount, credit }] as [OrderItemStruct],
     };
   };
 

@@ -12,7 +12,7 @@ contract KaChingCashRegisterV1Test is Test {
     address public cahiser = vm.addr(0xCa11);
 
     function setUp() public {
-        cashRegister = new KaChingCashRegisterV1Testable(cahiser);
+        cashRegister = new KaChingCashRegisterV1Testable(cahiser, vm.addr(0xDead));
     }
 
     function testSetOrderSignersTwoAddresses() public {

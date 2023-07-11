@@ -2,12 +2,16 @@ import { utils, BigNumber } from 'ethers';
 import ms from 'ms';
 import { FullOrderStruct } from './abi/KaChingCashRegisterV1Abi';
 
-export function toEpoch(until: string): number {
+export function toEpoch(until: number | string): number {
+  const _epoch = (n: number) => Math.floor((Date.now() + n) / 1000);
+  if (typeof until === 'number') {
+    return _epoch(until);
+  }
   const durationMs = ms(until);
   if (!durationMs) {
     throw new Error(`Invalid duration format: ${until}`);
   }
-  return Math.floor((Date.now() + durationMs) / 1000);
+  return _epoch(durationMs);
 }
 
 export type SerializedOrder = `0x${string}`;
@@ -27,7 +31,6 @@ export function serializeOrder(order: FullOrderStruct): `0x${string}` {
   const itemsData = order.items
     .map((item) => [
       utils.hexZeroPad(utils.hexlify(item.amount), 32),
-      utils.hexlify(utils.toUtf8Bytes(item.currency)),
       item.credit ? '01' : '00',
     ])
     .join('');
@@ -51,14 +54,10 @@ export function deserializeOrder(
   let position = 264;
   while (position < hexString.length) {
     const amount = BigNumber.from(hexString.slice(position, position + 64));
-    const currencyBytes = utils.arrayify(
-      `0x${hexString.slice(position + 64, position + 128)}`
-    );
-    const currency = utils.toUtf8String(currencyBytes);
     const credit = hexString.slice(position + 128, position + 130) === '01';
-    items.push({ amount, currency, credit });
+    items.push({ amount, credit });
     position += 130;
   }
 
-  return { id, expiry, notBefore, customer, items };
+  return { id, expiry, notBefore, customer, items: [items[0]] };
 }
