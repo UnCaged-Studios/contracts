@@ -25,7 +25,7 @@ struct FullOrder {
 
 /// @title KaChingCashRegisterV1
 /// @dev This contract defines the KaChing cash register functionality.
-/// @notice It includes functions for managing orders and signers, and for settling payments.
+/// @notice It includes functions for managing orders and signers, and for settling payments for configured ERC20 token.
 /// The role of the cashier is only assignable upon deployment and cannot be changed.
 contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
     bytes32 private constant _ORDER_ITEM_HASH = keccak256("OrderItem(uint256 amount,bool credit)");
@@ -37,10 +37,10 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
     mapping(uint128 => bool) private _orderProcessed;
     address[] private _orderSignerAddresses;
 
-    /// @dev The cashier is an address capable of updating the order signers.
+    /// @notice The cashier is an address capable of updating the order signers.
     address public immutable CASHIER_ROLE;
 
-    /// @dev The ERC20 token supported for settle payments.
+    /// @notice The ERC20 token supported for settle payments.
     address public immutable ERC20_CURRENCY;
 
     /// @dev Event emitted when an order is fully settled.
@@ -49,15 +49,16 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
     /// @dev Event emitted when signers are updated
     event OrderSignersUpdated(address indexed signer1, address indexed signer2, address indexed signer3);
 
-    /// @dev Contract constructor sets initial cashier.
-    /// @param _cashier Address of the cashier.
+    /// @notice Contract constructor sets the cash register's cashier and supported ERC token.
+    /// @param _cashier Address of the cashier role.
+    /// @param _erc20Token Address of the supported ERC20 token.
     constructor(address _cashier, address _erc20Token) EIP712("KaChingCashRegisterV1", "1") {
         require(_cashier != address(0), "Cashier address cannot be 0x0");
         CASHIER_ROLE = _cashier;
         ERC20_CURRENCY = _erc20Token;
     }
 
-    /// @dev Modifier to only allow the cashier to execute a function.
+    /// @notice A modifier that restricts functions to be called only by the cashier.
     modifier onlyCashier() {
         require(msg.sender == CASHIER_ROLE, "Caller is not a cashier");
         _;
@@ -128,6 +129,7 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
         }
     }
 
+    /// @dev Internal function to validate the order payment settlement.
     function _settleOrderPaymentValidation(FullOrder calldata order, bytes calldata signature, address sender)
         internal
         view
@@ -143,13 +145,13 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
     }
 
     /// @notice External function to settle an order's payment.
+    /// @dev This function performs a number of validations before settling an order's payment.
     function settleOrderPayment(FullOrder calldata order, bytes calldata signature) external nonReentrant {
         // read-only validations
         _settleOrderPaymentValidation({order: order, signature: signature, sender: msg.sender});
 
         // change state
         _orderProcessed[order.id] = true;
-        // Deadline, v, r, s parameters are not used hence passed as default
         _performTransfers({
             order: order,
             to: msg.sender,
@@ -165,6 +167,7 @@ contract KaChingCashRegisterV1 is EIP712, ReentrancyGuard {
     }
 
     /// @notice External function to settle an order's payment with invoking erc20 permit.
+    /// @dev This function performs a number of validations before settling an order's payment.
     function settleOrderPaymentWithPermit(
         FullOrder calldata order,
         bytes calldata signature,
