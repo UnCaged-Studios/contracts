@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.15;
+pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
@@ -16,7 +16,7 @@ contract MonkeyLeagueERC20 is ERC20, ERC20Permit, ERC20Burnable, Ownable {
      * @dev Constructor that gives msg.sender all of existing tokens.
      */
     constructor() ERC20("MonkeyLeague", "MBS") ERC20Permit("MonkeyLeague") {
-        _mint(msg.sender, 1000000000 * 10 ** decimals());
+        _mint(msg.sender, 200_000_000 * 10 ** decimals());
     }
 
     /**

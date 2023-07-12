@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.15;
+pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 import "./contracts/TestableCashRegisterV1.sol";
-import "../../src/mbs-optimism/MonkeyLeagueOptimismMintableERC20.sol";
+import "../../src/mbs/MonkeyLeagueERC20.sol";
 import "./contracts/SigUtils.sol";
 
 contract KaChingCashRegisterV1Test is Test {
     KaChingCashRegisterV1Testable public cashRegister;
     SigUtils public sigUtils;
 
-    MonkeyLeagueOptimismMintableERC20 public mockMBS;
+    MonkeyLeagueERC20 public mockMBS;
 
     uint256 public signerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
     uint128 public uuid = uint128(uint256(keccak256(abi.encodePacked("550e8400-e29b-41d4-a716-446655440000"))));
@@ -42,13 +42,12 @@ contract KaChingCashRegisterV1Test is Test {
     }
 
     function _mint(address to, uint256 amount) internal {
-        vm.prank(0xdEADBEeF00000000000000000000000000000000);
+        // vm.prank(0xdEADBEeF00000000000000000000000000000000);
         mockMBS.mint(to, amount);
     }
 
     function setUp() public {
-        mockMBS =
-        new MonkeyLeagueOptimismMintableERC20(0xdEADBEeF00000000000000000000000000000000, 0x4F0dDcE25D496698e9e3F6218c019AED3e862aA7);
+        mockMBS = new MonkeyLeagueERC20();
         cashRegister = new KaChingCashRegisterV1Testable(cashier, address(mockMBS));
 
         sigUtils = new SigUtils(mockMBS.DOMAIN_SEPARATOR());
