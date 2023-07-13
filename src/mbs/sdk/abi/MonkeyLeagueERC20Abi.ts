@@ -335,8 +335,8 @@ export interface MonkeyLeagueERC20Abi extends BaseContract {
     ): Promise<ContractTransaction>;
 
     mint(
-      to: string,
-      amount: BigNumberish,
+      _to: string,
+      _amount: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
@@ -440,8 +440,8 @@ export interface MonkeyLeagueERC20Abi extends BaseContract {
   ): Promise<ContractTransaction>;
 
   mint(
-    to: string,
-    amount: BigNumberish,
+    _to: string,
+    _amount: BigNumberish,
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
@@ -542,8 +542,8 @@ export interface MonkeyLeagueERC20Abi extends BaseContract {
     ): Promise<boolean>;
 
     mint(
-      to: string,
-      amount: BigNumberish,
+      _to: string,
+      _amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -670,8 +670,8 @@ export interface MonkeyLeagueERC20Abi extends BaseContract {
     ): Promise<BigNumber>;
 
     mint(
-      to: string,
-      amount: BigNumberish,
+      _to: string,
+      _amount: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
@@ -767,8 +767,8 @@ export interface MonkeyLeagueERC20Abi extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     mint(
-      to: string,
-      amount: BigNumberish,
+      _to: string,
+      _amount: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
