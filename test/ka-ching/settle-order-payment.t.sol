@@ -3,14 +3,14 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 import "./contracts/TestableCashRegisterV1.sol";
-import "../../src/mbs/MonkeyLeagueERC20.sol";
+import "../../src/mbs/MBS.sol";
 import "./contracts/SigUtils.sol";
 
 contract KaChingCashRegisterV1Test is Test {
     KaChingCashRegisterV1Testable public cashRegister;
     SigUtils public sigUtils;
 
-    MonkeyLeagueERC20 public mockMBS;
+    MBS public mockMBS;
 
     uint256 public signerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
     uint128 public uuid = uint128(uint256(keccak256(abi.encodePacked("550e8400-e29b-41d4-a716-446655440000"))));
@@ -46,7 +46,7 @@ contract KaChingCashRegisterV1Test is Test {
     }
 
     function setUp() public {
-        mockMBS = new MonkeyLeagueERC20();
+        mockMBS = new MBS();
         cashRegister = new KaChingCashRegisterV1Testable(cashier, address(mockMBS));
 
         sigUtils = new SigUtils(mockMBS.DOMAIN_SEPARATOR());

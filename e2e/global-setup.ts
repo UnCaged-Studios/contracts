@@ -97,11 +97,11 @@ export default async () => {
     const cashierAddress = publicKeys[predefinedWalletsIdx.kaChing_cashier];
 
     const mbsToken = await _deployContract(
-      'src/mbs/MonkeyLeagueERC20.sol:MonkeyLeagueERC20',
+      'src/mbs/MBS.sol:MBS',
       mbsContractDeployer
     );
     const mbsOptimism = await _deployContract(
-      'src/mbs-optimism/MonkeyLeagueOptimismMintableERC20.sol:MonkeyLeagueOptimismMintableERC20',
+      'src/mbs-optimism/MBSOptimismMintableERC20.sol:MBSOptimismMintableERC20',
       mbsContractDeployer,
       [bridgeAddress, mbsToken]
     );

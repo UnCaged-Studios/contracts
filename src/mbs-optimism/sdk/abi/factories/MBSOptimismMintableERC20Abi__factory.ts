@@ -5,9 +5,9 @@
 import { Contract, Signer, utils } from "ethers";
 import type { Provider } from "@ethersproject/providers";
 import type {
-  MonkeyLeagueOptimismMintableERC20Abi,
-  MonkeyLeagueOptimismMintableERC20AbiInterface,
-} from "../MonkeyLeagueOptimismMintableERC20Abi";
+  MBSOptimismMintableERC20Abi,
+  MBSOptimismMintableERC20AbiInterface,
+} from "../MBSOptimismMintableERC20Abi";
 
 const _abi = [
   {
@@ -653,21 +653,19 @@ const _abi = [
   },
 ] as const;
 
-export class MonkeyLeagueOptimismMintableERC20Abi__factory {
+export class MBSOptimismMintableERC20Abi__factory {
   static readonly abi = _abi;
-  static createInterface(): MonkeyLeagueOptimismMintableERC20AbiInterface {
-    return new utils.Interface(
-      _abi
-    ) as MonkeyLeagueOptimismMintableERC20AbiInterface;
+  static createInterface(): MBSOptimismMintableERC20AbiInterface {
+    return new utils.Interface(_abi) as MBSOptimismMintableERC20AbiInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): MonkeyLeagueOptimismMintableERC20Abi {
+  ): MBSOptimismMintableERC20Abi {
     return new Contract(
       address,
       _abi,
       signerOrProvider
-    ) as MonkeyLeagueOptimismMintableERC20Abi;
+    ) as MBSOptimismMintableERC20Abi;
   }
 }

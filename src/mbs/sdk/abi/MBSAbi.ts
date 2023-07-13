@@ -26,76 +26,58 @@ import type {
   OnEvent,
 } from "./common";
 
-export interface MonkeyLeagueOptimismMintableERC20AbiInterface
-  extends utils.Interface {
+export interface MBSAbiInterface extends utils.Interface {
   functions: {
-    "BRIDGE()": FunctionFragment;
     "DOMAIN_SEPARATOR()": FunctionFragment;
-    "REMOTE_TOKEN()": FunctionFragment;
     "allowance(address,address)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
-    "bridge()": FunctionFragment;
     "burn(uint256)": FunctionFragment;
-    "burn(address,uint256)": FunctionFragment;
     "burnFrom(address,uint256)": FunctionFragment;
     "decimals()": FunctionFragment;
     "decreaseAllowance(address,uint256)": FunctionFragment;
     "eip712Domain()": FunctionFragment;
     "increaseAllowance(address,uint256)": FunctionFragment;
-    "l1Token()": FunctionFragment;
-    "l2Bridge()": FunctionFragment;
     "mint(address,uint256)": FunctionFragment;
     "name()": FunctionFragment;
     "nonces(address)": FunctionFragment;
+    "owner()": FunctionFragment;
     "permit(address,address,uint256,uint256,uint8,bytes32,bytes32)": FunctionFragment;
-    "remoteToken()": FunctionFragment;
-    "supportsInterface(bytes4)": FunctionFragment;
+    "renounceOwnership()": FunctionFragment;
     "symbol()": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transfer(address,uint256)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
-    "version()": FunctionFragment;
+    "transferOwnership(address)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
-      | "BRIDGE"
       | "DOMAIN_SEPARATOR"
-      | "REMOTE_TOKEN"
       | "allowance"
       | "approve"
       | "balanceOf"
-      | "bridge"
-      | "burn(uint256)"
-      | "burn(address,uint256)"
+      | "burn"
       | "burnFrom"
       | "decimals"
       | "decreaseAllowance"
       | "eip712Domain"
       | "increaseAllowance"
-      | "l1Token"
-      | "l2Bridge"
       | "mint"
       | "name"
       | "nonces"
+      | "owner"
       | "permit"
-      | "remoteToken"
-      | "supportsInterface"
+      | "renounceOwnership"
       | "symbol"
       | "totalSupply"
       | "transfer"
       | "transferFrom"
-      | "version"
+      | "transferOwnership"
   ): FunctionFragment;
 
-  encodeFunctionData(functionFragment: "BRIDGE", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "DOMAIN_SEPARATOR",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "REMOTE_TOKEN",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -107,15 +89,7 @@ export interface MonkeyLeagueOptimismMintableERC20AbiInterface
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
-  encodeFunctionData(functionFragment: "bridge", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "burn(uint256)",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "burn(address,uint256)",
-    values: [string, BigNumberish]
-  ): string;
+  encodeFunctionData(functionFragment: "burn", values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: "burnFrom",
     values: [string, BigNumberish]
@@ -133,14 +107,13 @@ export interface MonkeyLeagueOptimismMintableERC20AbiInterface
     functionFragment: "increaseAllowance",
     values: [string, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "l1Token", values?: undefined): string;
-  encodeFunctionData(functionFragment: "l2Bridge", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "mint",
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(functionFragment: "nonces", values: [string]): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "permit",
     values: [
@@ -154,12 +127,8 @@ export interface MonkeyLeagueOptimismMintableERC20AbiInterface
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "remoteToken",
+    functionFragment: "renounceOwnership",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "supportsInterface",
-    values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
@@ -174,29 +143,19 @@ export interface MonkeyLeagueOptimismMintableERC20AbiInterface
     functionFragment: "transferFrom",
     values: [string, string, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "version", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "transferOwnership",
+    values: [string]
+  ): string;
 
-  decodeFunctionResult(functionFragment: "BRIDGE", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "DOMAIN_SEPARATOR",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "REMOTE_TOKEN",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "bridge", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "burn(uint256)",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "burn(address,uint256)",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burnFrom", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(
@@ -211,18 +170,13 @@ export interface MonkeyLeagueOptimismMintableERC20AbiInterface
     functionFragment: "increaseAllowance",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "l1Token", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "l2Bridge", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "nonces", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "permit", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "remoteToken",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "supportsInterface",
+    functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
@@ -235,20 +189,21 @@ export interface MonkeyLeagueOptimismMintableERC20AbiInterface
     functionFragment: "transferFrom",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "transferOwnership",
+    data: BytesLike
+  ): Result;
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
-    "Burn(address,uint256)": EventFragment;
     "EIP712DomainChanged()": EventFragment;
-    "Mint(address,uint256)": EventFragment;
+    "OwnershipTransferred(address,address)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Burn"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "EIP712DomainChanged"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Mint"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
 
@@ -264,14 +219,6 @@ export type ApprovalEvent = TypedEvent<
 
 export type ApprovalEventFilter = TypedEventFilter<ApprovalEvent>;
 
-export interface BurnEventObject {
-  account: string;
-  amount: BigNumber;
-}
-export type BurnEvent = TypedEvent<[string, BigNumber], BurnEventObject>;
-
-export type BurnEventFilter = TypedEventFilter<BurnEvent>;
-
 export interface EIP712DomainChangedEventObject {}
 export type EIP712DomainChangedEvent = TypedEvent<
   [],
@@ -281,13 +228,17 @@ export type EIP712DomainChangedEvent = TypedEvent<
 export type EIP712DomainChangedEventFilter =
   TypedEventFilter<EIP712DomainChangedEvent>;
 
-export interface MintEventObject {
-  account: string;
-  amount: BigNumber;
+export interface OwnershipTransferredEventObject {
+  previousOwner: string;
+  newOwner: string;
 }
-export type MintEvent = TypedEvent<[string, BigNumber], MintEventObject>;
+export type OwnershipTransferredEvent = TypedEvent<
+  [string, string],
+  OwnershipTransferredEventObject
+>;
 
-export type MintEventFilter = TypedEventFilter<MintEvent>;
+export type OwnershipTransferredEventFilter =
+  TypedEventFilter<OwnershipTransferredEvent>;
 
 export interface TransferEventObject {
   from: string;
@@ -301,12 +252,12 @@ export type TransferEvent = TypedEvent<
 
 export type TransferEventFilter = TypedEventFilter<TransferEvent>;
 
-export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
+export interface MBSAbi extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: MonkeyLeagueOptimismMintableERC20AbiInterface;
+  interface: MBSAbiInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -328,11 +279,7 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    BRIDGE(overrides?: CallOverrides): Promise<[string]>;
-
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<[string]>;
-
-    REMOTE_TOKEN(overrides?: CallOverrides): Promise<[string]>;
 
     allowance(
       owner: string,
@@ -348,22 +295,14 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
 
     balanceOf(account: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    bridge(overrides?: CallOverrides): Promise<[string]>;
-
-    "burn(uint256)"(
+    burn(
       amount: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    "burn(address,uint256)"(
-      _from: string,
-      _amount: BigNumberish,
-      overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>;
-
     burnFrom(
-      _account: string,
-      _amount: BigNumberish,
+      account: string,
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
@@ -395,10 +334,6 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    l1Token(overrides?: CallOverrides): Promise<[string]>;
-
-    l2Bridge(overrides?: CallOverrides): Promise<[string]>;
-
     mint(
       _to: string,
       _amount: BigNumberish,
@@ -408,6 +343,8 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
     name(overrides?: CallOverrides): Promise<[string]>;
 
     nonces(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    owner(overrides?: CallOverrides): Promise<[string]>;
 
     permit(
       owner: string,
@@ -420,12 +357,9 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    remoteToken(overrides?: CallOverrides): Promise<[string]>;
-
-    supportsInterface(
-      _interfaceId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
+    renounceOwnership(
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
 
@@ -444,14 +378,13 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    version(overrides?: CallOverrides): Promise<[string]>;
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
   };
 
-  BRIDGE(overrides?: CallOverrides): Promise<string>;
-
   DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
-
-  REMOTE_TOKEN(overrides?: CallOverrides): Promise<string>;
 
   allowance(
     owner: string,
@@ -467,22 +400,14 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
 
   balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  bridge(overrides?: CallOverrides): Promise<string>;
-
-  "burn(uint256)"(
+  burn(
     amount: BigNumberish,
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  "burn(address,uint256)"(
-    _from: string,
-    _amount: BigNumberish,
-    overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>;
-
   burnFrom(
-    _account: string,
-    _amount: BigNumberish,
+    account: string,
+    amount: BigNumberish,
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
@@ -514,10 +439,6 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  l1Token(overrides?: CallOverrides): Promise<string>;
-
-  l2Bridge(overrides?: CallOverrides): Promise<string>;
-
   mint(
     _to: string,
     _amount: BigNumberish,
@@ -527,6 +448,8 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
   name(overrides?: CallOverrides): Promise<string>;
 
   nonces(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+  owner(overrides?: CallOverrides): Promise<string>;
 
   permit(
     owner: string,
@@ -539,12 +462,9 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  remoteToken(overrides?: CallOverrides): Promise<string>;
-
-  supportsInterface(
-    _interfaceId: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
+  renounceOwnership(
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
 
   symbol(overrides?: CallOverrides): Promise<string>;
 
@@ -563,14 +483,13 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  version(overrides?: CallOverrides): Promise<string>;
+  transferOwnership(
+    newOwner: string,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
 
   callStatic: {
-    BRIDGE(overrides?: CallOverrides): Promise<string>;
-
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
-
-    REMOTE_TOKEN(overrides?: CallOverrides): Promise<string>;
 
     allowance(
       owner: string,
@@ -586,22 +505,11 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
 
     balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    bridge(overrides?: CallOverrides): Promise<string>;
-
-    "burn(uint256)"(
-      amount: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "burn(address,uint256)"(
-      _from: string,
-      _amount: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    burn(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     burnFrom(
-      _account: string,
-      _amount: BigNumberish,
+      account: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -633,10 +541,6 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    l1Token(overrides?: CallOverrides): Promise<string>;
-
-    l2Bridge(overrides?: CallOverrides): Promise<string>;
-
     mint(
       _to: string,
       _amount: BigNumberish,
@@ -646,6 +550,8 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
     name(overrides?: CallOverrides): Promise<string>;
 
     nonces(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    owner(overrides?: CallOverrides): Promise<string>;
 
     permit(
       owner: string,
@@ -658,12 +564,7 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    remoteToken(overrides?: CallOverrides): Promise<string>;
-
-    supportsInterface(
-      _interfaceId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+    renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     symbol(overrides?: CallOverrides): Promise<string>;
 
@@ -682,7 +583,10 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    version(overrides?: CallOverrides): Promise<string>;
+    transferOwnership(
+      newOwner: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
@@ -697,20 +601,17 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
       value?: null
     ): ApprovalEventFilter;
 
-    "Burn(address,uint256)"(
-      account?: string | null,
-      amount?: null
-    ): BurnEventFilter;
-    Burn(account?: string | null, amount?: null): BurnEventFilter;
-
     "EIP712DomainChanged()"(): EIP712DomainChangedEventFilter;
     EIP712DomainChanged(): EIP712DomainChangedEventFilter;
 
-    "Mint(address,uint256)"(
-      account?: string | null,
-      amount?: null
-    ): MintEventFilter;
-    Mint(account?: string | null, amount?: null): MintEventFilter;
+    "OwnershipTransferred(address,address)"(
+      previousOwner?: string | null,
+      newOwner?: string | null
+    ): OwnershipTransferredEventFilter;
+    OwnershipTransferred(
+      previousOwner?: string | null,
+      newOwner?: string | null
+    ): OwnershipTransferredEventFilter;
 
     "Transfer(address,address,uint256)"(
       from?: string | null,
@@ -725,11 +626,7 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
   };
 
   estimateGas: {
-    BRIDGE(overrides?: CallOverrides): Promise<BigNumber>;
-
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<BigNumber>;
-
-    REMOTE_TOKEN(overrides?: CallOverrides): Promise<BigNumber>;
 
     allowance(
       owner: string,
@@ -745,22 +642,14 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
 
     balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    bridge(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "burn(uint256)"(
+    burn(
       amount: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    "burn(address,uint256)"(
-      _from: string,
-      _amount: BigNumberish,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>;
-
     burnFrom(
-      _account: string,
-      _amount: BigNumberish,
+      account: string,
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
@@ -780,10 +669,6 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    l1Token(overrides?: CallOverrides): Promise<BigNumber>;
-
-    l2Bridge(overrides?: CallOverrides): Promise<BigNumber>;
-
     mint(
       _to: string,
       _amount: BigNumberish,
@@ -793,6 +678,8 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
     name(overrides?: CallOverrides): Promise<BigNumber>;
 
     nonces(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     permit(
       owner: string,
@@ -805,11 +692,8 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    remoteToken(overrides?: CallOverrides): Promise<BigNumber>;
-
-    supportsInterface(
-      _interfaceId: BytesLike,
-      overrides?: CallOverrides
+    renounceOwnership(
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
@@ -829,15 +713,14 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    version(overrides?: CallOverrides): Promise<BigNumber>;
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    BRIDGE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    REMOTE_TOKEN(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     allowance(
       owner: string,
@@ -856,22 +739,14 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    bridge(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    "burn(uint256)"(
+    burn(
       amount: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
-    "burn(address,uint256)"(
-      _from: string,
-      _amount: BigNumberish,
-      overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>;
-
     burnFrom(
-      _account: string,
-      _amount: BigNumberish,
+      account: string,
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
@@ -891,10 +766,6 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
-    l1Token(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    l2Bridge(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     mint(
       _to: string,
       _amount: BigNumberish,
@@ -908,6 +779,8 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     permit(
       owner: string,
       spender: string,
@@ -919,11 +792,8 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
-    remoteToken(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    supportsInterface(
-      _interfaceId: BytesLike,
-      overrides?: CallOverrides
+    renounceOwnership(
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -943,6 +813,9 @@ export interface MonkeyLeagueOptimismMintableERC20Abi extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
-    version(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
   };
 }

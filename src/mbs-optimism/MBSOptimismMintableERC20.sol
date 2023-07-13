@@ -6,20 +6,20 @@ import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20P
 import {ERC20Burnable} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 /**
- * @title MonkeyLeagueOptimismMintableERC20
+ * @title MBSOptimismMintableERC20
  * @notice This contract is a variant of OptimismMintableERC20, incorporating permit functionality (ERC20Permit) and burnability (ERC20Burnable).
  *  It allows for a mintable, burnable ERC20 token with permit functionality on the Optimism network.
  *  This version of the token also enables the L2 Standard Bridge to burn tokens.
  */
-contract MonkeyLeagueOptimismMintableERC20 is OptimismMintableERC20, ERC20Permit, ERC20Burnable {
+contract MBSOptimismMintableERC20 is OptimismMintableERC20, ERC20Permit, ERC20Burnable {
     /**
-     * @notice Constructs the MonkeyLeagueOptimismMintableERC20 contract with specified parameters.
+     * @notice Constructs the MBSOptimismMintableERC20 contract with specified parameters.
      * @param _bridge The address of the L2 standard bridge, capable of minting and burning tokens.
      * @param _remoteToken The address of the corresponding L1 token.
      */
     constructor(address _bridge, address _remoteToken)
-        OptimismMintableERC20(_bridge, _remoteToken, "MonkeyLeague", "MBS")
-        ERC20Permit("MonkeyLeague")
+        OptimismMintableERC20(_bridge, _remoteToken, "MBS", "MBS")
+        ERC20Permit("MBS")
     {}
 
     /**
