@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.15;
+pragma solidity 0.8.19;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {ERC20Burnable} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 
 /**
  * @title MonkeyLeagueERC20
@@ -13,19 +13,19 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
  */
 contract MonkeyLeagueERC20 is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     /**
-     * @dev Constructor that gives msg.sender all of existing tokens.
+     * @dev Creates a new token and mints its initial supply to the deployer.
      */
     constructor() ERC20("MonkeyLeague", "MBS") ERC20Permit("MonkeyLeague") {
-        _mint(msg.sender, 1000000000 * 10 ** decimals());
+        _mint(msg.sender, 200_000_000 * 10 ** decimals());
     }
 
     /**
      * @notice Allows the owner to mint new tokens
      * @dev Can only be called by the current owner
-     * @param to The address that will receive the minted tokens
-     * @param amount The amount of tokens to mint
+     * @param _to The address that will receive the minted tokens
+     * @param _amount The amount of tokens to mint
      */
-    function mint(address to, uint256 amount) public onlyOwner {
-        _mint(to, amount);
+    function mint(address _to, uint256 _amount) external onlyOwner {
+        _mint(_to, _amount);
     }
 }
