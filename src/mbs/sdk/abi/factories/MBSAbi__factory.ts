@@ -4,10 +4,7 @@
 
 import { Contract, Signer, utils } from "ethers";
 import type { Provider } from "@ethersproject/providers";
-import type {
-  MonkeyLeagueERC20Abi,
-  MonkeyLeagueERC20AbiInterface,
-} from "../MonkeyLeagueERC20Abi";
+import type { MBSAbi, MBSAbiInterface } from "../MBSAbi";
 
 const _abi = [
   {
@@ -528,19 +525,12 @@ const _abi = [
   },
 ] as const;
 
-export class MonkeyLeagueERC20Abi__factory {
+export class MBSAbi__factory {
   static readonly abi = _abi;
-  static createInterface(): MonkeyLeagueERC20AbiInterface {
-    return new utils.Interface(_abi) as MonkeyLeagueERC20AbiInterface;
+  static createInterface(): MBSAbiInterface {
+    return new utils.Interface(_abi) as MBSAbiInterface;
   }
-  static connect(
-    address: string,
-    signerOrProvider: Signer | Provider
-  ): MonkeyLeagueERC20Abi {
-    return new Contract(
-      address,
-      _abi,
-      signerOrProvider
-    ) as MonkeyLeagueERC20Abi;
+  static connect(address: string, signerOrProvider: Signer | Provider): MBSAbi {
+    return new Contract(address, _abi, signerOrProvider) as MBSAbi;
   }
 }

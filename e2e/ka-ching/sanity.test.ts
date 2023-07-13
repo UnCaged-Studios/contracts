@@ -47,7 +47,7 @@ test('debit customer with erc20', async () => {
   const amount = BigNumber.from(BigInt(3 * 10 ** 18));
   await _waitForTxn(() =>
     customerSdk.permitERC20(amount, '1h', {
-      name: 'MonkeyLeague',
+      name: 'MBS',
       version: '1',
       chainId: '31337',
       verifyingContract: contracts.mbsOptimism,
@@ -84,7 +84,7 @@ test('debit customer with erc20 and built-in permit', async () => {
   const orderSignature = await _signOffChain(order);
   await _waitForTxn(() =>
     customerSdk.settleOrderPaymentWithPermit(serializedOrder, orderSignature, {
-      name: 'MonkeyLeague',
+      name: 'MBS',
       version: '1',
       chainId: '31337',
       verifyingContract: contracts.mbsOptimism,
