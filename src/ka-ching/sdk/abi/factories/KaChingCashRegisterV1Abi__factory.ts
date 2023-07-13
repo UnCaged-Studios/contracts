@@ -14,12 +14,12 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_cashier",
+        name: "cashier",
         type: "address",
       },
       {
         internalType: "address",
-        name: "_erc20Token",
+        name: "erc20Token",
         type: "address",
       },
     ],
@@ -94,7 +94,7 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "CASHIER_ROLE",
+    name: "_cashierRole",
     outputs: [
       {
         internalType: "address",
@@ -107,10 +107,10 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "ERC20_CURRENCY",
+    name: "_erc20Token",
     outputs: [
       {
-        internalType: "address",
+        internalType: "contract IERC20",
         name: "",
         type: "address",
       },

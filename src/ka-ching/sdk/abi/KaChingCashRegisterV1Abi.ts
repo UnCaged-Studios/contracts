@@ -57,8 +57,8 @@ export type FullOrderStructOutput = [
 
 export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
   functions: {
-    "CASHIER_ROLE()": FunctionFragment;
-    "ERC20_CURRENCY()": FunctionFragment;
+    "_cashierRole()": FunctionFragment;
+    "_erc20Token()": FunctionFragment;
     "eip712Domain()": FunctionFragment;
     "getOrderSigners()": FunctionFragment;
     "isOrderProcessed(uint128)": FunctionFragment;
@@ -69,8 +69,8 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
-      | "CASHIER_ROLE"
-      | "ERC20_CURRENCY"
+      | "_cashierRole"
+      | "_erc20Token"
       | "eip712Domain"
       | "getOrderSigners"
       | "isOrderProcessed"
@@ -80,11 +80,11 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
   ): FunctionFragment;
 
   encodeFunctionData(
-    functionFragment: "CASHIER_ROLE",
+    functionFragment: "_cashierRole",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "ERC20_CURRENCY",
+    functionFragment: "_erc20Token",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -120,11 +120,11 @@ export interface KaChingCashRegisterV1AbiInterface extends utils.Interface {
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "CASHIER_ROLE",
+    functionFragment: "_cashierRole",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "ERC20_CURRENCY",
+    functionFragment: "_erc20Token",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -224,9 +224,9 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    CASHIER_ROLE(overrides?: CallOverrides): Promise<[string]>;
+    _cashierRole(overrides?: CallOverrides): Promise<[string]>;
 
-    ERC20_CURRENCY(overrides?: CallOverrides): Promise<[string]>;
+    _erc20Token(overrides?: CallOverrides): Promise<[string]>;
 
     eip712Domain(
       overrides?: CallOverrides
@@ -271,9 +271,9 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
-  CASHIER_ROLE(overrides?: CallOverrides): Promise<string>;
+  _cashierRole(overrides?: CallOverrides): Promise<string>;
 
-  ERC20_CURRENCY(overrides?: CallOverrides): Promise<string>;
+  _erc20Token(overrides?: CallOverrides): Promise<string>;
 
   eip712Domain(
     overrides?: CallOverrides
@@ -318,9 +318,9 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    CASHIER_ROLE(overrides?: CallOverrides): Promise<string>;
+    _cashierRole(overrides?: CallOverrides): Promise<string>;
 
-    ERC20_CURRENCY(overrides?: CallOverrides): Promise<string>;
+    _erc20Token(overrides?: CallOverrides): Promise<string>;
 
     eip712Domain(
       overrides?: CallOverrides
@@ -391,9 +391,9 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
   };
 
   estimateGas: {
-    CASHIER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
+    _cashierRole(overrides?: CallOverrides): Promise<BigNumber>;
 
-    ERC20_CURRENCY(overrides?: CallOverrides): Promise<BigNumber>;
+    _erc20Token(overrides?: CallOverrides): Promise<BigNumber>;
 
     eip712Domain(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -427,9 +427,9 @@ export interface KaChingCashRegisterV1Abi extends BaseContract {
   };
 
   populateTransaction: {
-    CASHIER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    _cashierRole(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    ERC20_CURRENCY(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    _erc20Token(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     eip712Domain(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
