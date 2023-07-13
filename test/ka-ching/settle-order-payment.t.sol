@@ -42,7 +42,6 @@ contract KaChingCashRegisterV1Test is Test {
     }
 
     function _mint(address to, uint256 amount) internal {
-        // vm.prank(0xdEADBEeF00000000000000000000000000000000);
         mockMBS.mint(to, amount);
     }
 
