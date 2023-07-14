@@ -2,7 +2,7 @@
 
 KaChingCashRegisterV1, is a decentralized point-of-sale (PoS) system leveraging the Ethereum blockchain.
 
-It operates as a digital checkout counter, facilitating transactions with no central authority. Utilizing EIP712 and ECDSA for cryptographic functions and the IERC20 standard for token transactions, the system fosters security and transparency. Its distinctive feature is the use of off-chain EIP712 signed orders, marrying on-chain safety with off-chain efficacy. This feature validates orders based on authorized signers, expiration, and usage, significantly mitigating the risks of fraud and double-spending.
+It operates as a digital checkout counter, facilitating peer-to-peer transactions with no central authority. Utilizing EIP712 and ECDSA for cryptographic functions and the openzeppelin `IERC20` and `SafeERC20` standard for token transactions, the system fosters security and transparency. Its distinctive feature is the use of off-chain EIP712 signed orders, marrying on-chain safety with off-chain efficacy. This feature validates orders based on authorized signers, expiration, and usage, significantly mitigating the risks of fraud and double-spending.
 
 This smart contract presents the following primary features:
 
