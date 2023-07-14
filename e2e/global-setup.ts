@@ -110,6 +110,10 @@ export default async () => {
       kaChingContractDeployer,
       [cashierAddress, mbsOptimism]
     );
+    const helloBaseScoreGoal = await _deployContract(
+      'src/hello-base/HelloBaseScoreGoal.sol:HelloBaseScoreGoal',
+      kaChingContractDeployer
+    );
     const json = {
       privateKeys: {
         kaChingDeployer: kaChingContractDeployer,
@@ -124,6 +128,7 @@ export default async () => {
         kaChingCashRegister: kaChing,
         mbsOptimism,
         mbsToken,
+        helloBaseScoreGoal,
       },
     };
     await fs.writeJSON(path.join(__dirname, 'anvil.json'), json, {
