@@ -131,6 +131,10 @@ test('OrderFullySettled event', async () => {
     readonlySdk.events.OrderFullySettled.findByOrderId(_orders[1]),
     readonlySdk.events.OrderFullySettled.findByCustomer(customer.address),
   ]);
+  const isOrderProcessed: boolean[] = await Promise.all(
+    _orders.map((id) => readonlySdk.state.isOrderProcessed(id))
+  );
+  expect(isOrderProcessed.every((pred) => pred)).toBe(true);
   expect(allEvents.length).toBe(3);
   expect(byCustomer.length).toBe(3);
   expect(byOrderId_1.length).toBe(1);

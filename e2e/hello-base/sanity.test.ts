@@ -1,10 +1,6 @@
 import { expect, test } from '@jest/globals';
 import { privateKeys, contracts } from '../anvil.json';
-import {
-  _ensureNonZeroBalance,
-  _waitForTxn,
-  localJsonRpcProvider,
-} from '../test-utils';
+import { _waitForTxn, localJsonRpcProvider } from '../test-utils';
 import { Wallet } from 'ethers';
 
 import { HelloBaseScoreGoal } from '../../dist/cjs';
@@ -31,7 +27,7 @@ test('Alice and Bob can score a goal and cannot score again', async () => {
 
   try {
     await aliceSdk.scoreGoal();
-  } catch (e: any) {
-    expect(e.message).toContain('You have already scored a goal!');
+  } catch (e: unknown) {
+    expect((e as Error).message).toContain('You have already scored a goal!');
   }
 });

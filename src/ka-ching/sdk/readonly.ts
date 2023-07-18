@@ -75,6 +75,11 @@ export function readonlySdkFactory(
   };
 
   return {
+    state: {
+      isOrderProcessed(id: Uint8Array) {
+        return _sdk.isOrderProcessed(id);
+      },
+    },
     orders: {
       creditCustomerWithERC20(params: UnaryOrderParams) {
         const order = _unaryOrder(params, true);
